@@ -1,0 +1,52 @@
+name: aurasphere_pro
+description: AuraSphere Pro - Business OS (Flutter + Firebase)
+
+version: 0.1.0+1
+
+environment:
+  sdk: ">=2.19.0 <4.0.0"
+  flutter: ">=3.7.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^2.10.0
+  firebase_auth: ^4.4.0
+  cloud_firestore: ^4.6.0
+  firebase_storage: ^11.0.0
+  firebase_functions: ^4.4.0
+
+  # Auth & social
+  google_sign_in: ^6.1.0
+
+  # State management
+  provider: ^6.0.5
+  flutter_riverpod: ^2.3.6
+
+  # Utilities
+  http: ^0.14.0
+  shared_preferences: ^2.1.1
+  image_picker: ^0.8.7+4
+  intl: ^0.18.0
+  flutter_localizations:
+    sdk: flutter
+  lottie: ^2.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  build_runner: ^2.4.6
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/animations/
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+    - lib/localization/

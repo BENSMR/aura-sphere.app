@@ -1,0 +1,16 @@
+{
+  "app_name": "AuraSphere Pro",
+  "welcome": "Bienvenue sur AuraSphere Pro",
+  "login": "Connexion",
+  "signup": "S'inscrire",
+  "email": "E-mail",
+  "password": "Mot de passe",
+  "dashboard": "Tableau de bord",
+  "expenses": "Dépenses",
+  "ai_assistant": "Assistant IA",
+  "crm": "GRC",
+  "projects": "Projets",
+  "invoices": "Factures",
+  "crypto": "Portefeuille Crypto",
+  "profile": "Profil"
+}
