@@ -1,5 +1,5 @@
 import { CallableContext } from 'firebase-functions/v1/https';
-import { openai } from '../utils/openai';
+import { getOpenaiClient } from '../utils/openai';
 
 export const aiAssistant = async (data: any, context: CallableContext) => {
   if (!context.auth) {
@@ -13,6 +13,7 @@ export const aiAssistant = async (data: any, context: CallableContext) => {
   }
 
   try {
+    const openai = getOpenaiClient();
     const response = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 
-class AIAssistantScreen extends StatelessWidget {
-  const AIAssistantScreen({super.key});
-
+class AiAssistantScreen extends StatelessWidget {
+  const AiAssistantScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('AI Assistant')),
-      body: const Center(
-        child: Text('AI Assistant - TODO: Implement chat interface'),
-      ),
+      body: const Center(child: Text('Ask Aura: business advice, invoices, proposals...')),
     );
   }
 }

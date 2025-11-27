@@ -1,0 +1,274 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path_provider/path_provider.dart';
+import '../data/models/invoice_model.dart';
+import '../data/models/expense_model.dart';
+import '../utils/logger.dart';
+
+/// Service for exporting invoices in multiple formats
+class InvoiceExportService {
+  static const String _downloadsPath = 'downloads';
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  /// Export invoice as PDF
+  Future<File> exportPdf(InvoiceModel invoice, List<int> pdfBytes) async {
+    return _saveToLocalFile(
+      bytes: pdfBytes,
+      filename: '${invoice.invoiceNumber}.pdf',
+    );
+  }
+
+  /// Export invoice as CSV
+  Future<File> exportCsv(InvoiceModel invoice) async {
+    final csv = _generateCsv(invoice);
+    final bytes = utf8.encode(csv);
+
+    return _saveToLocalFile(
+      bytes: bytes,
+      filename: '${invoice.invoiceNumber}_items.csv',
+    );
+  }
+
+  /// Export invoice as JSON
+  Future<File> exportJson(InvoiceModel invoice) async {
+    final json = _generateJson(invoice);
+    final bytes = utf8.encode(json);
+
+    return _saveToLocalFile(
+      bytes: bytes,
+      filename: '${invoice.invoiceNumber}.json',
+    );
+  }
+
+  /// Export invoice with linked expenses as JSON
+  Future<File> exportWithExpenses(
+    InvoiceModel invoice,
+    List<ExpenseModel> linkedExpenses,
+  ) async {
+    final json = _generateJsonWithExpenses(invoice, linkedExpenses);
+    final bytes = utf8.encode(json);
+
+    return _saveToLocalFile(
+      bytes: bytes,
+      filename: '${invoice.invoiceNumber}_with_expenses.json',
+    );
+  }
+
+  /// Generate CSV content
+  String _generateCsv(InvoiceModel invoice) {
+    final buffer = StringBuffer();
+
+    // Header section
+    buffer.writeln('Invoice Export');
+    buffer.writeln('Generated,${DateTime.now().toIso8601String()}');
+    buffer.writeln('');
+
+    // Invoice details
+    buffer.writeln('Invoice Details');
+    buffer.writeln('Invoice Number,${invoice.invoiceNumber}');
+    buffer.writeln('Client,${_escapeCsv(invoice.clientName)}');
+    buffer.writeln('Client Email,${invoice.clientEmail}');
+    buffer.writeln('Status,${invoice.status}');
+    buffer.writeln('Created,${invoice.createdAt}');
+    buffer.writeln('');
+
+    // Items section
+    buffer.writeln('Items');
+    buffer.writeln('Item,Quantity,Unit Price,VAT Rate,VAT Amount,Total');
+
+    for (final item in invoice.items) {
+      final vatAmount = item.total * item.vatRate;
+      buffer.writeln(
+        '${_escapeCsv(item.name)},'
+        '${item.quantity},'
+        '${item.unitPrice.toStringAsFixed(2)},'
+        '${(item.vatRate * 100).toStringAsFixed(1)}%,'
+        '${vatAmount.toStringAsFixed(2)},'
+        '${item.total.toStringAsFixed(2)}',
+      );
+    }
+
+    // Summary section
+    buffer.writeln('');
+    buffer.writeln('Summary');
+    buffer.writeln('Subtotal,${invoice.subtotal.toStringAsFixed(2)}');
+    buffer.writeln('Total VAT,${invoice.totalVat.toStringAsFixed(2)}');
+    if (invoice.discount > 0) {
+      buffer.writeln('Discount,-${invoice.discount.toStringAsFixed(2)}');
+    }
+    buffer.writeln('Total,${invoice.total.toStringAsFixed(2)}');
+    buffer.writeln('Currency,${invoice.currency}');
+
+    // Notes
+    if ((invoice.notes ?? '').isNotEmpty) {
+      buffer.writeln('');
+      buffer.writeln('Notes');
+      buffer.writeln(_escapeCsv(invoice.notes ?? ''));
+    }
+
+    return buffer.toString();
+  }
+
+  /// Generate pretty-printed JSON
+  String _generateJson(InvoiceModel invoice) {
+    final json = invoice.toMap();
+    const encoder = JsonEncoder.withIndent('  ');
+    return encoder.convert(json);
+  }
+
+  /// Generate JSON with linked expenses
+  String _generateJsonWithExpenses(
+    InvoiceModel invoice,
+    List<ExpenseModel> linkedExpenses,
+  ) {
+    final json = {
+      'invoice': invoice.toMap(),
+      'linkedExpenses': linkedExpenses.map((e) => e.toMap()).toList(),
+      'metadata': {
+        'exportedAt': DateTime.now().toIso8601String(),
+        'expenseCount': linkedExpenses.length,
+        'totalExpenseAmount': linkedExpenses.fold<double>(
+          0,
+          (sum, e) => sum + e.amount,
+        ),
+      },
+    };
+
+    const encoder = JsonEncoder.withIndent('  ');
+    return encoder.convert(json);
+  }
+
+  /// Escape CSV special characters
+  String _escapeCsv(String value) {
+    if (value.contains(',') || value.contains('"') || value.contains('\n')) {
+      return '"${value.replaceAll('"', '""')}"';
+    }
+    return value;
+  }
+
+  /// Save bytes to local file
+  Future<File> _saveToLocalFile({
+    required List<int> bytes,
+    required String filename,
+  }) async {
+    try {
+      final directory = await getDownloadsDirectory();
+      final downloadsDir = Directory('${directory?.path}/$_downloadsPath');
+
+      // Create downloads directory if it doesn't exist
+      if (!await downloadsDir.exists()) {
+        await downloadsDir.create(recursive: true);
+      }
+
+      final file = File('${downloadsDir.path}/$filename');
+
+      // If file exists, add timestamp
+      if (await file.exists()) {
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final nameWithoutExt = filename.split('.').first;
+        final ext = filename.split('.').last;
+        final newFilename = '${nameWithoutExt}_$timestamp.$ext';
+        return File('${downloadsDir.path}/$newFilename').writeAsBytes(bytes);
+      }
+
+      return file.writeAsBytes(bytes);
+    } catch (e) {
+      logger.error('Failed to save file', {'error': e.toString()});
+      rethrow;
+    }
+  }
+
+  /// Upload file to Firebase Storage
+  Future<String> uploadToStorage({
+    required List<int> bytes,
+    required String filename,
+    required String userId,
+  }) async {
+    try {
+      final ref = _storage
+          .ref()
+          .child('invoices/$userId/exports/${DateTime.now().millisecondsSinceEpoch}_$filename');
+
+      final uploadTask = await ref.putData(
+        bytes,
+        SettableMetadata(contentType: _getContentType(filename)),
+      );
+
+      // Get download URL
+      final downloadUrl = await ref.getDownloadURL();
+
+      logger.info('File uploaded', {
+        'filename': filename,
+        'path': ref.fullPath,
+        'size': bytes.length,
+      });
+
+      return downloadUrl;
+    } catch (e) {
+      logger.error('Upload failed', {'filename': filename, 'error': e.toString()});
+      rethrow;
+    }
+  }
+
+  /// Get MIME type for file
+  String _getContentType(String filename) {
+    if (filename.endsWith('.pdf')) return 'application/pdf';
+    if (filename.endsWith('.csv')) return 'text/csv';
+    if (filename.endsWith('.json')) return 'application/json';
+    if (filename.endsWith('.zip')) return 'application/zip';
+    return 'application/octet-stream';
+  }
+
+  /// Delete exported file
+  Future<void> deleteLocalFile(String filename) async {
+    try {
+      final directory = await getDownloadsDirectory();
+      final file = File('${directory?.path}/$_downloadsPath/$filename');
+
+      if (await file.exists()) {
+        await file.delete();
+        logger.info('File deleted', {'filename': filename});
+      }
+    } catch (e) {
+      logger.error('Failed to delete file', {'filename': filename, 'error': e.toString()});
+    }
+  }
+
+  /// Get file size in bytes
+  Future<int> getFileSize(String filename) async {
+    try {
+      final directory = await getDownloadsDirectory();
+      final file = File('${directory?.path}/$_downloadsPath/$filename');
+
+      if (await file.exists()) {
+        return await file.length();
+      }
+      return 0;
+    } catch (e) {
+      logger.error('Failed to get file size', {'filename': filename});
+      return 0;
+    }
+  }
+
+  /// List all exported files
+  Future<List<String>> listExportedFiles() async {
+    try {
+      final directory = await getDownloadsDirectory();
+      final downloadsDir = Directory('${directory?.path}/$_downloadsPath');
+
+      if (!await downloadsDir.exists()) {
+        return [];
+      }
+
+      final files = await downloadsDir.list().toList();
+      return files
+          .whereType<File>()
+          .map((f) => f.path.split('/').last)
+          .toList();
+    } catch (e) {
+      logger.error('Failed to list files', {'error': e.toString()});
+      return [];
+    }
+  }
+}

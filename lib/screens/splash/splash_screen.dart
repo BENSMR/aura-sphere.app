@@ -10,7 +10,7 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('AuraSphere', style: Theme.of(context).textTheme.headline4),
+            Text('AuraSphere', style: Theme.of(context).textTheme.headlineMedium),
             const SizedBox(height: 16),
             const CircularProgressIndicator(),
           ],

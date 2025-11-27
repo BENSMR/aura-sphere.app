@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'logger.dart';
+import 'utils/logger.dart';
 
 class ErrorHandler {
   static void handleError(Object error, StackTrace? stackTrace) {

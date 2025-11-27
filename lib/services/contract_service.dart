@@ -1,4 +1,4 @@
-import 'functions_service.dart';
+import 'firebase/functions_service.dart';
 
 class ContractService {
   final FunctionsService _functions = FunctionsService();

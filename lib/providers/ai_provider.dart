@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/openai_service.dart';
+import '../services/ai/openai_service.dart';
 
 class AIProvider with ChangeNotifier {
   final OpenAIService _openAI = OpenAIService();

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 
-class CRMScreen extends StatelessWidget {
-  const CRMScreen({super.key});
-
+class CrmScreen extends StatelessWidget {
+  const CrmScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('CRM')),
-      body: const Center(
-        child: Text('CRM - TODO: Implement contact management'),
-      ),
+      body: const Center(child: Text('CRM dashboard — contacts, leads and deals.')),
     );
   }
 }

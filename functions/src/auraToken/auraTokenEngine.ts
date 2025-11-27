@@ -1,5 +1,7 @@
 import { CallableContext } from 'firebase-functions/v1/https';
-import { firestore } from '../utils/firestore';
+import * as admin from 'firebase-admin';
+
+const db = admin.firestore();
 
 export const auraTokenEngine = {
   getBalance: async (data: any, context: CallableContext) => {
@@ -8,7 +10,7 @@ export const auraTokenEngine = {
     }
 
     const { userId } = data;
-    const userDoc = await firestore.collection('users').doc(userId).get();
+    const userDoc = await db.collection('users').doc(userId).get();
     const userData = userDoc.data();
 
     return {
@@ -24,15 +26,15 @@ export const rewardTokens = async (data: any, context: CallableContext) => {
 
   const { userId, amount, reason } = data;
 
-  await firestore.collection('users').doc(userId).update({
-    auraTokens: firestore.FieldValue.increment(amount),
+  await db.collection('users').doc(userId).update({
+    auraTokens: admin.firestore.FieldValue.increment(amount),
   });
 
-  await firestore.collection('auraTokenTransactions').add({
+  await db.collection('auraTokenTransactions').add({
     userId,
     amount,
     reason,
-    timestamp: firestore.FieldValue.serverTimestamp(),
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
   });
 
   return { success: true };

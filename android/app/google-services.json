@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "876321378652",
+    "project_id": "aurasphere-pro",
+    "storage_bucket": "aurasphere-pro.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:876321378652:android:4092ff4a42bf1203c93199",
+        "android_client_info": {
+          "package_name": "com.company.aurasphere"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnvdb-5tXyr7IVaAxNDBCpvLEklm4RWBY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

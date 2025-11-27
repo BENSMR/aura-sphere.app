@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/project_model.dart';
+import '../data/models/project_model.dart';
 import '../services/project_service.dart';
 
 class ProjectProvider with ChangeNotifier {

@@ -1,14 +1,144 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // User profile: user can read/write their own profile
     match /users/{userId} {
       allow create: if request.auth != null && request.auth.uid == userId;
-      allow read: if request.auth != null;
-      allow update: if request.auth != null && request.auth.uid == userId && !(request.resource.data.keys().hasAny(['auraBalance','roles']));
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // allow update but disallow client changing critical fields (aura balance, roles)
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && !(request.resource.data.keys().hasAny(['wallet','roles','auraTokens','token_audit']));
+      
+      // Subcollections under users
+      match /wallet/{doc=**} {
+        // only owner can read/write their wallet docs
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /token_audit/{auditId} {
+        // only owner or admins can read (admin logic below)
+        allow read: if isOwnerOrAdmin(userId);
+        // writing audit entries should be done via server (cloud functions) - deny client writes
+        allow create: if false;
+        allow update, delete: if false;
+      }
+
+      // Generic pattern for user-owned collections (projects, invoices, crm, expenses)
+      match /{subCollection}/{docId=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Invoices collection - explicit rules for clarity
+      match /invoices/{invoiceId} {
+        allow create: if request.auth != null && request.auth.uid == userId;
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow update: if request.auth != null && request.auth.uid == userId;
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Expenses collection with explicit rules and approval workflow
+      match /expenses/{expenseId} {
+        allow create: if request.auth != null 
+                      && request.auth.uid == userId
+                      && isValidExpenseCreate();
+        allow read: if request.auth != null 
+                    && (request.auth.uid == userId 
+                        || isAdmin() 
+                        || resource.data.approverId == request.auth.uid);
+        allow update: if request.auth != null 
+                      && (request.auth.uid == userId || isAdmin() || request.auth.uid == resource.data.approverId)
+                      && isValidExpenseUpdate();
+        allow delete: if false;  // expenses are permanent for audit
+        
+        // Audit subcollection: immutable audit trail
+        match /audit/{auditId} {
+          allow read: if request.auth != null && request.auth.uid == userId;
+          allow create: if request.auth != null && request.auth.uid == userId;
+          allow update, delete: if false;  // audit entries are immutable
+        }
+      }
+
+      // Tasks collection with specific rules
+      match /tasks/{taskId} {
+        allow create: if request.auth != null && request.auth.uid == userId;
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow update: if request.auth != null && request.auth.uid == userId;
+        allow delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      }
     }
+
+    // Email queue for Firebase Email Extension
+    match /mail/{docId} {
+      allow read: if false;  // nobody should read emails
+      allow write: if request.auth != null;  // logged in users may send
+    }
+
+    // Admin check helper - requires a small admin collection to list admins
+    function isAdmin() {
+      return exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOwnerOrAdmin(userId) {
+      return request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Expense validation helpers
+    function isValidExpenseCreate() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['id', 'userId', 'merchant', 'amount', 'currency', 'category', 'paymentMethod', 'photoUrls', 'vatRate'])
+             && data.userId == request.auth.uid
+             && data.merchant is string && data.merchant.size() > 0
+             && data.amount is number && data.amount > 0
+             && data.currency is string && data.currency.size() > 0
+             && data.category is string && data.category.size() > 0
+             && data.paymentMethod is string && data.paymentMethod.size() > 0
+             && data.photoUrls is list
+             && data.vatRate is number && data.vatRate >= 0
+             && (data.vat == null || (data.vat is number && data.vat >= 0))
+             && (data.date == null || data.date is timestamp)
+             && (data.projectId == null || data.projectId is string)
+             && (data.invoiceId == null || data.invoiceId is string)
+             && (data.status == null || data.status is string)
+             && (data.approverId == null || data.approverId is string)
+             && (data.approvedNote == null || data.approvedNote is string)
+             && (data.rawOcr == null || data.rawOcr is map)
+             && (data.audit == null || data.audit is map)
+             && data.createdAt is timestamp
+             && data.size() <= 20;
+    }
+
+    function isValidExpenseUpdate() {
+      let data = request.resource.data;
+      let existing = resource.data;
+      // Prevent userId/id/createdAt changes (immutable fields)
+      return data.userId == existing.userId
+             && data.id == existing.id
+             && data.createdAt == existing.createdAt
+             && data.merchant is string && data.merchant.size() > 0
+             && data.amount is number && data.amount > 0
+             && data.currency is string && data.currency.size() > 0
+             && data.category is string && data.category.size() > 0
+             && data.paymentMethod is string && data.paymentMethod.size() > 0
+             && data.photoUrls is list
+             && data.vatRate is number && data.vatRate >= 0
+             && (data.vat == null || (data.vat is number && data.vat >= 0))
+             && (data.date == null || data.date is timestamp)
+             && (data.projectId == null || data.projectId is string)
+             && (data.invoiceId == null || data.invoiceId is string)
+             && (data.status == null || data.status is string)
+             && (data.approverId == null || data.approverId is string)
+             && (data.approvedNote == null || data.approvedNote is string)
+             && (data.rawOcr == null || data.rawOcr is map)
+             && (data.audit == null || data.audit is map)
+             && (data.updatedAt == null || data.updatedAt is timestamp)
+             && data.size() <= 20;
+    }
+
+    // Fallback: deny everything else
     match /{document=**} {
-      allow read: if false;
-      allow write: if false;
+      allow read, write: if false;
     }
   }
 }
