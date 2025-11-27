@@ -85,7 +85,6 @@ export const exportInvoiceFormats = functions
   .runWith({
     memory: "2GB",
     timeoutSeconds: 300,
-    vpcConnector: "no-vpc" // Use default if VPC not needed
   })
   .region("us-central1")
   .https.onCall(async (data: ExportPayload, context) => {

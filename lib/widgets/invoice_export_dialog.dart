@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:aura_sphere_pro/models/invoice_model.dart';
+import 'package:aura_sphere_pro/data/models/invoice_model.dart';
 import 'package:aura_sphere_pro/services/invoice_service_client.dart';
-import 'package:aura_sphere_pro/services/pdf/local_pdf_generator.dart';
-import 'package:aura_sphere_pro/utils/logger.dart';
+import 'package:aura_sphere_pro/utils/local_pdf_generator.dart';
+import 'package:aura_sphere_pro/utils/simple_logger.dart';
 
 /// Dialog for exporting invoices in multiple formats
 ///

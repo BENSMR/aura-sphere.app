@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/models/invoice_model.dart';
 import '../services/invoice_multi_format_export_service.dart';
-import '../utils/logger.dart';
+import '../utils/simple_logger.dart';
 
 /// Enhanced modal bottom sheet for multi-format invoice downloads
 class InvoiceMultiFormatDownloadSheet extends StatefulWidget {
