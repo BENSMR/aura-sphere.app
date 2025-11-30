@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../models/invoice_model.dart';
 import '../../services/invoice/invoice_service.dart';
 import '../../providers/invoice_provider.dart';
+import '../../config/app_routes.dart';
 
 class InvoiceDetailScreen extends StatefulWidget {
   final Invoice invoice;
@@ -68,7 +69,18 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
               ElevatedButton.icon(onPressed: _payNow, icon: const Icon(Icons.payment), label: const Text('Pay now')),
             ] else ...[
               const Row(children: [Icon(Icons.check_circle, color: Colors.green), SizedBox(width: 8), Text('Paid')])
-            ]
+            ],
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.paymentHistory,
+                  arguments: widget.invoice,
+                );
+              },
+              child: const Text('View Payment History'),
+            )
           ],
         ),
       ),
