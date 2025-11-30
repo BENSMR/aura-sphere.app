@@ -11,6 +11,7 @@ import '../screens/crm/crm_contact_screen.dart';
 import '../screens/tasks/tasks_list_screen.dart';
 // import '../screens/invoices/invoice_creator_screen.dart'; // Temporarily disabled
 import '../screens/invoice/invoice_template_select_screen.dart';
+import '../screens/invoices/payment_history_screen.dart';
 import '../screens/expenses/expense_scanner_screen.dart';
 import '../screens/waitlist_screen.dart';
 
@@ -32,6 +33,7 @@ class AppRoutes {
   static const String invoiceCreate = '/invoice/create';
   static const String invoiceTemplates = '/invoice/templates';
   static const String invoiceDetails = '/invoice/details';
+  static const String paymentHistory = '/payment-history';
   static const String crypto = '/crypto';
   static const String profile = '/profile';
   static const String waitlist = '/waitlist';
@@ -69,6 +71,12 @@ class AppRoutes {
         }
         return MaterialPageRoute(
           builder: (_) => InvoiceTemplateSelectScreen(userId: userId),
+        );
+      case paymentHistory:
+        final args = settings.arguments;
+        return MaterialPageRoute(
+          builder: (_) => const PaymentHistoryScreen(),
+          settings: settings,
         );
       case waitlist:
         final args = settings.arguments as Map<String, dynamic>?;
