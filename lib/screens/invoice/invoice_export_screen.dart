@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:printing/printing.dart';
-import '../../data/models/invoice_model.dart' as invoice_model;
+import '../../models/invoice_model.dart';
 import '../../providers/invoice_provider.dart';
 // import '../../widgets/invoice_download_sheet.dart'; // Temporarily disabled
 // import '../../services/invoice/local_pdf_service.dart'; // Temporarily disabled
@@ -56,7 +56,7 @@ class _InvoiceExportScreenState extends State<InvoiceExportScreen> {
       ),
       body: Consumer<InvoiceProvider>(
         builder: (context, invoiceProvider, _) {
-          if (invoiceProvider.isLoading) {
+          if (invoiceProvider.loading) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -262,7 +262,7 @@ class _InvoiceExportScreenState extends State<InvoiceExportScreen> {
     );
   }
 
-  List<invoice_model.InvoiceModel> _getFilteredInvoices(List<invoice_model.InvoiceModel> invoices) {
+  List<Invoice> _getFilteredInvoices(List<Invoice> invoices) {
     var filtered = invoices;
 
     // Filter by status
@@ -272,19 +272,18 @@ class _InvoiceExportScreenState extends State<InvoiceExportScreen> {
           .toList();
     }
 
-    // Search by invoice number, client name, or amount
+    // Search by invoice number or amount
     if (_searchController.text.isNotEmpty) {
       final query = _searchController.text.toLowerCase();
       filtered = filtered.where((i) {
         final invoiceNum = i.invoiceNumber ?? '';
         return invoiceNum.toLowerCase().contains(query) ||
-            i.clientName.toLowerCase().contains(query) ||
-            i.total.toString().contains(query);
+            i.amount.toString().contains(query);
       }).toList();
     }
 
     // Sort by date (newest first)
-    filtered.sort((a, b) => b.createdAt.toDate().compareTo(a.createdAt.toDate()));
+    filtered.sort((a, b) => b.issueDate.compareTo(a.issueDate));
 
     return filtered;
   }
@@ -345,7 +344,7 @@ class _InvoiceExportScreenState extends State<InvoiceExportScreen> {
 
 /// Invoice Tile for Export List
 class InvoiceExportTile extends StatelessWidget {
-  final invoice_model.InvoiceModel invoice;
+  final Invoice invoice;
   final bool isSelected;
   final ValueChanged<bool> onSelected;
   final VoidCallback onDownload;
@@ -373,7 +372,7 @@ class InvoiceExportTile extends StatelessWidget {
           children: [
             const SizedBox(height: 4),
             Text(
-              invoice.clientName,
+              invoice.clientId,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 12),
@@ -384,7 +383,7 @@ class InvoiceExportTile extends StatelessWidget {
                 _buildStatusBadge(invoice.status),
                 const SizedBox(width: 8),
                 Text(
-                  '${invoice.currency} ${invoice.total.toStringAsFixed(2)}',
+                  '${invoice.currency} ${invoice.amount.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,

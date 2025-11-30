@@ -18,7 +18,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       Provider.of<InvoiceProvider>(context, listen: false)
-          .listenToInvoices(user.uid);
+          .startWatching(user.uid);
     }
   }
 
