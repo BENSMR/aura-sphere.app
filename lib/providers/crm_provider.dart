@@ -8,6 +8,7 @@ class CrmProvider extends ChangeNotifier {
   List<Contact> _contacts = [];
   bool _loading = false;
   String _search = '';
+  String? _ownerId;
 
   CrmProvider({CrmService? service}) : _service = service ?? CrmService() {
     _subscribe();
@@ -16,8 +17,15 @@ class CrmProvider extends ChangeNotifier {
   List<Contact> get contacts => _contacts;
   bool get loading => _loading;
   String get search => _search;
+  String? get ownerId => _ownerId;
 
   StreamSubscription<List<Contact>>? _streamSub;
+
+  /// Set owner ID for the CRM (used on login)
+  void setOwner(String userId) {
+    _ownerId = userId;
+    _subscribe();
+  }
 
   void _subscribe() {
     try {

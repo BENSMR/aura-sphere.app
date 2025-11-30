@@ -12,8 +12,8 @@ class ExpenseCard extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: Icon(Icons.receipt),
-        title: Text(expense.description),
-        subtitle: Text(expense.category),
+        title: Text(expense.merchant),
+        subtitle: Text(expense.category ?? 'Uncategorized'),
         trailing: Text('\$${expense.amount.toStringAsFixed(2)}'),
         onTap: onTap,
       ),

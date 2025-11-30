@@ -1,0 +1,551 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../models/business_profile.dart';
+import '../../providers/business_provider.dart';
+
+class BusinessProfileFormScreen extends StatefulWidget {
+  final BusinessProfile? initialProfile;
+
+  const BusinessProfileFormScreen({
+    Key? key,
+    this.initialProfile,
+  }) : super(key: key);
+
+  @override
+  State<BusinessProfileFormScreen> createState() => _BusinessProfileFormScreenState();
+}
+
+class _BusinessProfileFormScreenState extends State<BusinessProfileFormScreen> {
+  late TextEditingController _businessNameController;
+  late TextEditingController _businessEmailController;
+  late TextEditingController _businessPhoneController;
+  late TextEditingController _taxIdController;
+  late TextEditingController _industryController;
+  late TextEditingController _websiteController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _streetAddressController;
+  late TextEditingController _cityController;
+  late TextEditingController _stateController;
+  late TextEditingController _zipCodeController;
+  late TextEditingController _countryController;
+  late TextEditingController _registrationNumberController;
+  late TextEditingController _currencyController;
+  late TextEditingController _fiscalYearEndController;
+  late TextEditingController _contactPersonNameController;
+  late TextEditingController _contactPersonEmailController;
+  late TextEditingController _contactPersonPhoneController;
+  late TextEditingController _bankAccountNameController;
+  late TextEditingController _bankAccountNumberController;
+  late TextEditingController _routingNumberController;
+  late TextEditingController _swiftCodeController;
+
+  late String _selectedBusinessType;
+  late DateTime? _foundedDate;
+  late int? _numberOfEmployees;
+  late String _selectedCurrency;
+  late String _selectedStatus;
+
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = widget.initialProfile;
+    
+    _businessNameController = TextEditingController(text: profile?.businessName ?? '');
+    _businessEmailController = TextEditingController(text: profile?.businessEmail ?? '');
+    _businessPhoneController = TextEditingController(text: profile?.businessPhone ?? '');
+    _taxIdController = TextEditingController(text: profile?.taxId ?? '');
+    _industryController = TextEditingController(text: profile?.industry ?? '');
+    _websiteController = TextEditingController(text: profile?.website ?? '');
+    _descriptionController = TextEditingController(text: profile?.description ?? '');
+    _streetAddressController = TextEditingController(text: profile?.streetAddress ?? '');
+    _cityController = TextEditingController(text: profile?.city ?? '');
+    _stateController = TextEditingController(text: profile?.state ?? '');
+    _zipCodeController = TextEditingController(text: profile?.zipCode ?? '');
+    _countryController = TextEditingController(text: profile?.country ?? '');
+    _registrationNumberController = TextEditingController(text: profile?.registrationNumber ?? '');
+    _currencyController = TextEditingController(text: profile?.currency ?? 'USD');
+    _fiscalYearEndController = TextEditingController(text: profile?.fiscalYearEnd ?? 'December 31');
+    _contactPersonNameController = TextEditingController(text: profile?.contactPersonName ?? '');
+    _contactPersonEmailController = TextEditingController(text: profile?.contactPersonEmail ?? '');
+    _contactPersonPhoneController = TextEditingController(text: profile?.contactPersonPhone ?? '');
+    _bankAccountNameController = TextEditingController(text: profile?.bankAccountName ?? '');
+    _bankAccountNumberController = TextEditingController(text: profile?.bankAccountNumber ?? '');
+    _routingNumberController = TextEditingController(text: profile?.routingNumber ?? '');
+    _swiftCodeController = TextEditingController(text: profile?.swiftCode ?? '');
+
+    _selectedBusinessType = profile?.businessType ?? 'sole_proprietor';
+    _foundedDate = profile?.foundedDate;
+    _numberOfEmployees = profile?.numberOfEmployees;
+    _selectedCurrency = profile?.currency ?? 'USD';
+    _selectedStatus = profile?.status ?? 'setup';
+  }
+
+  @override
+  void dispose() {
+    _businessNameController.dispose();
+    _businessEmailController.dispose();
+    _businessPhoneController.dispose();
+    _taxIdController.dispose();
+    _industryController.dispose();
+    _websiteController.dispose();
+    _descriptionController.dispose();
+    _streetAddressController.dispose();
+    _cityController.dispose();
+    _stateController.dispose();
+    _zipCodeController.dispose();
+    _countryController.dispose();
+    _registrationNumberController.dispose();
+    _currencyController.dispose();
+    _fiscalYearEndController.dispose();
+    _contactPersonNameController.dispose();
+    _contactPersonEmailController.dispose();
+    _contactPersonPhoneController.dispose();
+    _bankAccountNameController.dispose();
+    _bankAccountNumberController.dispose();
+    _routingNumberController.dispose();
+    _swiftCodeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.initialProfile == null ? 'Create Business Profile' : 'Edit Business Profile'),
+      ),
+      body: Consumer<BusinessProvider>(
+        builder: (context, businessProvider, _) {
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Basic Information Section
+                    _buildSectionHeader(context, 'Basic Information'),
+                    const SizedBox(height: 16),
+                    _buildTextFieldSection(context, 'Business Name', _businessNameController),
+                    const SizedBox(height: 12),
+                    _buildDropdownSection(
+                      context,
+                      'Business Type',
+                      _selectedBusinessType,
+                      _businessTypeOptions,
+                      (value) => setState(() => _selectedBusinessType = value),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(context, 'Industry', _industryController),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(
+                      context,
+                      'Description',
+                      _descriptionController,
+                      maxLines: 3,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Contact Information Section
+                    _buildSectionHeader(context, 'Contact Information'),
+                    const SizedBox(height: 16),
+                    _buildTextFieldSection(
+                      context,
+                      'Business Email',
+                      _businessEmailController,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(
+                      context,
+                      'Business Phone',
+                      _businessPhoneController,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(context, 'Website', _websiteController),
+
+                    const SizedBox(height: 24),
+
+                    // Address Information Section
+                    _buildSectionHeader(context, 'Address'),
+                    const SizedBox(height: 16),
+                    _buildTextFieldSection(context, 'Street Address', _streetAddressController),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(context, 'City', _cityController),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: _buildTextFieldSection(context, 'State', _stateController),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 3,
+                          child: _buildTextFieldSection(context, 'ZIP Code', _zipCodeController),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(context, 'Country', _countryController),
+
+                    const SizedBox(height: 24),
+
+                    // Business Details Section
+                    _buildSectionHeader(context, 'Business Details'),
+                    const SizedBox(height: 16),
+                    _buildTextFieldSection(context, 'Tax ID', _taxIdController),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(
+                      context,
+                      'Registration Number',
+                      _registrationNumberController,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDateFieldSection(context, 'Founded Date'),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      initialValue: _numberOfEmployees?.toString() ?? '',
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Number of Employees',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _numberOfEmployees = int.tryParse(value);
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDropdownSection(
+                      context,
+                      'Currency',
+                      _selectedCurrency,
+                      _currencyOptions,
+                      (value) => setState(() => _selectedCurrency = value),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(
+                      context,
+                      'Fiscal Year End',
+                      _fiscalYearEndController,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDropdownSection(
+                      context,
+                      'Status',
+                      _selectedStatus,
+                      _statusOptions,
+                      (value) => setState(() => _selectedStatus = value),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Contact Person Section
+                    _buildSectionHeader(context, 'Contact Person'),
+                    const SizedBox(height: 16),
+                    _buildTextFieldSection(
+                      context,
+                      'Name',
+                      _contactPersonNameController,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(
+                      context,
+                      'Email',
+                      _contactPersonEmailController,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(
+                      context,
+                      'Phone',
+                      _contactPersonPhoneController,
+                      keyboardType: TextInputType.phone,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Banking Information Section
+                    _buildSectionHeader(context, 'Banking Information (Optional)'),
+                    const SizedBox(height: 16),
+                    _buildTextFieldSection(
+                      context,
+                      'Account Name',
+                      _bankAccountNameController,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(
+                      context,
+                      'Account Number',
+                      _bankAccountNumberController,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(
+                      context,
+                      'Routing Number',
+                      _routingNumberController,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextFieldSection(
+                      context,
+                      'SWIFT Code',
+                      _swiftCodeController,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Submit Button
+                    ElevatedButton.icon(
+                      onPressed: businessProvider.isSaving ? null : () => _handleSubmit(context),
+                      icon: businessProvider.isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.save),
+                      label: Text(
+                        widget.initialProfile == null ? 'Create Profile' : 'Update Profile',
+                      ),
+                    ),
+
+                    if (businessProvider.hasError) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red[100],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          businessProvider.error ?? 'An error occurred',
+                          style: TextStyle(color: Colors.red[700]),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: Colors.blue[600],
+          ),
+    );
+  }
+
+  Widget _buildTextFieldSection(
+    BuildContext context,
+    String label,
+    TextEditingController controller, {
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+    ValueChanged<String>? onChanged,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
+      validator: validator ??
+          (value) {
+            if (label.contains('Email') && value?.isNotEmpty == true) {
+              if (!value!.contains('@')) {
+                return 'Invalid email format';
+              }
+            }
+            return null;
+          },
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildDropdownSection(
+    BuildContext context,
+    String label,
+    String value,
+    List<String> options,
+    ValueChanged<String> onChanged,
+  ) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
+      items: options
+          .map((option) => DropdownMenuItem(
+                value: option,
+                child: Text(option),
+              ))
+          .toList(),
+      onChanged: (selectedValue) {
+        if (selectedValue != null) onChanged(selectedValue);
+      },
+    );
+  }
+
+  Widget _buildDateFieldSection(BuildContext context, String label) {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _foundedDate ?? DateTime.now(),
+          firstDate: DateTime(1900),
+          lastDate: DateTime.now(),
+        );
+        if (picked != null) {
+          setState(() => _foundedDate = picked);
+        }
+      },
+      child: TextFormField(
+        enabled: false,
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: _foundedDate != null ? '${_foundedDate!.month}/${_foundedDate!.day}/${_foundedDate!.year}' : 'Select date',
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          suffixIcon: const Icon(Icons.calendar_today),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleSubmit(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final businessProvider = context.read<BusinessProvider>();
+    
+    // Build data map for new type-safe BusinessProfile
+    final profileData = {
+      'businessName': _businessNameController.text,
+      'legalName': _businessNameController.text,  // Using businessName as legalName if not separate
+      'taxId': _taxIdController.text,
+      'vatNumber': '',  // Can be extended later
+      'address': _streetAddressController.text,
+      'city': _cityController.text,
+      'postalCode': _zipCodeController.text,
+      'invoicePrefix': 'AS-',
+      'documentFooter': '',
+      'brandColor': '#0A84FF',
+      'watermarkText': '',
+      'invoiceTemplate': 'minimal',
+      'defaultCurrency': _selectedCurrency,
+      'defaultLanguage': 'en',
+      'taxSettings': {},
+    };
+    
+    // Also build legacy BusinessProfile for backward compatibility
+    final legacyProfile = BusinessProfile(
+      userId: widget.initialProfile?.userId ?? '',
+      businessName: _businessNameController.text,
+      businessType: _selectedBusinessType,
+      industry: _industryController.text,
+      taxId: _taxIdController.text,
+      businessEmail: _businessEmailController.text,
+      businessPhone: _businessPhoneController.text,
+      website: _websiteController.text,
+      description: _descriptionController.text,
+      streetAddress: _streetAddressController.text,
+      city: _cityController.text,
+      state: _stateController.text,
+      zipCode: _zipCodeController.text,
+      country: _countryController.text,
+      registrationNumber: _registrationNumberController.text,
+      foundedDate: _foundedDate,
+      status: _selectedStatus,
+      numberOfEmployees: _numberOfEmployees,
+      currency: _selectedCurrency,
+      fiscalYearEnd: _fiscalYearEndController.text,
+      contactPersonName: _contactPersonNameController.text,
+      contactPersonEmail: _contactPersonEmailController.text,
+      contactPersonPhone: _contactPersonPhoneController.text,
+      bankAccountName: _bankAccountNameController.text,
+      bankAccountNumber: _bankAccountNumberController.text,
+      routingNumber: _routingNumberController.text,
+      swiftCode: _swiftCodeController.text,
+      createdAt: widget.initialProfile?.createdAt,
+      updatedAt: widget.initialProfile?.updatedAt,
+    );
+
+    try {
+      // Save using BusinessProvider.saveProfile()
+      await businessProvider.saveProfile(profileData);
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              widget.initialProfile == null ? 'Business profile created!' : 'Business profile updated!',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  static const _businessTypeOptions = [
+    'sole_proprietor',
+    'llc',
+    's_corp',
+    'c_corp',
+    'partnership',
+    'nonprofit',
+  ];
+
+  static const _currencyOptions = [
+    'USD',
+    'EUR',
+    'GBP',
+    'CAD',
+    'AUD',
+    'JPY',
+    'CNY',
+    'INR',
+  ];
+
+  static const _statusOptions = [
+    'setup',
+    'active',
+    'inactive',
+    'suspended',
+  ];
+}

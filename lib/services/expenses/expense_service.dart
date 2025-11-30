@@ -25,6 +25,11 @@ class ExpenseService {
         .map((snap) => snap.docs.map((d) => ExpenseModel.fromDoc(d)).toList());
   }
 
+  /// Add a new expense to Firestore
+  Future<void> addExpense(ExpenseModel expense) async {
+    await userExpensesRef(expense.userId).doc(expense.id).set(expense.toMap());
+  }
+
   /// Create a new expense draft with auto-calculated VAT
   /// 
   /// If [vatRate] is not provided, uses user's country VAT rate

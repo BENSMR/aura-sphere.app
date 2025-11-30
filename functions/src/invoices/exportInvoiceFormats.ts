@@ -299,6 +299,33 @@ export const exportInvoiceFormats = functions
 
       const duration = Date.now() - startTime;
 
+      // Atomically increment invoice counter in business profile
+      try {
+        const businessProfileRef = admin
+          .firestore()
+          .collection("users")
+          .doc(userId)
+          .collection("meta")
+          .doc("business");
+
+        await businessProfileRef.update({
+          invoiceCounter: admin.firestore.FieldValue.increment(1),
+          lastInvoiceExportedAt: new Date().toISOString(),
+        });
+
+        logger.info("Export formats - invoice counter incremented", {
+          invoiceNumber,
+          userId,
+        });
+      } catch (err: any) {
+        logger.warn("Export formats - failed to increment counter", {
+          invoiceNumber,
+          userId,
+          error: err?.message,
+        });
+        // Don't throw - counter increment failure shouldn't block export
+      }
+
       logger.info("Export formats - completed successfully", {
         invoiceNumber,
         userId,

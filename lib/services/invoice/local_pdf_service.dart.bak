@@ -1,0 +1,78 @@
+// lib/services/invoice/local_pdf_service.dart
+import 'dart:typed_data';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:intl/intl.dart';
+import '../../data/models/invoice_model.dart';
+import '../../data/models/business_model.dart';
+import 'invoice_template_service.dart';
+
+class LocalPdfService {
+  static final DateFormat df = DateFormat('MMM dd, yyyy');
+
+  /// Generate invoice PDF bytes with selected template and all business settings
+  /// Automatically applies: invoiceTemplate, currency, language, tax, branding, watermark
+  static Future<Uint8List> generateInvoicePdfBytes(
+    InvoiceModel invoice,
+    Map<String, dynamic> business, {
+    String template = InvoiceTemplateService.classic,
+  }) async {
+    final pdf = pw.Document();
+    final currency = invoice.currency;
+
+    // Get template from business settings if available, otherwise use provided template
+    final templateKey = business['invoiceTemplate'] ?? template ?? InvoiceTemplateService.minimal;
+    final builder = InvoiceTemplateService.getBuilder(templateKey);
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) => [
+          builder(invoice, business, context),
+        ],
+      ),
+    );
+
+    return pdf.save();
+  }
+
+  /// Generate PDF with full BusinessProfile object (complete type-safe settings)
+  /// All fields available: invoiceTemplate, defaultCurrency, defaultLanguage, taxSettings, 
+  /// customerSupportInfo, branding, watermark, etc.
+  static Future<Uint8List> generateInvoicePdfBytesWithProfile(
+    InvoiceModel invoice,
+    BusinessProfile businessProfile,
+  ) async {
+    // Convert BusinessProfile to map for template rendering
+    final businessMap = businessProfile.toMapForUpdate();
+    return generateInvoicePdfBytes(
+      invoice,
+      businessMap,
+      template: businessProfile.invoiceTemplate,
+    );
+  }
+
+  /// Generate and open print preview or share with business settings applied
+  static Future<void> generateAndShare(
+    InvoiceModel invoice,
+    Map<String, dynamic> business, {
+    String template = InvoiceTemplateService.classic,
+  }) async {
+    final bytes = await generateInvoicePdfBytes(
+      invoice,
+      business,
+      template: template,
+    );
+    await Printing.layoutPdf(onLayout: (format) async => bytes);
+  }
+
+  /// Generate and preview with full BusinessProfile (type-safe)
+  static Future<void> generateAndShareWithProfile(
+    InvoiceModel invoice,
+    BusinessProfile businessProfile,
+  ) async {
+    final bytes = await generateInvoicePdfBytesWithProfile(invoice, businessProfile);
+    await Printing.layoutPdf(onLayout: (format) async => bytes);
+  }
+}

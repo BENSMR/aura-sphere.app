@@ -32,6 +32,12 @@ jobs:
         working-directory: functions
         run: npm run build
 
+      - name: Verify Functions Build
+        working-directory: functions
+        run: |
+          npm list --depth=0
+          echo "✓ Functions built successfully"
+
       - name: Deploy Firestore Rules
         run: firebase deploy --only firestore:rules --token "${{ secrets.FIREBASE_TOKEN }}"
 

@@ -25,6 +25,29 @@ service cloud.firestore {
         allow update, delete: if false;
       }
 
+      // Meta collection (business profile, settings)
+      match /meta/{doc=**} {
+        // Allow read-only access to all meta subcollections
+        allow read: if request.auth != null && request.auth.uid == userId;
+        // Allow write but protect invoiceCounter field (server-only)
+        allow write: if request.auth != null 
+                     && request.auth.uid == userId
+                     && !request.resource.data.keys().hasAny(['invoiceCounter']);
+      }
+
+      // Branding collection: company colors, logos, fonts
+      match /business/branding {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Prevent user from manually editing invoiceCounter
+      match /users/{userId}/meta/business {
+        allow read: if request.auth.uid == userId;
+        allow write: if request.auth.uid == userId
+          && !("invoiceCounter" in request.resource.data);
+      }
+
       // Generic pattern for user-owned collections (projects, invoices, crm, expenses)
       match /{subCollection}/{docId=**} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -36,6 +59,24 @@ service cloud.firestore {
         allow read: if request.auth != null && request.auth.uid == userId;
         allow update: if request.auth != null && request.auth.uid == userId;
         allow delete: if request.auth != null && request.auth.uid == userId;
+
+        // Payments subcollection: read-only for users, write-only for Stripe webhook (Cloud Functions)
+        match /payments/{pid} {
+          allow read: if request.auth != null && request.auth.uid == userId;
+          allow write: if false; // ONLY Stripe webhook (Cloud Functions) can write
+        }
+
+        // Payment errors subcollection: read-only for users, write-only for Stripe webhook
+        match /paymentErrors/{eid} {
+          allow read: if request.auth != null && request.auth.uid == userId;
+          allow write: if false; // ONLY Stripe webhook (Cloud Functions) can write
+        }
+
+        // PDF storage: invoice PDF metadata and URLs
+        match /pdf/{pdfId} {
+          allow read: if request.auth != null && request.auth.uid == userId;
+          allow write: if false; // ONLY Cloud Functions (PDF generation) can write
+        }
       }
 
       // Expenses collection with explicit rules and approval workflow

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:aura_sphere_pro/data/models/invoice_model.dart';
-import 'package:aura_sphere_pro/services/invoice_service_client.dart';
-import 'package:aura_sphere_pro/utils/local_pdf_generator.dart';
-import 'package:aura_sphere_pro/utils/simple_logger.dart';
+import 'package:aurasphere_pro/data/models/invoice_model.dart';
+import 'package:aurasphere_pro/services/invoice_service_client.dart';
+import 'package:aurasphere_pro/utils/simple_logger.dart';
 
 /// Dialog for exporting invoices in multiple formats
 ///
@@ -48,7 +47,7 @@ class _InvoiceExportDialogState extends State<InvoiceExportDialog> {
     try {
       final invoiceData = _buildInvoiceDataForExport();
 
-      logger.i('Initializing export for invoice ${widget.invoice.invoiceNumber}');
+      SimpleLogger.i('Initializing export for invoice ${widget.invoice.invoiceNumber}');
 
       final urls = await _client.exportInvoiceAllFormats(invoiceData);
 
@@ -57,9 +56,9 @@ class _InvoiceExportDialogState extends State<InvoiceExportDialog> {
         _errorMessage = null;
       });
 
-      logger.i('Export successful. Generated ${urls.length} formats');
+      SimpleLogger.i('Export successful. Generated ${urls.length} formats');
     } catch (e) {
-      logger.e('Export initialization failed: $e');
+      SimpleLogger.e('Export initialization failed: $e');
       setState(() {
         _errorMessage = 'Failed to generate exports. Using local PDF fallback.';
       });
@@ -79,12 +78,12 @@ class _InvoiceExportDialogState extends State<InvoiceExportDialog> {
         throw Exception('No URL available for $format format');
       }
 
-      logger.i('Opening $format: $url');
+      SimpleLogger.i('Opening $format: $url');
 
       // Open the signed URL in external application
       await _client.openUrl(url);
 
-      logger.i('$format export opened successfully');
+      SimpleLogger.i('$format export opened successfully');
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -93,7 +92,7 @@ class _InvoiceExportDialogState extends State<InvoiceExportDialog> {
         ),
       );
     } catch (e) {
-      logger.e('Error opening $format: $e');
+      SimpleLogger.e('Error opening $format: $e');
 
       // Fallback for PDF
       if (format == 'pdf') {
@@ -115,65 +114,41 @@ class _InvoiceExportDialogState extends State<InvoiceExportDialog> {
   /// Fallback to local PDF generation
   Future<void> _fallbackLocalPdf() async {
     try {
-      logger.i('Falling back to local PDF generation');
+      SimpleLogger.i('Falling back to local PDF generation');
 
-      final bytes = await LocalPdfGenerator.generateInvoicePdf(
-        widget.invoice,
-      );
+      // Local PDF generation not available - user can use exportPdf method instead
+      SimpleLogger.i('Fallback: User should use exportPdf method');
 
-      // TODO: Save to file or use share/printing plugin
-      logger.i('Local PDF generated: ${bytes.length} bytes');
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Local PDF generated. Save or share using system menu.'),
-          duration: Duration(seconds: 3),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please try exporting individual format instead'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     } catch (e) {
-      logger.e('Local PDF generation failed: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('PDF generation failed: $e'),
-          duration: const Duration(seconds: 3),
-          backgroundColor: Colors.red,
-        ),
-      );
+      SimpleLogger.e('Fallback generation failed: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Export failed: $e'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   /// Build invoice data map for Cloud Function
   Map<String, dynamic> _buildInvoiceDataForExport() {
-    return {
-      'invoiceNumber': widget.invoice.invoiceNumber,
-      'invoiceId': widget.invoice.id,
-      'createdAt': widget.invoice.createdAt.toIso8601String(),
-      'dueDate': widget.invoice.dueDate.toIso8601String(),
-      'items': widget.invoice.items
-          .map((item) => {
-                'id': item.id,
-                'name': item.name,
-                'description': item.description ?? '',
-                'quantity': item.quantity,
-                'unitPrice': item.unitPrice,
-                'vatRate': item.vatRate,
-                'total': item.total,
-              })
-          .toList(),
-      'currency': widget.invoice.currency,
-      'subtotal': widget.invoice.subtotal,
-      'totalVat': widget.invoice.totalVat,
-      'discount': widget.invoice.discount ?? 0,
-      'total': widget.invoice.total,
-      'businessName': widget.invoice.businessName,
-      'businessAddress': widget.invoice.businessAddress ?? '',
-      'clientName': widget.invoice.clientName,
-      'clientEmail': widget.invoice.clientEmail,
-      'clientAddress': widget.invoice.clientAddress ?? '',
-      'notes': widget.invoice.notes ?? '',
-      'status': widget.invoice.status,
-    };
+    return widget.invoice.toMapForExport(
+      businessName: 'Business',
+      businessAddress: '',
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -384,43 +359,18 @@ Future<void> downloadInvoiceAllFormats(
   final client = InvoiceServiceClient();
 
   try {
-    logger.i('Starting invoice export: ${invoice.invoiceNumber}');
+    SimpleLogger.i('Starting invoice export: ${invoice.invoiceNumber}');
 
-    // Build invoice data
-    final invoiceData = {
-      'invoiceNumber': invoice.invoiceNumber,
-      'invoiceId': invoice.id,
-      'createdAt': invoice.createdAt.toIso8601String(),
-      'dueDate': invoice.dueDate.toIso8601String(),
-      'items': invoice.items
-          .map((item) => {
-                'id': item.id,
-                'name': item.name,
-                'description': item.description ?? '',
-                'quantity': item.quantity,
-                'unitPrice': item.unitPrice,
-                'vatRate': item.vatRate,
-                'total': item.total,
-              })
-          .toList(),
-      'currency': invoice.currency,
-      'subtotal': invoice.subtotal,
-      'totalVat': invoice.totalVat,
-      'discount': invoice.discount ?? 0,
-      'total': invoice.total,
-      'businessName': invoice.businessName,
-      'businessAddress': invoice.businessAddress ?? '',
-      'clientName': invoice.clientName,
-      'clientEmail': invoice.clientEmail,
-      'clientAddress': invoice.clientAddress ?? '',
-      'notes': invoice.notes ?? '',
-      'status': invoice.status,
-    };
+    // Build invoice data using the model's export method
+    final invoiceData = invoice.toMapForExport(
+      businessName: 'Business',
+      businessAddress: '',
+    );
 
     // Export all formats
     final urls = await client.exportInvoiceAllFormats(invoiceData);
 
-    logger.i('Export successful. Generated ${urls.length} formats');
+    SimpleLogger.i('Export successful. Generated ${urls.length} formats');
 
     // Open PDF by default
     if (urls.containsKey('pdf')) {
@@ -429,16 +379,7 @@ Future<void> downloadInvoiceAllFormats(
 
     onSuccess();
   } catch (e) {
-    logger.e('Export failed: $e');
-
-    try {
-      // Fallback to local PDF
-      logger.i('Attempting local PDF fallback');
-      await LocalPdfGenerator.generateInvoicePdf(invoice);
-      onSuccess();
-    } catch (fallbackError) {
-      logger.e('Fallback failed: $fallbackError');
-      onError('Failed to export invoice: $fallbackError');
-    }
+    SimpleLogger.e('Export failed: $e');
+    onError('Failed to export invoice: $e');
   }
 }

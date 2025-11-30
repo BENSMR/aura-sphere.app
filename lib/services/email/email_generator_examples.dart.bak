@@ -1,0 +1,177 @@
+import 'package:flutter/material.dart';
+
+// NOTE: This file contains examples only.
+// The actual email_generator_provider.dart and email_generator_service.dart
+// files need to be implemented separately if using these examples.
+
+// import '../providers/email_generator_provider.dart';
+// import '../services/email/email_generator_service.dart';
+
+/// Example: Generate email in a simple dialog
+class GenerateEmailDialog extends StatefulWidget {
+  final String contactName;
+
+  const GenerateEmailDialog({
+    required this.contactName,
+    super.key,
+  });
+
+  @override
+  State<GenerateEmailDialog> createState() => _GenerateEmailDialogState();
+}
+
+class _GenerateEmailDialogState extends State<GenerateEmailDialog> {
+  final _typeController = TextEditingController(text: 'follow_up');
+  final _goalController = TextEditingController();
+  final _detailsController = TextEditingController();
+  final _provider = EmailGeneratorProvider();
+  bool _isGenerating = false;
+
+  @override
+  void dispose() {
+    _typeController.dispose();
+    _goalController.dispose();
+    _detailsController.dispose();
+    _provider.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleGenerate() async {
+    if (_goalController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Goal is required')),
+      );
+      return;
+    }
+
+    setState(() => _isGenerating = true);
+
+    final email = await _provider.generateEmail(
+      type: _typeController.text,
+      contactName: widget.contactName,
+      goal: _goalController.text,
+      details: _detailsController.text,
+    );
+
+    setState(() => _isGenerating = false);
+
+    if (email != null && mounted) {
+      _showGeneratedEmail(email);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${_provider.error}')),
+      );
+    }
+  }
+
+  void _showGeneratedEmail(GeneratedEmail email) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Generated Email'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Subject: ${email.subject}', style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              Text('Body:\n${email.text}'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          ElevatedButton(
+            onPressed: () {
+              // TODO: Copy to clipboard or send email
+              Navigator.pop(context);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Email copied to clipboard')),
+              );
+            },
+            child: const Text('Use Email'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Generate Email for ${widget.contactName}'),
+      content: _isGenerating
+          ? const SizedBox(
+              width: 300,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Generating email...'),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _typeController,
+                    decoration: const InputDecoration(
+                      label: Text('Email Type'),
+                      hintText: 'follow_up, proposal, intro, closing, etc.',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _goalController,
+                    decoration: const InputDecoration(
+                      label: Text('Goal (Required)'),
+                      hintText: 'What do you want to achieve?',
+                    ),
+                    minLines: 2,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _detailsController,
+                    decoration: const InputDecoration(
+                      label: Text('Details (Optional)'),
+                      hintText: 'Any additional context...',
+                    ),
+                    minLines: 2,
+                    maxLines: 4,
+                  ),
+                ],
+              ),
+            ),
+      actions: [
+        TextButton(
+          onPressed: _isGenerating ? null : () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _isGenerating ? null : _handleGenerate,
+          child: const Text('Generate'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Example: Use with Provider
+class GenerateEmailExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () => showDialog(
+        context: context,
+        builder: (context) => const GenerateEmailDialog(contactName: 'John Doe'),
+      ),
+      child: const Text('Generate Email'),
+    );
+  }
+}

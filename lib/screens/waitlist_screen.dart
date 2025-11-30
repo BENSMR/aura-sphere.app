@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/firebase/firestore_service.dart';
 import '../services/firebase/auth_service.dart';
+import '../services/firestore_service.dart';
 
 /// Screen for joining feature waitlists.
 /// Collects user email and registers them for early access.

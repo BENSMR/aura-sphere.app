@@ -33,6 +33,21 @@ class InvoicePdfService {
     return pdf;
   }
 
+  /// Instance method for generating PDF with expenses
+  Future<List<int>> generateLocalPdfWithExpenses(
+    InvoiceModel invoice,
+    List<dynamic> expenses,
+  ) async {
+    // Placeholder implementation
+    return [];
+  }
+
+  /// Instance method for generating local PDF
+  Future<List<int>> generateLocalPdf(InvoiceModel invoice) async {
+    // Placeholder implementation
+    return [];
+  }
+
   /// Header with logo/branding and invoice number
   static pw.Widget _buildHeader(InvoiceModel invoice) {
     return pw.Container(

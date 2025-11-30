@@ -1,0 +1,128 @@
+// lib/services/invoice/pdf_export_service.dart
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../business/business_profile_service.dart';
+import '../../data/models/business_model.dart';
+
+class PdfExportService {
+  final HttpsCallable _export = FirebaseFunctions.instance.httpsCallable('exportInvoiceFormats');
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final BusinessProfileService _businessService = BusinessProfileService();
+
+  /// Fetch full business profile from Firestore
+  /// Returns BusinessProfile with all settings including invoice template, tax, currency, etc.
+  Future<BusinessProfile?> getFullBusinessProfile(String userId) async {
+    try {
+      final doc = await _businessService.getBusinessProfile(userId);
+      if (!doc.exists || doc.data() == null) {
+        return null;
+      }
+      return BusinessProfile.fromFirestore(doc.data() as Map<String, dynamic>);
+    } catch (e) {
+      print('Error fetching business profile: $e');
+      return null;
+    }
+  }
+
+  /// Build enriched payload with all business settings from Firestore
+  /// Every export automatically uses: template, currency, language, tax, branding, etc.
+  Future<Map<String, dynamic>> buildEnrichedExportPayload(
+    String userId,
+    Map<String, dynamic> invoiceMap,
+  ) async {
+    // Fetch complete business profile from Firestore
+    final business = await getFullBusinessProfile(userId);
+
+    final payload = Map<String, dynamic>.from(invoiceMap);
+
+    if (business != null) {
+      // 📦 Core Business Info
+      payload['businessName'] = payload['businessName'] ?? business.businessName;
+      payload['businessAddress'] = payload['businessAddress'] ?? business.streetAddress;
+      payload['businessEmail'] = payload['businessEmail'] ?? business.businessEmail;
+      payload['businessPhone'] = payload['businessPhone'] ?? business.businessPhone;
+      payload['website'] = payload['website'] ?? business.website;
+
+      // 🎨 Branding & Visual
+      payload['userLogoUrl'] = payload['userLogoUrl'] ?? business.logoUrl;
+      payload['signatureUrl'] = payload['signatureUrl'] ?? business.signatureUrl;
+      payload['brandColor'] = payload['brandColor'] ?? business.brandColor;
+      payload['watermarkText'] = payload['watermarkText'] ?? business.watermarkText;
+
+      // 📄 Invoice Configuration
+      payload['invoicePrefix'] = payload['invoicePrefix'] ?? business.invoicePrefix;
+      payload['invoiceTemplate'] = payload['invoiceTemplate'] ?? business.invoiceTemplate;
+      payload['documentFooter'] = payload['documentFooter'] ?? business.documentFooter;
+
+      // 💱 Localization & Currency
+      payload['defaultCurrency'] = payload['defaultCurrency'] ?? business.defaultCurrency;
+      payload['defaultLanguage'] = payload['defaultLanguage'] ?? business.defaultLanguage;
+      payload['currency'] = payload['currency'] ?? business.defaultCurrency;
+
+      // 🏛️ Tax Configuration
+      if (business.taxSettings != null) {
+        payload['taxSettings'] = payload['taxSettings'] ?? business.taxSettings.toMap();
+        payload['vatPercentage'] = payload['vatPercentage'] ?? business.taxSettings.vatPercentage;
+        payload['taxCountry'] = payload['taxCountry'] ?? business.taxSettings.country;
+        payload['taxType'] = payload['taxType'] ?? business.taxSettings.taxType;
+      }
+
+      // 📞 Customer Support
+      if (business.customerSupportInfo != null) {
+        payload['customerSupportInfo'] = payload['customerSupportInfo'] ?? business.customerSupportInfo.toMap();
+        payload['supportEmail'] = payload['supportEmail'] ?? business.customerSupportInfo.supportEmail;
+        payload['supportPhone'] = payload['supportPhone'] ?? business.customerSupportInfo.supportPhone;
+        payload['supportUrl'] = payload['supportUrl'] ?? business.customerSupportInfo.supportUrl;
+      }
+
+      // 🏢 Legal & Tax ID
+      payload['taxId'] = payload['taxId'] ?? business.taxId;
+      payload['vatNumber'] = payload['vatNumber'] ?? business.vatNumber;
+      payload['registrationNumber'] = payload['registrationNumber'] ?? business.registrationNumber;
+    }
+
+    return payload;
+  }
+
+  /// Export with auto-applied business settings from Firestore
+  /// All exports (PDF, CSV, JSON) automatically use business profile data
+  Future<Map<String, dynamic>> exportInvoice(
+    String userId,
+    Map<String, dynamic> invoiceMap,
+  ) async {
+    final payload = await buildEnrichedExportPayload(userId, invoiceMap);
+    try {
+      final res = await _export.call(payload);
+      if (res.data is Map) {
+        return Map<String, dynamic>.from(res.data);
+      }
+      return {'success': false};
+    } catch (e) {
+      print('Export error: $e');
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Legacy compatibility - old method name (basic fields only)
+  Future<Map<String, dynamic>> buildExportPayload(
+    String userId,
+    Map<String, dynamic> invoiceMap,
+  ) async {
+    final businessDoc = await _db.collection('users').doc(userId).collection('meta').doc('business').get();
+    final business = businessDoc.exists ? businessDoc.data()! : {};
+
+    final payload = Map<String, dynamic>.from(invoiceMap);
+
+    payload['businessName'] = payload['businessName'] ?? business['businessName'] ?? '';
+    payload['businessAddress'] = payload['businessAddress'] ?? business['address'] ?? '';
+    payload['userLogoUrl'] = payload['userLogoUrl'] ?? business['logoUrl'] ?? '';
+    payload['invoicePrefix'] = payload['invoicePrefix'] ?? business['invoicePrefix'] ?? 'AS-';
+    payload['watermarkText'] = payload['watermarkText'] ?? business['watermarkText'] ?? '';
+    payload['documentFooter'] = payload['documentFooter'] ?? business['documentFooter'] ?? '';
+    payload['brandColor'] = payload['brandColor'] ?? business['brandColor'] ?? '#0A84FF';
+    payload['invoiceTemplate'] = payload['invoiceTemplate'] ?? business['invoiceTemplate'] ?? 'minimal';
+    payload['defaultCurrency'] = payload['defaultCurrency'] ?? business['defaultCurrency'] ?? 'EUR';
+
+    return payload;
+  }
+}

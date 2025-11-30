@@ -1,0 +1,309 @@
+import 'dart:convert';
+// import 'package:csv/csv.dart';
+import '../../data/models/expense_model.dart';
+import './expense_service.dart';
+
+/// Report Service for expense analytics and exports
+/// 
+/// Provides monthly/yearly reporting, category breakdowns, and CSV exports
+/// 
+/// NOTE: CSV export functionality requires the csv package:
+/// ```yaml
+/// dependencies:
+///   csv: ^5.0.0
+/// ```
+class ReportService {
+  final ExpenseService _svc = ExpenseService();
+
+  /// Generate and export monthly report as CSV
+  /// 
+  /// Returns CSV string with:
+  /// - Summary stats (total, VAT, count)
+  /// - Category breakdown
+  /// - Payment method breakdown
+  Future<String> exportMonthlyCsv(int year, int month) async {
+    final report = await _svc.generateMonthlyReport(year, month);
+
+    final rows = <List<dynamic>>[];
+
+    // Header
+    rows.add(['Monthly Expense Report']);
+    rows.add(['Year', 'Month', 'Total', 'Total VAT', 'Count']);
+
+    // Summary
+    rows.add([
+      report['year'],
+      report['month'],
+      report['total'],
+      report['totalVat'],
+      report['count'],
+    ]);
+
+    // Category breakdown
+    rows.add([]);
+    rows.add(['Category Breakdown']);
+    rows.add(['Category', 'Amount']);
+    final byCategory = report['byCategory'] as Map<String, double>;
+    byCategory.forEach((category, amount) {
+      rows.add([category, amount]);
+    });
+
+    return const ListToCsvConverter().convert(rows);
+  }
+
+  /// Generate and export yearly report as CSV
+  /// 
+  /// Returns CSV string with monthly breakdown
+  Future<String> exportYearlyCsv(int year) async {
+    final rows = <List<dynamic>>[];
+
+    rows.add(['Yearly Expense Report']);
+    rows.add(['Year', year]);
+    rows.add([]);
+
+    rows.add(['Month', 'Total', 'VAT', 'Count']);
+
+    double yearTotal = 0;
+    double yearVat = 0;
+    int yearCount = 0;
+
+    for (int month = 1; month <= 12; month++) {
+      try {
+        final report = await _svc.generateMonthlyReport(year, month);
+        final total = report['total'] as double;
+        final vat = report['totalVat'] as double;
+        final count = report['count'] as int;
+
+        rows.add([
+          _monthName(month),
+          total,
+          vat,
+          count,
+        ]);
+
+        yearTotal += total;
+        yearVat += vat;
+        yearCount += count;
+      } catch (e) {
+        // Skip months with no data
+      }
+    }
+
+    // Yearly totals
+    rows.add([]);
+    rows.add(['TOTAL', yearTotal, yearVat, yearCount]);
+
+    return const ListToCsvConverter().convert(rows);
+  }
+
+  /// Get expense statistics summary
+  /// 
+  /// Returns map with:
+  /// - totalExpenses, totalVAT, avgExpense
+  /// - topCategories, topMerchants
+  /// - expensesByStatus
+  Future<Map<String, dynamic>> getStatsSummary() async {
+    // Stream all expenses
+    final expenses = <ExpenseModel>[];
+    await _svc.watchExpenses().take(1).forEach((list) {
+      expenses.addAll(list);
+    });
+
+    double totalAmount = 0;
+    double totalVat = 0;
+    final categoryMap = <String, double>{};
+    final merchantMap = <String, int>{};
+    final statusMap = <String, int>{};
+
+    for (final exp in expenses) {
+      totalAmount += exp.amount;
+      totalVat += (exp.vat ?? 0);
+      categoryMap[exp.category] = (categoryMap[exp.category] ?? 0) + exp.amount;
+      merchantMap[exp.merchant] = (merchantMap[exp.merchant] ?? 0) + 1;
+      statusMap[exp.status.toString().split('.').last] =
+          (statusMap[exp.status.toString().split('.').last] ?? 0) + 1;
+    }
+
+    // Top 5 categories
+    final topCategories = categoryMap.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    // Top 5 merchants
+    final topMerchants = merchantMap.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return {
+      'totalExpenses': totalAmount,
+      'totalVAT': totalVat,
+      'averageExpense': expenses.isNotEmpty ? totalAmount / expenses.length : 0,
+      'count': expenses.length,
+      'topCategories': topCategories
+          .take(5)
+          .map((e) => {'category': e.key, 'amount': e.value})
+          .toList(),
+      'topMerchants': topMerchants
+          .take(5)
+          .map((e) => {'merchant': e.key, 'count': e.value})
+          .toList(),
+      'byStatus': statusMap,
+    };
+  }
+
+  /// Generate status summary report
+  /// 
+  /// Returns breakdown of expenses by approval status
+  Future<Map<String, dynamic>> getStatusReport() async {
+    final draft = await _svc.getExpensesByStatus(ExpenseStatus.draft);
+    final pending = await _svc.getExpensesByStatus(ExpenseStatus.pending_approval);
+    final approved = await _svc.getExpensesByStatus(ExpenseStatus.approved);
+    final rejected = await _svc.getExpensesByStatus(ExpenseStatus.rejected);
+    final reimbursed = await _svc.getExpensesByStatus(ExpenseStatus.reimbursed);
+
+    double _sumAmount(List<ExpenseModel> list) =>
+        list.fold(0, (sum, e) => sum + e.amount);
+
+    return {
+      'draft': {
+        'count': draft.length,
+        'total': _sumAmount(draft),
+      },
+      'pending_approval': {
+        'count': pending.length,
+        'total': _sumAmount(pending),
+      },
+      'approved': {
+        'count': approved.length,
+        'total': _sumAmount(approved),
+      },
+      'rejected': {
+        'count': rejected.length,
+        'total': _sumAmount(rejected),
+      },
+      'reimbursed': {
+        'count': reimbursed.length,
+        'total': _sumAmount(reimbursed),
+      },
+    };
+  }
+
+  /// Generate category analysis report
+  /// 
+  /// Returns detailed breakdown by category
+  Future<Map<String, dynamic>> getCategoryReport() async {
+    final expenses = <ExpenseModel>[];
+    await _svc.watchExpenses().take(1).forEach((list) {
+      expenses.addAll(list);
+    });
+
+    final categories = <String, List<ExpenseModel>>{};
+    for (final exp in expenses) {
+      categories.putIfAbsent(exp.category, () => []).add(exp);
+    }
+
+    final report = <String, Map<String, dynamic>>{};
+    for (final cat in categories.entries) {
+      final total = cat.value.fold<double>(0, (sum, e) => sum + e.amount);
+      final vat = cat.value.fold<double>(0, (sum, e) => sum + (e.vat ?? 0));
+      final avg = cat.value.isNotEmpty ? total / cat.value.length : 0;
+
+      report[cat.key] = {
+        'count': cat.value.length,
+        'total': total,
+        'vat': vat,
+        'average': avg,
+        'approved': cat.value
+            .where((e) => e.status == ExpenseStatus.approved)
+            .length,
+        'pending': cat.value
+            .where((e) => e.status == ExpenseStatus.pending_approval)
+            .length,
+      };
+    }
+
+    return report;
+  }
+
+  /// Export statistics as JSON
+  Future<String> exportStatsJson() async {
+    final stats = await getStatsSummary();
+    return jsonEncode(stats);
+  }
+
+  /// Export statistics as CSV
+  /// 
+  /// Returns CSV with summary and top items
+  Future<String> exportStatsCsv() async {
+    final stats = await getStatsSummary();
+
+    final rows = <List<dynamic>>[];
+
+    // Summary
+    rows.add(['Expense Statistics Summary']);
+    rows.add([]);
+    rows.add(['Metric', 'Value']);
+    rows.add(['Total Expenses', stats['totalExpenses']]);
+    rows.add(['Total VAT', stats['totalVAT']]);
+    rows.add(['Average Expense', stats['averageExpense']]);
+    rows.add(['Expense Count', stats['count']]);
+
+    // Top categories
+    rows.add([]);
+    rows.add(['Top 5 Categories']);
+    rows.add(['Category', 'Amount']);
+    for (final cat in stats['topCategories'] as List) {
+      rows.add([cat['category'], cat['amount']]);
+    }
+
+    // Top merchants
+    rows.add([]);
+    rows.add(['Top 5 Merchants']);
+    rows.add(['Merchant', 'Count']);
+    for (final merchant in stats['topMerchants'] as List) {
+      rows.add([merchant['merchant'], merchant['count']]);
+    }
+
+    return const ListToCsvConverter().convert(rows);
+  }
+
+  /// Helper: Get month name
+  static String _monthName(int month) {
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return months[month - 1];
+  }
+}
+
+/// Example Usage:
+/// 
+/// ```dart
+/// final reportService = ReportService();
+/// 
+/// // Export monthly CSV
+/// final csv = await reportService.exportMonthlyCsv(2025, 11);
+/// 
+/// // Get stats summary
+/// final stats = await reportService.getStatsSummary();
+/// print('Total: \${stats['totalExpenses']}');
+/// 
+/// // Export statistics
+/// final statsJson = await reportService.exportStatsJson();
+/// final statsCsv = await reportService.exportStatsCsv();
+/// 
+/// // Get category report
+/// final catReport = await reportService.getCategoryReport();
+/// 
+/// // Get status report
+/// final statusReport = await reportService.getStatusReport();
+/// ```

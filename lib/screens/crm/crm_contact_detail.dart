@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/crm_provider.dart';
 import '../../data/models/crm_model.dart';
 import 'crm_contact_screen.dart';
+import '../invoices/invoice_create_screen.dart';
 
 class CrmContactDetail extends StatefulWidget {
   final String contactId;
@@ -86,6 +87,34 @@ class _CrmContactDetailState extends State<CrmContactDetail> {
           const Text('Notes', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text(c.notes.isNotEmpty ? c.notes : '-'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final provider = Provider.of<CrmProvider>(context, listen: false);
+                    final currentUserId = provider.ownerId ?? '';
+                    final created = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => InvoiceCreateScreen(
+                          contact: c,
+                          currentUserId: currentUserId,
+                        ),
+                      ),
+                    );
+                    if (created == true) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Invoice created from contact')),
+                      );
+                    }
+                  },
+                  child: const Text('Create Invoice'),
+                ),
+              ),
+            ],
+          )
         ]),
       ),
     );

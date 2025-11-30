@@ -1,0 +1,298 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+// NOTE: These are example implementations. The actual service
+// classes (EmailAiService, EmailGenerated, etc.) need to be
+// implemented separately in email_ai_service.dart
+
+/// Example 1: Simple service usage without provider
+class SimpleEmailGeneratorExample extends StatefulWidget {
+  final String contactName;
+
+  const SimpleEmailGeneratorExample({
+    required this.contactName,
+    super.key,
+  });
+
+  @override
+  State<SimpleEmailGeneratorExample> createState() => _SimpleEmailGeneratorExampleState();
+}
+
+class _SimpleEmailGeneratorExampleState extends State<SimpleEmailGeneratorExample> {
+  bool _isLoading = false;
+  EmailGenerated? _email;
+  String? _error;
+
+  void _generate() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final result = await EmailAiService.generate(
+        type: 'follow_up',
+        contactName: widget.contactName,
+        details: 'Met at conference last month',
+        goal: 'Request a follow-up meeting',
+      );
+
+      setState(() {
+        _email = EmailGenerated.fromJson(result);
+      });
+    } on EmailAiException catch (e) {
+      setState(() {
+        _error = e.message;
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        if (_isLoading) const CircularProgressIndicator(),
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Text('Error: $_error', style: const TextStyle(color: Colors.red)),
+          ),
+        if (_email != null)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Subject: ${_email!.subject}',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text(_email!.text),
+                ],
+              ),
+            ),
+          ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _generate,
+          child: const Text('Generate Email'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Example 2: Using Provider pattern (recommended)
+class EmailGeneratorWithProvider extends StatelessWidget {
+  final String contactName;
+
+  const EmailGeneratorWithProvider({
+    required this.contactName,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<EmailAiProvider>(
+      builder: (context, provider, child) {
+        return Column(
+          children: [
+            if (provider.isLoading) const CircularProgressIndicator(),
+            if (provider.error != null)
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  'Error: ${provider.error}',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            if (provider.lastEmail != null)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Subject: ${provider.lastEmail!.subject}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(provider.lastEmail!.text),
+                    ],
+                  ),
+                ),
+              ),
+            ElevatedButton(
+              onPressed: provider.isLoading
+                  ? null
+                  : () => provider.generateEmail(
+                    type: 'follow_up',
+                    contactName: contactName,
+                    goal: 'Request a meeting to discuss Q4 roadmap',
+                    details: 'Previously discussed CRM solutions',
+                  ),
+              child: const Text('Generate Email'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Example 3: Dialog-based email generator
+class GenerateEmailDialog extends StatefulWidget {
+  final String contactName;
+
+  const GenerateEmailDialog({
+    required this.contactName,
+    super.key,
+  });
+
+  @override
+  State<GenerateEmailDialog> createState() => _GenerateEmailDialogState();
+}
+
+class _GenerateEmailDialogState extends State<GenerateEmailDialog> {
+  final _typeController = TextEditingController(text: 'follow_up');
+  final _goalController = TextEditingController();
+  final _detailsController = TextEditingController();
+
+  @override
+  void dispose() {
+    _typeController.dispose();
+    _goalController.dispose();
+    _detailsController.dispose();
+    super.dispose();
+  }
+
+  void _handleGenerate() async {
+    if (_goalController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Goal is required')),
+      );
+      return;
+    }
+
+    final provider = context.read<EmailAiProvider>();
+    final email = await provider.generateEmail(
+      type: _typeController.text,
+      contactName: widget.contactName,
+      goal: _goalController.text,
+      details: _detailsController.text,
+    );
+
+    if (email != null && mounted) {
+      Navigator.pop(context, email);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<EmailAiProvider>(
+      builder: (context, provider, _) {
+        return AlertDialog(
+          title: Text('Generate Email for ${widget.contactName}'),
+          content: provider.isLoading
+              ? const SizedBox(
+                  width: 300,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('Generating email...'),
+                    ],
+                  ),
+                )
+              : SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _typeController,
+                        decoration: const InputDecoration(
+                          label: Text('Email Type'),
+                          hintText: 'follow_up, proposal, intro, closing',
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _goalController,
+                        decoration: const InputDecoration(
+                          label: Text('Goal (Required)'),
+                          hintText: 'What do you want to achieve?',
+                        ),
+                        minLines: 2,
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _detailsController,
+                        decoration: const InputDecoration(
+                          label: Text('Details (Optional)'),
+                          hintText: 'Any additional context...',
+                        ),
+                        minLines: 2,
+                        maxLines: 4,
+                      ),
+                    ],
+                  ),
+                ),
+          actions: [
+            TextButton(
+              onPressed: provider.isLoading ? null : () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: provider.isLoading ? null : _handleGenerate,
+              child: const Text('Generate'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Example 4: Integration in CRM contact detail screen
+class ContactDetailEmailButton extends StatelessWidget {
+  final String contactName;
+  final String? contactEmail;
+
+  const ContactDetailEmailButton({
+    required this.contactName,
+    this.contactEmail,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: () => showDialog(
+        context: context,
+        builder: (context) => GenerateEmailDialog(contactName: contactName),
+      ).then((email) {
+        if (email != null && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Email generated! Subject: '),
+              action: SnackBarAction(
+                label: 'Copy',
+                onPressed: () {
+                  // TODO: Copy to clipboard
+                },
+              ),
+            ),
+          );
+        }
+      }),
+      icon: const Icon(Icons.mail_outline),
+      label: const Text('Generate Email'),
+    );
+  }
+}

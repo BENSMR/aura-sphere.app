@@ -1,0 +1,370 @@
+# PDF Generation System - Architecture Diagram
+
+## System Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          AURA SPHERE PRO - PDF GENERATION                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                              ┌──────────────────┐
+                              │   User Opens     │
+                              │ Invoice Screen   │
+                              └────────┬─────────┘
+                                       │
+                    ┌──────────────────┴──────────────────┐
+                    │                                     │
+            ┌───────▼──────────┐            ┌────────────▼────────┐
+            │  Clicks "PDF     │            │  Clicks "Download"  │
+            │  (Local)" Option │            │  or "PDF (Server)"  │
+            └───────┬──────────┘            └────────────┬────────┘
+                    │                                    │
+        ┌───────────▼──────────────┐        ┌──────────▼──────────────┐
+        │  LocalPdfService.       │        │  InvoiceExportService  │
+        │  generateInvoicePdfBytes│        │  .exportInvoice()      │
+        └───────────┬──────────────┘        └──────────┬──────────────┘
+                    │                                  │
+        ┌───────────▼──────────────┐        ┌──────────▼──────────────┐
+        │  1. Fetch Business      │        │  1. Call Cloud Function│
+        │     Profile from        │        │     generateInvoicePdf │
+        │     Firestore           │        └──────────┬──────────────┘
+        │  2. Generate PDF in     │                   │
+        │     Memory (PDF pkg)    │        ┌──────────▼──────────────┐
+        │  3. Return Bytes        │        │  Cloud Function:       │
+        └───────────┬──────────────┘        │  - Fetch Invoice      │
+                    │                      │  - Fetch Business     │
+        ┌───────────▼──────────────┐        │  - Generate PDF      │
+        │  Printing.layoutPdf()   │        │    (PDFKit)           │
+        │  Opens Print Preview    │        │  - Write to Storage   │
+        └───────────┬──────────────┘        │  - Save Metadata      │
+                    │                      └──────────┬──────────────┘
+        ┌───────────▼──────────────┐                   │
+        │  User Actions:           │        ┌──────────▼──────────────┐
+        │  - Print                 │        │  Firebase Storage:     │
+        │  - Save to Device        │        │  invoices/{userId}/... │
+        │  - Share                 │        └──────────┬──────────────┘
+        │  (INSTANT - 300-500ms)   │                   │
+        └──────────────────────────┘        ┌──────────▼──────────────┐
+                                            │  Return Signed URL     │
+                                            │  (7-day validity)      │
+                                            └──────────┬──────────────┘
+                                                       │
+                                            ┌──────────▼──────────────┐
+                                            │  Client Downloads or   │
+                                            │  Views PDF             │
+                                            │  (DELAYED - 1-2s)      │
+                                            └───────────────────────┘
+```
+
+## Data Flow Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         FIRESTORE DATA STRUCTURE                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+users/{userId}
+├── invoices/{invoiceId}
+│   ├── invoiceNumber: "INV-2024-001"
+│   ├── clientName: "Acme Corp"
+│   ├── clientEmail: "contact@acme.com"
+│   ├── items: [
+│   │   { description: "Consulting", quantity: 10, unitPrice: 100.00 },
+│   │   { description: "Development", quantity: 20, unitPrice: 150.00 }
+│   │ ]
+│   ├── subtotal: 4000.00
+│   ├── tax: 800.00
+│   ├── total: 4800.00
+│   ├── taxRate: 0.20
+│   ├── currency: "USD"
+│   ├── status: "paid"
+│   ├── dueDate: Timestamp(2024-12-31)
+│   ├── createdAt: Timestamp(2024-11-28)
+│   └── [PDF GENERATION WRITES]
+│       ├── exportPdfUrl: "https://..."
+│       ├── exportPdfPath: "invoices/userId/INV-2024-001.pdf"
+│       └── exportPdfGeneratedAt: Timestamp(...)
+│
+└── meta/business
+    ├── businessName: "My Company"
+    ├── address: "123 Main St, City, State 12345"
+    ├── logoUrl: "https://..."
+    ├── brandColor: "#ff6600"
+    └── documentFooter: "Thank you for your business!"
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      FIREBASE STORAGE STRUCTURE                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+storage/
+└── invoices/
+    └── {userId}/
+        ├── INV-2024-001.pdf          ← Generated by Cloud Function
+        ├── INV-2024-002.pdf
+        └── INV-2024-003.pdf
+```
+
+## Component Interaction
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    FLUTTER CLIENT COMPONENTS                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+InvoiceExportScreen
+│
+├─ InvoiceExportTile                 ← Displays invoice in list
+│  │
+│  └─ _generateLocalPdf()            ← Handles "PDF (Local)" click
+│     │
+│     ├─ FirebaseFirestore          ← Fetch business profile
+│     │  .collection('users')
+│     │  .doc(userId)
+│     │  .collection('meta')
+│     │  .doc('business')
+│     │
+│     └─ LocalPdfService            ← Generate PDF bytes
+│        .generateInvoicePdfBytes()
+│        │
+│        ├─ Parse colors            ← Extract brand colors
+│        ├─ Format dates            ← Use intl package
+│        ├─ Build PDF layout        ← Use pdf package
+│        │  ├─ Header (logo, name)
+│        │  ├─ Invoice details
+│        │  ├─ Client info
+│        │  ├─ Items table
+│        │  ├─ Totals
+│        │  └─ Footer
+│        │
+│        └─ pdf.save()              ← Return Uint8List
+│
+│        Then: Printing.layoutPdf() ← Open print preview
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                   CLOUD FUNCTIONS COMPONENTS                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+functions/src/invoicing/generateInvoicePdf.ts
+│
+├─ Check authentication              ← Verify user logged in
+│  └─ context.auth.uid
+│
+├─ Fetch invoice from Firestore      ← Get invoice data
+│  └─ db.collection('users')
+│     .doc(userId)
+│     .collection('invoices')
+│     .doc(invoiceId)
+│
+├─ Fetch business profile            ← Get branding data
+│  └─ db.collection('users')
+│     .doc(userId)
+│     .collection('meta')
+│     .doc('business')
+│
+├─ Generate PDF with PDFKit          ← Create PDF stream
+│  └─ new PDFDocument()
+│     ├─ Write header
+│     ├─ Write metadata
+│     ├─ Write items table
+│     ├─ Write totals
+│     └─ Write footer
+│
+├─ Write to Firebase Storage         ← Save PDF file
+│  └─ storage.bucket()
+│     .file('invoices/{userId}/{number}.pdf')
+│     .createWriteStream()
+│
+├─ Generate signed URL               ← Create 7-day link
+│  └─ file.getSignedUrl({ expires: ... })
+│
+└─ Update Firestore metadata         ← Save PDF info
+   └─ invoice.update({
+      exportPdfUrl: url,
+      exportPdfPath: path,
+      exportPdfGeneratedAt: FieldValue.serverTimestamp()
+   })
+```
+
+## Comparison: Local vs Server PDF Generation
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                      LOCAL PDF (Recommended)                               │
+├────────────────────────────────────────────────────────────────────────────┤
+│ When: User clicks "PDF (Local)"                                            │
+│                                                                             │
+│ Process:                                                                   │
+│   1. Fetch business profile (~50-100ms)                                    │
+│   2. Generate PDF in memory (~100-200ms)                                   │
+│   3. Open print preview (~50-100ms)                                        │
+│                                                                             │
+│ Total Time: 200-400ms                                                     │
+│ Network: Required (only to fetch business profile)                        │
+│ Storage: None (kept in memory)                                            │
+│ Works Offline: After business profile is cached                           │
+│                                                                             │
+│ Advantages:                                                                │
+│   ✅ Instant user feedback                                                 │
+│   ✅ No server cost                                                         │
+│   ✅ Works offline (after initial load)                                     │
+│   ✅ Print preview immediately                                              │
+│   ✅ User controls save/share                                               │
+│                                                                             │
+│ Disadvantages:                                                             │
+│   ❌ PDF not stored on server                                               │
+│   ❌ User must manage their own backups                                      │
+│   ❌ No audit trail for compliance                                          │
+│                                                                             │
+│ Best For:                                                                   │
+│   • Quick preview/printing                                                 │
+│   • Mobile-first users                                                     │
+│   • Low-latency requirements                                               │
+│   • Offline scenarios                                                      │
+└────────────────────────────────────────────────────────────────────────────┘
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│                    SERVER PDF (Archival)                                   │
+├────────────────────────────────────────────────────────────────────────────┤
+│ When: User clicks "PDF (Server)" / via Cloud Function                      │
+│                                                                             │
+│ Process:                                                                   │
+│   1. Send invoiceId to Cloud Function (~50ms)                              │
+│   2. Fetch invoice from Firestore (~100ms)                                 │
+│   3. Fetch business profile (~100ms)                                       │
+│   4. Generate PDF with PDFKit (~400-800ms)                                 │
+│   5. Write to Firebase Storage (~200-500ms)                                │
+│   6. Generate signed URL (~50ms)                                           │
+│   7. Return URL to client (~50ms)                                          │
+│                                                                             │
+│ Total Time: 950-1750ms (1-2 seconds)                                       │
+│ Network: Required (full round trip)                                        │
+│ Storage: Yes (permanent in Firebase Storage)                               │
+│ Works Offline: No                                                          │
+│                                                                             │
+│ Advantages:                                                                │
+│   ✅ PDF stored in cloud for backup                                         │
+│   ✅ Permanent audit trail                                                  │
+│   ✅ Compliance/legal protection                                            │
+│   ✅ Accessible from any device                                             │
+│   ✅ Shareable via URL                                                      │
+│                                                                             │
+│ Disadvantages:                                                             │
+│   ❌ Slower (1-2 seconds)                                                   │
+│   ❌ Server resources needed                                                │
+│   ❌ Requires network connection                                            │
+│   ❌ Increased latency                                                      │
+│                                                                             │
+│ Best For:                                                                  │
+│   • Compliance/auditing                                                    │
+│   • Long-term archival                                                     │
+│   • Sharing via URL                                                        │
+│   • Business records                                                       │
+│   • Email attachments                                                      │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Recommendation: Use LOCAL for user interactions, SERVER for archival/compliance
+```
+
+## Deployment Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     DEPLOYMENT CHECKLIST                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Development:
+  1. Create LocalPdfService          ✅ lib/services/invoice/local_pdf_service.dart
+  2. Create Cloud Function           ✅ functions/src/invoicing/generateInvoicePdf.ts
+  3. Update export screen            ✅ lib/screens/invoice/invoice_export_screen.dart
+  4. Add dependencies                ✅ pdfkit in functions/package.json
+  5. Create documentation            ✅ PDF_GENERATION_IMPLEMENTATION.md
+
+Pre-deployment Testing:
+  1. Install dependencies            → flutter pub get && cd functions && npm install
+  2. Compile TypeScript              → cd functions && npm run build
+  3. Test locally                    → flutter run on emulator
+  4. Test PDF generation             → Click "PDF (Local)" on invoice
+  5. Test error scenarios            → Try with missing data
+  6. Performance testing             → Measure generation time
+  7. UI/UX testing                   → Verify print preview
+
+Deployment:
+  1. Deploy Cloud Functions          → firebase deploy --only functions:generateInvoicePdf
+  2. Monitor Cloud Functions logs    → Firebase Console > Functions > Logs
+  3. Test in staging                 → With test invoices
+  4. Monitor Firestore updates       → Check pdf metadata is saved
+  5. Verify Storage uploads          → Check bucket for PDFs
+  6. Test signed URLs                → Open in browser
+  7. Production rollout              → Enable for all users
+
+Post-deployment Monitoring:
+  1. Track PDF generation success    → Cloud Functions logs
+  2. Monitor Storage usage           → Firebase Console
+  3. Check for errors                → Error rates in logs
+  4. User feedback                   → Track issues/bugs
+  5. Performance metrics             → PDF generation time
+  6. Cleanup old PDFs                → Set retention policy
+```
+
+## Security & Permissions
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      FIRESTORE SECURITY RULES                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User invoices
+    match /users/{userId}/invoices/{invoiceId} {
+      allow read, write: if request.auth.uid == userId;
+      
+      // PDF metadata subcollection
+      match /pdf/{pdfId} {
+        allow read: if request.auth.uid == userId;
+        allow write: if false;  // Cloud Functions only
+      }
+    }
+    
+    // Business profile
+    match /users/{userId}/meta/business {
+      allow read, write: if request.auth.uid == userId;
+    }
+  }
+}
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    FIREBASE STORAGE RULES                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Invoice PDFs
+    match /invoices/{userId}/{filename} {
+      allow read: if request.auth.uid == userId;
+      allow write: if false;  // Cloud Functions only
+    }
+  }
+}
+
+Security Principles:
+  ✅ User can read their own PDFs
+  ✅ User cannot write PDFs directly
+  ✅ Only Cloud Functions can create PDFs
+  ✅ PDFs stored in user-specific folders
+  ✅ Signed URLs expire after 7 days
+  ✅ All operations logged by Firestore/Storage
+```
+
+---
+
+*Architecture Diagram: November 28, 2025*  
+*System Status: ✅ Ready for Testing*  
+*Components: 2 main services + 1 enhanced screen*
+

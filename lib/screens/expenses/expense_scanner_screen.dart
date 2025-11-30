@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../../services/ocr/expense_scanner_service.dart';
 import '../../data/models/expense_model.dart';
-import '../../services/firebase_service.dart';
 import '../../utils/expense_parser.dart';
 import 'expense_review_screen.dart';
 
@@ -96,8 +96,9 @@ class _ExpenseScannerScreenState extends State<ExpenseScannerScreen> {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final filename = 'expenses/receipts/$timestamp.jpg';
 
-      final firebaseService = FirebaseService();
-      final url = await firebaseService.uploadFile(file, filename);
+      final ref = FirebaseStorage.instance.ref().child(filename);
+      await ref.putFile(file);
+      final url = await ref.getDownloadURL();
 
       return url;
     } catch (e) {
@@ -132,7 +133,7 @@ class _ExpenseScannerScreenState extends State<ExpenseScannerScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => ExpenseReviewScreen(
-          parsedData: _parsedData!,
+          ocrData: _parsedData!,
           imageUrl: _uploadedImageUrl!,
         ),
       ),

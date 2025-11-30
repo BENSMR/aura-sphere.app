@@ -1,0 +1,206 @@
+import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
+import 'package:intl/intl.dart';
+import '../../data/models/invoice_model.dart';
+
+/// Minimal template - clean and simple
+/// Shows only essential information
+class InvoiceTemplateMinimal {
+  /// Build minimal invoice PDF page
+  static List<pw.Widget> build(
+    pw.Context context,
+    InvoiceModel invoice,
+    Map<String, dynamic> business,
+    PdfColor brandColor,
+  ) {
+    final currency = invoice.currency.toUpperCase();
+    final df = DateFormat.yMMMd();
+
+    return [
+      // Header - minimal
+      pw.Text(
+        business['businessName'] ?? 'Invoice',
+        style: pw.TextStyle(
+          fontSize: 24,
+          fontWeight: pw.FontWeight.bold,
+          color: brandColor,
+        ),
+      ),
+      pw.SizedBox(height: 4),
+      pw.Text(
+        'Invoice #${invoice.invoiceNumber}',
+        style: pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
+      ),
+      pw.Divider(color: brandColor, thickness: 1),
+      pw.SizedBox(height: 12),
+
+      // Dates
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('Date', style: const pw.TextStyle(fontSize: 10)),
+              pw.Text(
+                df.format(invoice.createdAt.toDate()),
+                style: pw.TextStyle(
+                  fontSize: 12,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          if (invoice.dueDate != null)
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Due', style: const pw.TextStyle(fontSize: 10)),
+                pw.Text(
+                  df.format(invoice.dueDate!),
+                  style: pw.TextStyle(
+                    fontSize: 12,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+      pw.SizedBox(height: 12),
+
+      // Client info - minimal
+      pw.Text(
+        'Bill To',
+        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+      ),
+      pw.Text(invoice.clientName, style: const pw.TextStyle(fontSize: 11)),
+      pw.Text(invoice.clientEmail, style: const pw.TextStyle(fontSize: 10)),
+      pw.SizedBox(height: 16),
+
+      // Items table - compact
+      pw.Table(
+        border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+        children: [
+          // Header row
+          pw.TableRow(
+            decoration: pw.BoxDecoration(color: brandColor.withOpacity(0.1)),
+            children: [
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(4),
+                child: pw.Text(
+                  'Description',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(4),
+                child: pw.Text(
+                  'Qty',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+                  textAlign: pw.TextAlign.center,
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(4),
+                child: pw.Text(
+                  'Total',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+                  textAlign: pw.TextAlign.right,
+                ),
+              ),
+            ],
+          ),
+          // Item rows
+          ...invoice.items.map((item) {
+            return pw.TableRow(
+              children: [
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(4),
+                  child: pw.Text(item.description, fontSize: 10),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(4),
+                  child: pw.Text(
+                    item.quantity.toString(),
+                    textAlign: pw.TextAlign.center,
+                    fontSize: 10,
+                  ),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(4),
+                  child: pw.Text(
+                    '${item.total.toStringAsFixed(2)} $currency',
+                    textAlign: pw.TextAlign.right,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            );
+          }),
+        ],
+      ),
+      pw.SizedBox(height: 12),
+
+      // Summary - minimal
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.end,
+        children: [
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.end,
+            children: [
+              pw.Text(
+                'Subtotal: ${invoice.subtotal.toStringAsFixed(2)} $currency',
+                fontSize: 11,
+              ),
+              if (invoice.taxRate > 0)
+                pw.Text(
+                  'Tax: ${invoice.tax.toStringAsFixed(2)} $currency',
+                  fontSize: 11,
+                ),
+              if (invoice.discount > 0)
+                pw.Text(
+                  'Discount: -${invoice.discount.toStringAsFixed(2)} $currency',
+                  fontSize: 11,
+                ),
+              pw.SizedBox(height: 4),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: pw.BoxDecoration(
+                  color: brandColor.withOpacity(0.1),
+                  border: pw.Border.all(color: brandColor),
+                ),
+                child: pw.Text(
+                  'Total: ${invoice.total.toStringAsFixed(2)} $currency',
+                  style: pw.TextStyle(
+                    fontSize: 13,
+                    fontWeight: pw.FontWeight.bold,
+                    color: brandColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      pw.SizedBox(height: 16),
+
+      // Payment status
+      if (invoice.isPaid)
+        pw.Container(
+          padding: const pw.EdgeInsets.all(8),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.green.withOpacity(0.1),
+            border: pw.Border.all(color: PdfColors.green),
+          ),
+          child: pw.Text(
+            'PAID',
+            style: pw.TextStyle(
+              color: PdfColors.green,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+        ),
+    ];
+  }
+}

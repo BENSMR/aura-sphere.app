@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:aura_sphere_pro/services/email_service.dart';
+import './email_service.dart';
 
 // EXAMPLE 1: Send email from a task detail screen button
 class TaskDetailScreenExample extends StatefulWidget {

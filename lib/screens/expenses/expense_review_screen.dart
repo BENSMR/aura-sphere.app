@@ -14,7 +14,7 @@ class ExpenseReviewScreen extends StatefulWidget {
   });
 
   @override
-  State<ExpenseReviewScreenState> createState() =>
+  State<ExpenseReviewScreen> createState() =>
       _ExpenseReviewScreenState();
 }
 
@@ -90,13 +90,16 @@ class _ExpenseReviewScreenState extends State<ExpenseReviewScreen> {
     try {
       final expense = ExpenseModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: 'current_user', // Will be set by service
         merchant: merchantCtrl.text.trim(),
-        date: dateCtrl.text.trim(),
-        total: double.parse(totalCtrl.text),
-        vat: double.tryParse(vatCtrl.text) ?? 0,
+        date: DateTime.tryParse(dateCtrl.text.trim()),
+        amount: double.parse(totalCtrl.text),
+        vat: double.tryParse(vatCtrl.text),
+        vatRate: 0,
         currency: currencyCtrl.text.trim(),
         category: categoryCtrl.text.trim(),
-        imageUrl: widget.imageUrl,
+        paymentMethod: 'unknown',
+        photoUrls: widget.imageUrl != null ? [widget.imageUrl!] : [],
         createdAt: DateTime.now(),
       );
 
@@ -245,7 +248,7 @@ class _ExpenseReviewScreenState extends State<ExpenseReviewScreen> {
                     children: [
                       const Text('Net Amount:'),
                       Text(
-                        '${currencyCtrl.text} ${(double.tryParse(totalCtrl.text) ?? 0 - double.tryParse(vatCtrl.text) ?? 0).toStringAsFixed(2)}',
+                        '${currencyCtrl.text} ${((double.tryParse(totalCtrl.text) ?? 0) - (double.tryParse(vatCtrl.text) ?? 0)).toStringAsFixed(2)}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],

@@ -25,6 +25,7 @@ class CrmService {
     String jobTitle = '',
     String notes = '',
     List<String> tags = const [],
+    String status = 'active',
   }) async {
     final uid = currentUid;
     final contact = Contact(
@@ -37,6 +38,7 @@ class CrmService {
       jobTitle: jobTitle,
       notes: notes,
       tags: tags,
+      status: status,
       createdAt: null,
       updatedAt: null,
     );

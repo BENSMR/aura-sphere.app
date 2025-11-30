@@ -5,17 +5,33 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../data/models/user_model.dart';
 import '../services/firebase/auth_service.dart';
+import 'business_provider.dart';
+import 'invoice_provider.dart';
 
 class UserProvider with ChangeNotifier {
   final AuthService _authService;
   AppUser? _appUser;
   bool _loading = true;
+  
+  // Will be injected via setters
+  BusinessProvider? _businessProvider;
+  InvoiceProvider? _invoiceProvider;
 
   StreamSubscription<User?>? _authSub;
   StreamSubscription<AppUser?>? _userSub;
 
   UserProvider(this._authService) {
     _init();
+  }
+  
+  /// Set business provider reference for initialization on login
+  void setBusinessProvider(BusinessProvider provider) {
+    _businessProvider = provider;
+  }
+
+  /// Set invoice provider reference for lifecycle hooks
+  void setInvoiceProvider(InvoiceProvider provider) {
+    _invoiceProvider = provider;
   }
 
   AppUser? get user => _appUser;
@@ -27,9 +43,18 @@ class UserProvider with ChangeNotifier {
       _userSub?.cancel();
       if (firebaseUser == null) {
         _appUser = null;
+        // Stop business provider on logout
+        _businessProvider?.stop();
+        // Stop invoice provider on logout
+        _invoiceProvider?.stopWatching();
         _setLoading(false);
         return;
       }
+
+      // Start business provider on login
+      _businessProvider?.start(firebaseUser.uid);
+      // Start invoice provider on login
+      _invoiceProvider?.startWatching(firebaseUser.uid);
 
       _userSub = _authService.appUserStream(firebaseUser.uid).listen(
         (appUser) {

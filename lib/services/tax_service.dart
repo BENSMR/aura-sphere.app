@@ -302,7 +302,6 @@ class TaxService {
     ];
     return codes.map((code) => getCountryTaxDetails(code)).toList();
   }
-}
 
   /// Detect VAT rate from user profile (async)
   /// 

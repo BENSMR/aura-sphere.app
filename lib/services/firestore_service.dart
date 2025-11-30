@@ -31,6 +31,23 @@ class FirestoreService {
     }
   }
 
+  /// Set document using path (e.g., "collection/doc/subcoll/subdoc")
+  Future<void> set(String path, Map<String, dynamic> data) async {
+    try {
+      final parts = path.split('/');
+      DocumentReference ref = _firestore.collection(parts[0]).doc(parts[1]);
+      for (int i = 2; i < parts.length; i += 2) {
+        if (i + 1 < parts.length) {
+          ref = ref.collection(parts[i]).doc(parts[i + 1]);
+        }
+      }
+      await ref.set(data);
+    } catch (e) {
+      Logger.error('Failed to set at path', error: e);
+      rethrow;
+    }
+  }
+
   Future<void> updateDocument(String collection, String docId, Map<String, dynamic> data) async {
     try {
       await _firestore.collection(collection).doc(docId).update(data);

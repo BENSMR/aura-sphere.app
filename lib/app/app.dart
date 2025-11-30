@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../core/constants/config.dart';
 import 'theme.dart';
 import '../providers/user_provider.dart';
+import '../providers/business_provider.dart';
 import '../providers/crm_provider.dart';
 import '../providers/crm_insights_provider.dart';
 import '../providers/task_provider.dart';
@@ -34,21 +35,38 @@ class AuraSphereApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
-
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider(authService)),
-        ChangeNotifierProvider(create: (_) => CrmProvider()),
+        ChangeNotifierProvider(create: (_) => BusinessProvider()),
+        ChangeNotifierProvider(create: (_) => InvoiceProvider()),
+        ChangeNotifierProvider(
+          create: (context) {
+            final authService = AuthService();
+            final userProvider = UserProvider(authService);
+            // Wire BusinessProvider to UserProvider for auto-initialization
+            final businessProvider = Provider.of<BusinessProvider>(context, listen: false);
+            userProvider.setBusinessProvider(businessProvider);
+            // Wire InvoiceProvider to UserProvider for lifecycle hooks
+            final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
+            userProvider.setInvoiceProvider(invoiceProvider);
+            return userProvider;
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (context) {
+            final userProvider = Provider.of<UserProvider>(context, listen: false);
+            final currentUserId = userProvider.user?.uid;
+            return CrmProvider()..setOwner(currentUserId ?? '');
+          },
+        ),
         ChangeNotifierProvider(create: (_) => CrmInsightsProvider()),
         ChangeNotifierProvider(create: (_) => TaskProvider()),
-        ChangeNotifierProvider(create: (_) => InvoiceProvider()),
         ChangeNotifierProvider(create: (_) => ExpenseProvider()),
       ],
       child: MaterialApp(
         title: Config.appName,
         theme: AppTheme.light(),
-        initialRoute: AppRoutes.splash,
+        initialRoute: AppRoutes.splash, // where lifecycle hooks are applied
         onGenerateRoute: AppRoutes.onGenerateRoute,
         debugShowCheckedModeBanner: false,
       ),

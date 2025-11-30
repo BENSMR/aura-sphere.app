@@ -1,6 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../data/models/invoice_model.dart';
-import '../../services/invoice_service.dart';
+// import '../../services/invoice_service.dart'; // Temporarily disabled
+
+// Stub class for disabled service
+class InvoiceService {
+  Future<void> sendInvoiceByEmail(InvoiceModel invoice) async {
+    // TODO: Implement
+  }
+  Future<void> sendPaymentReminder(InvoiceModel invoice) async {
+    // TODO: Implement
+  }
+  Future<void> savePdfToDevice(InvoiceModel invoice) async {
+    // TODO: Implement
+  }
+}
 
 /// Send Invoice via Email Button
 /// 

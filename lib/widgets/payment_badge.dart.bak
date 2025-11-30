@@ -1,0 +1,605 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../data/models/invoice_model.dart';
+
+/// Payment status badge widget showing invoice payment state
+class PaymentBadge extends StatelessWidget {
+  final InvoiceModel invoice;
+  final double? fontSize;
+  final double? iconSize;
+  final bool showVerificationIcon;
+
+  const PaymentBadge({
+    Key? key,
+    required this.invoice,
+    this.fontSize,
+    this.iconSize,
+    this.showVerificationIcon = true,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (invoice.paymentStatus == 'paid') {
+      return _buildPaidBadge();
+    }
+    return _buildUnpaidBadge();
+  }
+
+  /// Build paid badge with verification indicator
+  Widget _buildPaidBadge() {
+    final verificationIcon = invoice.paymentVerified
+        ? Icons.verified
+        : Icons.info_outline;
+    
+    final verificationColor = invoice.paymentVerified
+        ? Colors.green
+        : Colors.amber;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.green.withOpacity(0.15),
+        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.check_circle,
+            color: Colors.green,
+            size: iconSize ?? 16,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            'PAID',
+            style: TextStyle(
+              color: Colors.green,
+              fontWeight: FontWeight.bold,
+              fontSize: fontSize,
+            ),
+          ),
+          if (showVerificationIcon) ...[
+            const SizedBox(width: 5),
+            Icon(
+              verificationIcon,
+              color: verificationColor,
+              size: (iconSize ?? 16) * 0.8,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Build unpaid badge
+  Widget _buildUnpaidBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(0.15),
+        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.timelapse,
+            color: Colors.orange,
+            size: iconSize ?? 16,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            'UNPAID',
+            style: TextStyle(
+              color: Colors.orange,
+              fontWeight: FontWeight.bold,
+              fontSize: fontSize,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Detailed payment info widget
+class PaymentInfoCard extends StatelessWidget {
+  final InvoiceModel invoice;
+  final VoidCallback? onViewDetails;
+
+  const PaymentInfoCard({
+    Key? key,
+    required this.invoice,
+    this.onViewDetails,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (invoice.paymentStatus != 'paid') {
+      return _buildUnpaidCard(context);
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.green.withOpacity(0.05),
+        border: Border.all(color: Colors.green.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with status
+          Row(
+            children: [
+              Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Payment Confirmed',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (invoice.paidAt != null)
+                      Text(
+                        _formatDate(invoice.paidAt!),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              if (invoice.paymentVerified)
+                Tooltip(
+                  message: 'Payment verified',
+                  child: Icon(
+                    Icons.verified,
+                    color: Colors.green,
+                    size: 18,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Payment details
+          if (invoice.paidAmount != null) ...[
+            _buildInfoRow(
+              'Amount Paid',
+              '${invoice.paidAmount?.toStringAsFixed(2)} ${invoice.paidCurrency?.toUpperCase() ?? 'USD'}',
+            ),
+            const SizedBox(height: 8),
+          ],
+
+          if (invoice.lastPaymentIntentId != null) ...[
+            _buildInfoRow(
+              'Payment ID',
+              _truncateId(invoice.lastPaymentIntentId!),
+              onTap: () => _copyToClipboard(context, invoice.lastPaymentIntentId!),
+            ),
+            const SizedBox(height: 8),
+          ],
+
+          // Action button
+          if (onViewDetails != null)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: onViewDetails,
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.green),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+                child: const Text('View Payment Details'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Build unpaid card
+  Widget _buildUnpaidCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(0.05),
+        border: Border.all(color: Colors.orange.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.timelapse,
+            color: Colors.orange,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Payment Pending',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Amount due: ${invoice.amount.toStringAsFixed(2)} ${invoice.currency}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build info row
+  Widget _buildInfoRow(String label, String value, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+            ),
+          ),
+          Row(
+            children: [
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.copy,
+                  size: 12,
+                  color: Colors.grey[400],
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Format date
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inSeconds < 60) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
+  /// Truncate ID for display
+  String _truncateId(String id) {
+    if (id.length <= 12) return id;
+    return '${id.substring(0, 6)}...${id.substring(id.length - 6)}';
+  }
+
+  /// Copy to clipboard
+  void _copyToClipboard(BuildContext context, String text) {
+    final scaffold = ScaffoldMessenger.of(context);
+    final data = ClipboardData(text: text);
+    Clipboard.setData(data).then((_) {
+      scaffold.showSnackBar(
+        SnackBar(
+          content: const Text('Copied to clipboard'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    });
+  }
+}
+
+/// Payment verification status indicator
+class PaymentVerificationBadge extends StatelessWidget {
+  final InvoiceModel invoice;
+  final bool compact;
+
+  const PaymentVerificationBadge({
+    Key? key,
+    required this.invoice,
+    this.compact = false,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (invoice.paymentStatus != 'paid') {
+      return const SizedBox.shrink();
+    }
+
+    if (invoice.paymentVerified) {
+      return _buildVerified();
+    }
+
+    return _buildUnverified();
+  }
+
+  Widget _buildVerified() {
+    if (compact) {
+      return Tooltip(
+        message: 'Payment verified',
+        child: Icon(
+          Icons.verified,
+          color: Colors.green,
+          size: 16,
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.green.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.verified,
+            color: Colors.green,
+            size: 14,
+          ),
+          const SizedBox(width: 4),
+          const Text(
+            'Verified',
+            style: TextStyle(
+              color: Colors.green,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUnverified() {
+    if (compact) {
+      return Tooltip(
+        message: 'Verification pending',
+        child: Icon(
+          Icons.info_outline,
+          color: Colors.amber,
+          size: 16,
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.amber.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.hourglass_empty,
+            color: Colors.amber,
+            size: 14,
+          ),
+          const SizedBox(width: 4),
+          const Text(
+            'Verifying',
+            style: TextStyle(
+              color: Colors.amber,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Payment timeline widget
+class PaymentTimeline extends StatelessWidget {
+  final InvoiceModel invoice;
+
+  const PaymentTimeline({
+    Key? key,
+    required this.invoice,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Payment Timeline',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildTimelineItem(
+          icon: Icons.receipt,
+          title: 'InvoiceModel Created',
+          time: invoice.issueDate,
+          isCompleted: true,
+        ),
+        _buildTimelineDivider(),
+        if (invoice.paymentStatus == 'paid')
+          _buildTimelineItem(
+            icon: Icons.check_circle,
+            title: 'Payment Received',
+            time: invoice.paidAt ?? DateTime.now(),
+            isCompleted: true,
+            subtitle: invoice.paidAmount != null
+                ? '${invoice.paidAmount?.toStringAsFixed(2)} ${invoice.paidCurrency?.toUpperCase()}'
+                : null,
+          )
+        else
+          _buildTimelineItem(
+            icon: Icons.schedule,
+            title: 'Awaiting Payment',
+            time: invoice.dueDate,
+            isCompleted: false,
+            subtitle: 'Due: ${_formatDate(invoice.dueDate)}',
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineItem({
+    required IconData icon,
+    required String title,
+    required DateTime time,
+    required bool isCompleted,
+    String? subtitle,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          icon,
+          color: isCompleted ? Colors.green : Colors.grey,
+          size: 20,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: isCompleted ? Colors.green : Colors.grey,
+                ),
+              ),
+              Text(
+                _formatDateTime(time),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineDivider() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 10, top: 4, bottom: 4),
+      child: SizedBox(
+        height: 20,
+        child: VerticalDivider(
+          color: Colors.grey[300],
+          thickness: 2,
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  String _formatDateTime(DateTime date) {
+    return '${_formatDate(date)} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+/// Quick helper function to show payment badge
+/// Usage: paymentBadge(invoice)
+Widget paymentBadge(
+  InvoiceModel invoice, {
+  double? fontSize,
+  double? iconSize,
+  bool showVerificationIcon = true,
+}) {
+  return PaymentBadge(
+    invoice: invoice,
+    fontSize: fontSize,
+    iconSize: iconSize,
+    showVerificationIcon: showVerificationIcon,
+  );
+}
+
+/// Quick helper function to show payment info card
+/// Usage: paymentInfoCard(invoice, onViewDetails: () { ... })
+Widget paymentInfoCard(
+  InvoiceModel invoice, {
+  VoidCallback? onViewDetails,
+}) {
+  return PaymentInfoCard(
+    invoice: invoice,
+    onViewDetails: onViewDetails,
+  );
+}
+
+/// Quick helper function to show verification badge
+/// Usage: paymentVerificationBadge(invoice)
+Widget paymentVerificationBadge(
+  InvoiceModel invoice, {
+  bool compact = false,
+}) {
+  return PaymentVerificationBadge(
+    invoice: invoice,
+    compact: compact,
+  );
+}
+
+/// Quick helper function to show payment timeline
+/// Usage: paymentTimeline(invoice)
+Widget paymentTimeline(InvoiceModel invoice) {
+  return PaymentTimeline(invoice: invoice);
+}
