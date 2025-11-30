@@ -1,0 +1,42 @@
+steps:
+  # Step 1: Install Node.js dependencies for Cloud Functions
+  - name: 'gcr.io/cloud-builders/npm'
+    id: 'install-functions'
+    dir: 'functions'
+    args: ['ci']
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
+
+  # Step 2: Build Cloud Functions (TypeScript to JavaScript)
+  - name: 'gcr.io/cloud-builders/npm'
+    id: 'build-functions'
+    dir: 'functions'
+    args: ['run', 'build']
+
+  # Step 3: Deploy to Firebase
+  - name: 'gcr.io/cloud-builders/firebase'
+    id: 'firebase-deploy'
+    args:
+      - 'deploy'
+      - '--only'
+      - 'firestore:rules,storage:rules,functions'
+      - '--token'
+      - '${_FIREBASE_TOKEN}'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
+
+# Substitutions for variables
+substitutions:
+  _FIREBASE_TOKEN: ''
+
+# Build configuration
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
+# Timeout for the build (30 minutes)
+timeout: '1800s'
+
+# Only deploy from main branch
+onFailure:
+  - 'NOTIFY'

@@ -1,0 +1,3 @@
+# This is a Flutter mobile app with Cloud Functions backend
+# Deployment is handled by Firebase, not buildpacks
+# See cloudbuild.yaml for the Cloud Build configuration
