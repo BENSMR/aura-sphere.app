@@ -56,6 +56,11 @@ export const generateInvoiceReceipt = functions
       const businessSnap = await businessRef.get();
       const business = businessSnap.exists ? (businessSnap.data() as any) : {};
 
+      // Load branding settings if exists
+      const brandingRef = db.collection("users").doc(uid).collection("meta").doc("businessBranding");
+      const brandingSnap = await brandingRef.get();
+      const branding = brandingSnap.exists ? (brandingSnap.data() as any) : {};
+
       // Load payments (optional)
       const paymentsSnap = await invoiceRef.collection("payments").orderBy("createdAt", "asc").get();
       const payments = paymentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -68,8 +73,8 @@ export const generateInvoiceReceipt = functions
       });
       doc.pipe(stream);
 
-      // Header: logo (if available), business name & contact
-      const logoUrl = business?.logoUrl;
+      // Header: prefer branding.logoUrl, fallback to business.logoUrl
+      const logoUrl = (branding?.logoUrl) || (business?.logoUrl);
       if (logoUrl) {
         try {
           // Try to fetch logo bytes via storage or external URL
@@ -93,10 +98,11 @@ export const generateInvoiceReceipt = functions
         }
       }
 
-      // Business name & invoice title
-      const businessName = business?.businessName || business?.company || "AuraSphere";
-      doc.fontSize(18).text(businessName, 160, 50, { align: "left" });
-      doc.fontSize(10).text(business?.address ?? "", 160, 72);
+      // Business name & invoice title (use branding companyDetails if supplied)
+      const businessName = (branding?.companyDetails?.name) || (business?.businessName) || (business?.company) || "AuraSphere";
+      doc.fontSize(18).fillColor(branding?.primaryColor || "#000000").text(businessName, 160, 50, { align: "left" });
+      const baddress = branding?.companyDetails?.address || business?.address || "";
+      if (baddress) doc.fontSize(10).fillColor(branding?.textColor || "#333333").text(baddress, 160, 72);
       doc.moveDown(2);
 
       // Invoice title, number, dates
@@ -160,14 +166,17 @@ export const generateInvoiceReceipt = functions
       }
 
       // Footer
-      doc.fontSize(9).text(business?.documentFooter ?? "Thank you for your business.", 40, doc.page.height - 80, { align: "center", width: doc.page.width - 80 });
+      const footerNote = branding?.footerNote || business?.documentFooter || "Thank you for your business.";
+      doc.fontSize(9).fillColor(branding?.textColor || "#333333").text(footerNote, 40, doc.page.height - 80, { align: "center", width: doc.page.width - 80 });
 
       // Paid watermark if invoice is paid
       if (invoice?.paymentStatus === "paid") {
-        // simple rotated watermark
+        // watermark text comes from branding or default
+        const watermark = branding?.watermarkText || "PAID";
+        doc.save();
         doc.rotate(-45, { origin: [doc.page.width / 2, doc.page.height / 2] });
-        doc.fontSize(60).opacity(0.08).text("PAID", doc.page.width / 4, doc.page.height / 2, { align: "center" });
-        doc.rotate(45, { origin: [doc.page.width / 2, doc.page.height / 2] });
+        doc.fontSize(60).fillColor(branding?.primaryColor || "#0A84FF").opacity(0.08).text(watermark, doc.page.width / 4, doc.page.height / 2, { align: "center" });
+        doc.restore();
         doc.opacity(1);
       }
 
@@ -191,7 +200,7 @@ export const generateInvoiceReceipt = functions
       const [signedUrl] = await file.getSignedUrl({ action: "read", expires });
 
       // Save URL to invoice doc
-      await invoiceRef.set({ receiptPdfUrl: signedUrl }, { merge: true });
+      await invoiceRef.set({ receiptPdfUrl: signedUrl, brandingAppliedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
 
       // Auto-send receipt email via SendGrid if configured and customer email exists
       const customerEmail = invoice?.customerEmail || invoice?.customer?.email || null;
