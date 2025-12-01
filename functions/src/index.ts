@@ -34,3 +34,11 @@ export { generateInvoiceReceipt } from './billing/generateInvoiceReceipt';
 export { auditPaymentEvent, getPaymentAuditTrail, exportPaymentRecords } from './billing/paymentAudit';
 export { sendPaymentConfirmationEmail, paymentReceiptEmail } from './billing/sendPaymentEmail';
 export { generateInvoicePreview } from './billing/generateInvoicePreview';
+export {
+  saveBrandingProfile,
+  getBrandingProfile,
+  deleteBrandingProfile,
+  getDefaultBrandingProfile,
+  createBrandingFromTemplate,
+  listBrandingTemplates,
+} from './billing/brandingProfiles';
