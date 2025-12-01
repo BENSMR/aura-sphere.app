@@ -102,4 +102,17 @@ class InvoiceService {
       rethrow;
     }
   }
+
+  /// Request server to generate and return signed receipt URL
+  Future<String?> generateReceiptAndGetUrl(String invoiceId) async {
+    try {
+      final functions = FirebaseFunctions.instance;
+      final callable = functions.httpsCallable('generateInvoiceReceipt');
+      final res = await callable.call({'invoiceId': invoiceId});
+      final data = res.data as Map<String, dynamic>?;
+      return data != null ? (data['url'] as String?) : null;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

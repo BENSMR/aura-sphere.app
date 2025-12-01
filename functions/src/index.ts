@@ -30,5 +30,6 @@ export { migrateBusinessProfiles, verifyBusinessProfileMigration, rollbackBusine
 export { createCheckoutSession as createCheckoutSessionBilling } from './billing/createCheckoutSession';
 export { stripeWebhook as stripeWebhookBilling } from './billing/stripeWebhook';
 export { sendReceiptEmail } from './billing/sendReceiptEmail';
+export { generateInvoiceReceipt } from './billing/generateInvoiceReceipt';
 export { auditPaymentEvent, getPaymentAuditTrail, exportPaymentRecords } from './billing/paymentAudit';
 export { sendPaymentConfirmationEmail, paymentReceiptEmail } from './billing/sendPaymentEmail';

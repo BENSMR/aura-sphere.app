@@ -71,6 +71,24 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
               const Row(children: [Icon(Icons.check_circle, color: Colors.green), SizedBox(width: 8), Text('Paid')])
             ],
             const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () async {
+                try {
+                  final svc = InvoiceService();
+                  final url = await svc.generateReceiptAndGetUrl(inv.id);
+                  if (url != null && url.isNotEmpty) {
+                    await launchUrlString(url, mode: LaunchMode.externalApplication);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Receipt not available')));
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+                }
+              },
+              icon: const Icon(Icons.download_rounded),
+              label: const Text('Download Receipt (PDF)'),
+            ),
+            const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamed(
