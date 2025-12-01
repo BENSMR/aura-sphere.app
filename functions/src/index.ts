@@ -33,3 +33,4 @@ export { sendReceiptEmail } from './billing/sendReceiptEmail';
 export { generateInvoiceReceipt } from './billing/generateInvoiceReceipt';
 export { auditPaymentEvent, getPaymentAuditTrail, exportPaymentRecords } from './billing/paymentAudit';
 export { sendPaymentConfirmationEmail, paymentReceiptEmail } from './billing/sendPaymentEmail';
+export { generateInvoicePreview } from './billing/generateInvoicePreview';
