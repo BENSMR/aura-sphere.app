@@ -77,7 +77,7 @@ export const generateInvoiceReceipt = functions
             doc.image(resp.data, 40, 45, { width: 120 });
           }
         } catch (e: any) {
-          console.warn("Logo load failed:", e?.message || e);
+          console.warn("Logo load failed:", e?.message || String(e));
         }
       }
 
@@ -98,7 +98,7 @@ export const generateInvoiceReceipt = functions
 
       // Customer block
       doc.fontSize(12).text("Bill to:", { underline: true });
-      doc.fontSize(12).text((invoice?.customerName ?? invoice?.customer) || "Customer");
+      doc.fontSize(12).text(((invoice?.customerName ?? invoice?.customer) || "Customer") as string);
       if (invoice?.customerEmail) doc.text(invoice.customerEmail);
       if (invoice?.customerAddress) doc.text(invoice.customerAddress);
       doc.moveDown(1);
