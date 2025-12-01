@@ -2,9 +2,21 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as PDFDocument from "pdfkit";
 import * as StreamBuffers from "stream-buffers";
+import * as sgMail from "@sendgrid/mail";
+import * as path from "path";
+import * as os from "os";
+import * as fs from "fs";
 
 if (!admin.apps.length) {
   admin.initializeApp();
+}
+
+const sendgridKey = functions.config()?.sendgrid?.key || "";
+const sendgridSender = functions.config()?.sendgrid?.sender || "";
+if (sendgridKey) {
+  sgMail.setApiKey(sendgridKey);
+} else {
+  console.warn("SendGrid not configured (sendgrid.key/sendgrid.sender). Receipt emails will be skipped.");
 }
 
 /**
@@ -180,6 +192,40 @@ export const generateInvoiceReceipt = functions
 
       // Save URL to invoice doc
       await invoiceRef.set({ receiptPdfUrl: signedUrl }, { merge: true });
+
+      // Auto-send receipt email via SendGrid if configured and customer email exists
+      const customerEmail = invoice?.customerEmail || invoice?.customer?.email || null;
+      if (sendgridKey && sendgridSender && customerEmail) {
+        try {
+          // Prepare attachment (we have pdfBuffer in memory)
+          const attachment = pdfBuffer.toString("base64");
+
+          const msg: any = {
+            to: customerEmail,
+            from: sendgridSender,
+            subject: `Receipt - ${invoiceNumber}`,
+            text: `Thank you for your payment. Attached is your receipt for invoice ${invoiceNumber}.`,
+            attachments: [
+              {
+                content: attachment,
+                filename: `receipt-${invoiceNumber}.pdf`,
+                type: "application/pdf",
+                disposition: "attachment"
+              }
+            ]
+          };
+
+          await sgMail.send(msg);
+          console.log(`Receipt emailed to ${customerEmail}`);
+          // Optionally record that email was sent
+          await invoiceRef.set({ receiptEmailSentAt: admin.firestore.FieldValue.serverTimestamp(), receiptEmailTo: customerEmail }, { merge: true });
+        } catch (err) {
+          console.error("Failed to send receipt email:", err);
+        }
+      } else {
+        if (!customerEmail) console.warn("No customer email available; skipping send.");
+        if (!sendgridKey || !sendgridSender) console.warn("SendGrid not configured; skipping email send.");
+      }
 
       return { url: signedUrl };
     } catch (err: any) {
