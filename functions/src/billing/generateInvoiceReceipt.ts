@@ -2,7 +2,7 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as PDFDocument from "pdfkit";
 import * as StreamBuffers from "stream-buffers";
-import * as sgMail from "@sendgrid/mail";
+import sgMail from "@sendgrid/mail";
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
