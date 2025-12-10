@@ -100,3 +100,4 @@ export { onInvoiceWriteAudit, onInvoiceStatusChange } from './audit/onInvoiceCha
 export { grantAdminRole, revokeAdminRole, listAdmins, getAdminStatus, getMyAdminStatus, setFirstAdmin } from './admin/manageAdmins';
 export { archiveOldAuditEntries, archiveAuditManually } from './audit/archiveAudit';
 export { exportAudit } from './audit/exportAudit';
+export { detectExpenseAnomalies, detectInvoiceAnomalies, detectAuditAnomalies, resolveAnomaly, queryAnomalies } from './audit/anomalyDetection';

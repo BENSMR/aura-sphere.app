@@ -517,6 +517,17 @@ service cloud.firestore {
       allow create, update, delete: if false; // Server-only via admin SDK
     }
 
+    // Anomalies collection - admin only, server-write
+    // Path: /anomalies/{anomalyId}
+    // Purpose: Log detected anomalies in expenses, invoices, inventory, audit
+    // Access: Admin read, server-write only
+    match /anomalies/{anomalyId} {
+      allow read: if request.auth != null && isAdmin();
+      allow create: if false; // Server-only via admin SDK
+      allow update: if request.auth != null && isAdmin(); // Admin can mark resolved
+      allow delete: if false; // Never delete anomalies (audit trail)
+    }
+
     // Fallback: deny everything else
     match /{document=**} {
       allow read, write: if false;
