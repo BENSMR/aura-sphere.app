@@ -25,10 +25,26 @@ const db = admin.firestore();
 
 type Severity = "low" | "medium" | "high" | "critical";
 
-const WINDOW_HOURS = Number(process.env.ANOMALY_WINDOW_HOURS || 72);
-const MAX_DOCS = Number(process.env.ANOMALY_MAX_DOCS_PER_COLLECTION || 500);
-const SLACK_THRESHOLD = Number(process.env.ANOMALY_SLACK_THRESHOLD || 2);
-const DEBUG = process.env.ANOMALY_DEBUG === "true";
+// Read from functions.config() first (via firebase functions:config:set)
+// then fall back to process.env (for local dev or .env files)
+const getConfigValue = (path: string, envVar: string, defaultValue: any) => {
+  try {
+    const keys = path.split('.');
+    let config: any = functions.config();
+    for (const key of keys) {
+      config = config?.[key];
+    }
+    if (config !== undefined) return config;
+  } catch (e) {
+    // functions.config() not available in local testing
+  }
+  return process.env[envVar] ?? defaultValue;
+};
+
+const WINDOW_HOURS = Number(getConfigValue('anomaly.window_hours', 'ANOMALY_WINDOW_HOURS', 72));
+const MAX_DOCS = Number(getConfigValue('anomaly.max_docs_per_collection', 'ANOMALY_MAX_DOCS_PER_COLLECTION', 500));
+const SLACK_THRESHOLD = Number(getConfigValue('anomaly.slack_threshold', 'ANOMALY_SLACK_THRESHOLD', 2));
+const DEBUG = String(getConfigValue('anomaly.debug', 'ANOMALY_DEBUG', 'false')).toLowerCase() === 'true';
 
 function severityToScore(s: Severity) {
   switch (s) {
