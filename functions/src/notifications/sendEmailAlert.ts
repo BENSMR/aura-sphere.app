@@ -39,7 +39,7 @@ function getTransporter() {
   return transporter;
 }
 
-export const sendEmailAlertViaSmtp = functions.https.onCall(async (data, ctx) => {
+export const sendEmailAlert = functions.https.onCall(async (data, ctx) => {
   // protect: only server/admin can call
   if (!ctx.auth) throw new functions.https.HttpsError('unauthenticated', 'Auth required');
   // Optionally restrict to admins:

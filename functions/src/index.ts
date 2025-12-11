@@ -21,7 +21,7 @@ export { onInvoicePaid as onClientInvoicePaidStatus, onInvoiceOverdue, onInvoice
 export { updateClientAIScore, recalculateAllClientScores, dailyScoreRefresh } from './crm/updateClientAIScore';
 export { calculateClientAIScore, updateClientAIScore as updateClientAIScoreV2, recalculateAllClientScores as recalculateAllClientScoresV2, dailyScoreRefresh as dailyScoreRefreshV2 } from './crm/calculateAIScore';
 export { generateClientSummary, regenerateClientSummary, regenerateAllClientSummaries } from './crm/generateClientSummary';
-export { onInvoiceWrite, onClientWrite } from './crm/ai_insights';
+export { onClientWrite } from './crm/ai_insights';
 export * from './crm/timeline_triggers';
 export * from './crm/auto_follow_up';
 export { autoCreateInvoiceOnWonDeal } from './crm/auto_invoice_on_deal_won';
@@ -106,10 +106,10 @@ export { dailyAnomalyCount, queryAnomaliesDailyCount } from './anomaly/dailyAnom
 export { generateAnomalyInsights, queryAnomalyInsights } from './anomaly/generateInsights';
 export { generateAIInsights, queryAIInsights } from './anomaly/generateAIInsights';
 export { dailyAggregateScheduler, aggregateAnomaliesCallable } from './analytics/anomalyAggregator';
-export { sendEmailAlert, sendEmailAlertCallable, emailAnomalyAlert, emailInvoiceReminder, emailAlertPubSubHandler } from './notifications/emailAlert';
+export { sendEmailAlertCallable, emailAnomalyAlert, emailInvoiceReminder, emailAlertPubSubHandler } from './notifications/emailAlert';
 export { sendPushNotification, sendPushNotificationCallable, pushAnomalyAlert, pushRiskAlert, registerDevice, removeFCMToken } from './notifications/pushNotification';
 export { logAuditEvent, getUserAudits, getFailedAudits, updateAuditStatus, getAuditStats, deleteOldAudits } from './notifications/auditLogger';
 export { saveUserNotification, auditNotification, getUserDeviceTokens, sendPushToTokens } from './notifications/helpers';
-export { onAnomalyCreate, onInvoiceWriteNotification } from './notifications/sendPushOnEvent';
-export { sendEmailAlertViaSmtp } from './notifications/sendEmailAlert';
+export { onAnomalyCreate, onInvoiceWrite } from './notifications/sendPushOnEvent';
+export { sendEmailAlert } from './notifications/sendEmailAlert';
 export { sendSmsAlert } from './notifications/sendSmsAlert';

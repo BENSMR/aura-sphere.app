@@ -52,7 +52,7 @@ export const onAnomalyCreate = functions.firestore
  * Trigger: invoice created/updated under users/{uid}/invoices/{invoiceId}
  * Example of sending invoice reminders on overdue
  */
-export const onInvoiceWriteNotification = functions.firestore
+export const onInvoiceWrite = functions.firestore
   .document('users/{uid}/invoices/{invoiceId}')
   .onWrite(async (change, ctx) => {
     try {
