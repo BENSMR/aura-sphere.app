@@ -1,0 +1,174 @@
+--- a/functions/src/billing/paymentAudit.ts
++++ b/functions/src/billing/paymentAudit.ts
+@@ -0,0 +1,150 @@
++import * as functions from 'firebase-functions';
++import * as admin from 'firebase-admin';
++
++if (!admin.apps.length) {
++  admin.initializeApp();
++}
++
++const db = admin.firestore();
++
++interface AuditEntry {
++  invoiceId: string;
++  userId: string;
++  action: 'created' | 'paid' | 'refunded' | 'updated' | 'cancelled';
++  amount: number;
++  currency: string;
++  timestamp: admin.firestore.Timestamp;
++  description: string;
++  metadata?: Record<string, any>;
++}
++
++/**
++ * Record an audit event for invoice payment/creation
++ */
++export const auditPaymentEvent = functions.https.onCall(
++  async (data, context) => {
++    if (!context.auth) {
++      throw new functions.https.HttpsError(
++        'unauthenticated',
++        'User must be authenticated'
++      );
++    }
++
++    const uid = context.auth.uid;
++    const { invoiceId, action, amount, currency, description, metadata } = data;
++
++    if (!invoiceId || !action || !amount) {
++      throw new functions.https.HttpsError(
++        'invalid-argument',
++        'Missing required fields: invoiceId, action, amount'
++      );
++    }
++
++    const auditEntry: AuditEntry = {
++      invoiceId,
++      userId: uid,
++      action,
++      amount,
++      currency: currency || 'USD',
++      timestamp: admin.firestore.Timestamp.now(),
++      description: description || `${action} action on invoice ${invoiceId}`,
++      metadata: metadata || {},
++    };
++
++    try {
++      const auditRef = db
++        .collection('users')
++        .doc(uid)
++        .collection('auditLog')
++        .doc();
++
++      await auditRef.set(auditEntry);
++
++      return {
++        success: true,
++        auditId: auditRef.id,
++        message: 'Audit event recorded',
++      };
++    } catch (error) {
++      console.error('Error recording audit event:', error);
++      throw new functions.https.HttpsError(
++        'internal',
++        'Failed to record audit event'
++      );
++    }
++  }
++);
++
++/**
++ * Get audit trail for a specific invoice
++ */
++export const getPaymentAuditTrail = functions.https.onCall(
++  async (data, context) => {
++    if (!context.auth) {
++      throw new functions.https.HttpsError(
++        'unauthenticated',
++        'User must be authenticated'
++      );
++    }
++
++    const uid = context.auth.uid;
++    const { invoiceId } = data;
++
++    if (!invoiceId) {
++      throw new functions.https.HttpsError(
++        'invalid-argument',
++        'invoiceId is required'
++      );
++    }
++
++    try {
++      const snapshot = await db
++        .collection('users')
++        .doc(uid)
++        .collection('auditLog')
++        .where('invoiceId', '==', invoiceId)
++        .orderBy('timestamp', 'desc')
++        .get();
++
++      const entries = snapshot.docs.map((doc) => ({
++        id: doc.id,
++        ...doc.data(),
++      }));
++
++      return {
++        success: true,
++        invoiceId,
++        entries,
++        count: entries.length,
++      };
++    } catch (error) {
++      console.error('Error fetching audit trail:', error);
++      throw new functions.https.HttpsError(
++        'internal',
++        'Failed to fetch audit trail'
++      );
++    }
++  }
++);
++
++/**
++ * Export all audit records for a user
++ */
++export const exportPaymentRecords = functions.https.onCall(
++  async (data, context) => {
++    if (!context.auth) {
++      throw new functions.https.HttpsError(
++        'unauthenticated',
++        'User must be authenticated'
++      );
++    }
++
++    const uid = context.auth.uid;
++
++    try {
++      const snapshot = await db
++        .collection('users')
++        .doc(uid)
++        .collection('auditLog')
++        .orderBy('timestamp', 'desc')
++        .limit(1000)
++        .get();
++
++      const records = snapshot.docs.map((doc) => ({
++        id: doc.id,
++        ...doc.data(),
++      }));
++
++      return {
++        success: true,
++        totalRecords: records.length,
++        records,
++      };
++    } catch (error) {
++      console.error('Error exporting audit records:', error);
++      throw new functions.https.HttpsError(
++        'internal',
++        'Failed to export audit records'
++      );
++    }
++  }
++);

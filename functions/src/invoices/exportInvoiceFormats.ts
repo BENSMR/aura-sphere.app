@@ -163,7 +163,7 @@ export const exportInvoiceFormats = functions
       // Generate PDF and PNG using Puppeteer
       logger.info("Export formats - launching browser", { invoiceNumber });
       const browser = await puppeteer.launch({
-        headless: "new",
+        headless: true,
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",

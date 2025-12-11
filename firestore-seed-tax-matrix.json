@@ -1,0 +1,287 @@
+{
+  "config/tax_matrix/FR": {
+    "country": "FR",
+    "region": "EU",
+    "vat": {
+      "standard": 0.20,
+      "reduced": [0.10, 0.055],
+      "isEu": true,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/DE": {
+    "country": "DE",
+    "region": "EU",
+    "vat": {
+      "standard": 0.19,
+      "reduced": [0.07],
+      "isEu": true,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/GB": {
+    "country": "GB",
+    "region": "EU",
+    "vat": {
+      "standard": 0.20,
+      "reduced": [0.05],
+      "isEu": true,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/ES": {
+    "country": "ES",
+    "region": "EU",
+    "vat": {
+      "standard": 0.21,
+      "reduced": [0.10],
+      "isEu": true,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/IT": {
+    "country": "IT",
+    "region": "EU",
+    "vat": {
+      "standard": 0.22,
+      "reduced": [0.10, 0.05],
+      "isEu": true,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/NL": {
+    "country": "NL",
+    "region": "EU",
+    "vat": {
+      "standard": 0.21,
+      "reduced": [0.09],
+      "isEu": true,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/BE": {
+    "country": "BE",
+    "region": "EU",
+    "vat": {
+      "standard": 0.21,
+      "reduced": [0.12, 0.06],
+      "isEu": true,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/AT": {
+    "country": "AT",
+    "region": "EU",
+    "vat": {
+      "standard": 0.20,
+      "reduced": [0.10],
+      "isEu": true,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/PL": {
+    "country": "PL",
+    "region": "EU",
+    "vat": {
+      "standard": 0.23,
+      "reduced": [0.08, 0.05],
+      "isEu": true,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/SE": {
+    "country": "SE",
+    "region": "EU",
+    "vat": {
+      "standard": 0.25,
+      "reduced": [0.12, 0.06],
+      "isEu": true,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/US": {
+    "country": "US",
+    "region": "Americas",
+    "vat": null,
+    "sales_tax": {
+      "states": true,
+      "note": "Varies by state (5%-10%)"
+    }
+  },
+  "config/tax_matrix/CA": {
+    "country": "CA",
+    "region": "Americas",
+    "vat": {
+      "standard": 0.05,
+      "reduced": [0],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/AU": {
+    "country": "AU",
+    "region": "APAC",
+    "vat": {
+      "standard": 0.10,
+      "reduced": [0],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/JP": {
+    "country": "JP",
+    "region": "APAC",
+    "vat": {
+      "standard": 0.10,
+      "reduced": [0.08],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/SG": {
+    "country": "SG",
+    "region": "APAC",
+    "vat": {
+      "standard": 0.08,
+      "reduced": [0],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/IN": {
+    "country": "IN",
+    "region": "APAC",
+    "vat": {
+      "standard": 0.18,
+      "reduced": [0.12, 0.05],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/AE": {
+    "country": "AE",
+    "region": "GCC",
+    "vat": {
+      "standard": 0.05,
+      "reduced": [],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/SA": {
+    "country": "SA",
+    "region": "GCC",
+    "vat": {
+      "standard": 0.15,
+      "reduced": [],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/BH": {
+    "country": "BH",
+    "region": "GCC",
+    "vat": {
+      "standard": 0.10,
+      "reduced": [],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/OM": {
+    "country": "OM",
+    "region": "GCC",
+    "vat": {
+      "standard": 0.05,
+      "reduced": [],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/QA": {
+    "country": "QA",
+    "region": "GCC",
+    "vat": {
+      "standard": 0.0,
+      "reduced": [],
+      "isEu": false,
+      "has_vat": false
+    },
+    "sales_tax": null,
+    "note": "VAT not yet implemented in Qatar"
+  },
+  "config/tax_matrix/KW": {
+    "country": "KW",
+    "region": "GCC",
+    "vat": {
+      "standard": 0.0,
+      "reduced": [],
+      "isEu": false,
+      "has_vat": false
+    },
+    "sales_tax": null,
+    "note": "VAT not yet implemented in Kuwait"
+  },
+  "config/tax_matrix/BR": {
+    "country": "BR",
+    "region": "LATAM",
+    "vat": null,
+    "sales_tax": {
+      "brazil_model": true,
+      "average": 0.17
+    },
+    "note": "ICMS - state-based sales tax, varies 7%-19%"
+  },
+  "config/tax_matrix/MX": {
+    "country": "MX",
+    "region": "LATAM",
+    "vat": {
+      "standard": 0.16,
+      "reduced": [0.08],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/AR": {
+    "country": "AR",
+    "region": "LATAM",
+    "vat": {
+      "standard": 0.21,
+      "reduced": [0.105],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  },
+  "config/tax_matrix/CL": {
+    "country": "CL",
+    "region": "LATAM",
+    "vat": {
+      "standard": 0.19,
+      "reduced": [],
+      "isEu": false,
+      "has_vat": true
+    },
+    "sales_tax": null
+  }
+}

@@ -57,7 +57,7 @@ export const generateInvoiceReceipt = functions
       const business = businessSnap.exists ? (businessSnap.data() as any) : {};
 
       // Load branding settings if exists
-      const brandingRef = db.collection("users").doc(uid).collection("meta").doc("businessBranding");
+      const brandingRef = db.collection("users").doc(uid).collection("branding").doc("settings");
       const brandingSnap = await brandingRef.get();
       const branding = brandingSnap.exists ? (brandingSnap.data() as any) : {};
 
@@ -73,6 +73,57 @@ export const generateInvoiceReceipt = functions
       });
       doc.pipe(stream);
 
+      // Template-specific styling configuration
+      const templateId = branding?.templateId || "TEMPLATE_CLASSIC";
+      const templateStyles = {
+        "TEMPLATE_CLASSIC": {
+          businessNameSize: 18,
+          invoiceTitleSize: 20,
+          headerMargin: 2,
+          itemFontSize: 10,
+          totalFontSize: 14,
+          addressFontSize: 10,
+          logoWidth: 120
+        },
+        "TEMPLATE_MODERN": {
+          businessNameSize: 20,
+          invoiceTitleSize: 24,
+          headerMargin: 3,
+          itemFontSize: 11,
+          totalFontSize: 16,
+          addressFontSize: 9,
+          logoWidth: 140
+        },
+        "TEMPLATE_MINIMAL": {
+          businessNameSize: 16,
+          invoiceTitleSize: 18,
+          headerMargin: 1.5,
+          itemFontSize: 9,
+          totalFontSize: 12,
+          addressFontSize: 9,
+          logoWidth: 100
+        },
+        "TEMPLATE_ELEGANT": {
+          businessNameSize: 19,
+          invoiceTitleSize: 22,
+          headerMargin: 2.5,
+          itemFontSize: 10,
+          totalFontSize: 15,
+          addressFontSize: 10,
+          logoWidth: 125
+        },
+        "TEMPLATE_BUSINESS": {
+          businessNameSize: 18,
+          invoiceTitleSize: 20,
+          headerMargin: 2,
+          itemFontSize: 10,
+          totalFontSize: 14,
+          addressFontSize: 10,
+          logoWidth: 120
+        }
+      };
+      const styles = (templateStyles as any)[templateId] || (templateStyles as any)["TEMPLATE_CLASSIC"];
+
       // Header: prefer branding.logoUrl, fallback to business.logoUrl
       const logoUrl = (branding?.logoUrl) || (business?.logoUrl);
       if (logoUrl) {
@@ -86,12 +137,12 @@ export const generateInvoiceReceipt = functions
             const bucket = admin.storage().bucket(bucketName);
             const file = bucket.file(filePath);
             const [buf] = await file.download();
-            doc.image(buf, 40, 45, { width: 120 });
+            doc.image(buf, 40, 45, { width: styles.logoWidth });
           } else {
             // external http(s) url (PDFKit supports buffer)
             const axios = require("axios");
             const resp = await axios.get(logoUrl, { responseType: "arraybuffer" });
-            doc.image(resp.data, 40, 45, { width: 120 });
+            doc.image(resp.data, 40, 45, { width: styles.logoWidth });
           }
         } catch (e: any) {
           console.warn("Logo load failed:", e?.message || String(e));
@@ -100,16 +151,16 @@ export const generateInvoiceReceipt = functions
 
       // Business name & invoice title (use branding companyDetails if supplied)
       const businessName = (branding?.companyDetails?.name) || (business?.businessName) || (business?.company) || "AuraSphere";
-      doc.fontSize(18).fillColor(branding?.primaryColor || "#000000").text(businessName, 160, 50, { align: "left" });
+      doc.fontSize(styles.businessNameSize).fillColor(branding?.primaryColor || "#000000").text(businessName, 160, 50, { align: "left" });
       const baddress = branding?.companyDetails?.address || business?.address || "";
-      if (baddress) doc.fontSize(10).fillColor(branding?.textColor || "#333333").text(baddress, 160, 72);
-      doc.moveDown(2);
+      if (baddress) doc.fontSize(styles.addressFontSize).fillColor(branding?.textColor || "#333333").text(baddress, 160, 72);
+      doc.moveDown(styles.headerMargin);
 
       // Invoice title, number, dates
-      doc.fontSize(20).text("Receipt", { align: "right" });
+      doc.fontSize(styles.invoiceTitleSize).text("Receipt", { align: "right" });
       doc.moveDown(0.5);
       const invoiceNumber = invoice?.invoiceNumber || invoiceId;
-      doc.fontSize(10).text(`Invoice: ${invoiceNumber}`, { align: "right" });
+      doc.fontSize(styles.addressFontSize).text(`Invoice: ${invoiceNumber}`, { align: "right" });
       const createdAt = invoice?.createdAt ? invoice?.createdAt.toDate ? invoice.createdAt.toDate() : new Date(invoice.createdAt) : new Date();
       doc.text(`Date: ${createdAt.toLocaleDateString()}`, { align: "right" });
       doc.moveDown(1.2);
@@ -122,7 +173,7 @@ export const generateInvoiceReceipt = functions
       doc.moveDown(1);
 
       // Table header
-      doc.fontSize(11).text("Description", 40, doc.y, { continued: true });
+      doc.fontSize(styles.itemFontSize).text("Description", 40, doc.y, { continued: true });
       doc.text("Qty", 320, doc.y, { width: 50, align: "right", continued: true });
       doc.text("Unit", 380, doc.y, { width: 70, align: "right", continued: true });
       doc.text("Total", 0, doc.y, { align: "right" });
@@ -136,7 +187,7 @@ export const generateInvoiceReceipt = functions
         const qty = item?.quantity ?? item?.qty ?? 1;
         const unit = (item?.unitPrice ?? item?.price ?? 0).toFixed(2);
         const lineTotal = ((item?.quantity ?? 1) * (item?.unitPrice ?? item?.price ?? 0)).toFixed(2);
-        doc.fontSize(10).text(name, 40, doc.y, { continued: true });
+        doc.fontSize(styles.itemFontSize).text(name, 40, doc.y, { continued: true });
         doc.text(qty.toString(), 320, doc.y, { width: 50, align: "right", continued: true });
         doc.text(unit, 380, doc.y, { width: 70, align: "right", continued: true });
         doc.text(lineTotal, 0, doc.y, { align: "right" });
@@ -149,9 +200,9 @@ export const generateInvoiceReceipt = functions
       const vat = parseFloat((invoice?.totalVat ?? 0).toString());
       const total = parseFloat((invoice?.total ?? invoice?.amount ?? 0).toString());
 
-      doc.text(`Subtotal: ${subtotal.toFixed(2)} ${invoice?.currency ?? ""}`, { align: "right" });
+      doc.fontSize(styles.itemFontSize).text(`Subtotal: ${subtotal.toFixed(2)} ${invoice?.currency ?? ""}`, { align: "right" });
       doc.text(`VAT: ${vat.toFixed(2)} ${invoice?.currency ?? ""}`, { align: "right" });
-      doc.fontSize(14).text(`Total: ${total.toFixed(2)} ${invoice?.currency ?? ""}`, { align: "right" });
+      doc.fontSize(styles.totalFontSize).text(`Total: ${total.toFixed(2)} ${invoice?.currency ?? ""}`, { align: "right" });
       doc.moveDown(1);
 
       // Payments info

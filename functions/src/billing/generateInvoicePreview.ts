@@ -198,6 +198,62 @@ function applyTemplate(
   const accentColor = branding?.accentColor || '#FFC107';
   const textColor = branding?.textColor || '#000000';
 
+  // Template-specific styling
+  const templateStyles: any = {
+    "TEMPLATE_CLASSIC": {
+      titleFontSize: 28,
+      headerFontSize: 12,
+      contentFontSize: 11,
+      tableFontSize: 10,
+      totalFontSize: 14,
+      logoWidth: 100,
+      logoHeight: 80,
+      margin: 50
+    },
+    "TEMPLATE_MODERN": {
+      titleFontSize: 32,
+      headerFontSize: 14,
+      contentFontSize: 11,
+      tableFontSize: 11,
+      totalFontSize: 16,
+      logoWidth: 120,
+      logoHeight: 90,
+      margin: 50
+    },
+    "TEMPLATE_MINIMAL": {
+      titleFontSize: 24,
+      headerFontSize: 10,
+      contentFontSize: 10,
+      tableFontSize: 9,
+      totalFontSize: 12,
+      logoWidth: 80,
+      logoHeight: 60,
+      margin: 40
+    },
+    "TEMPLATE_ELEGANT": {
+      titleFontSize: 30,
+      headerFontSize: 13,
+      contentFontSize: 11,
+      tableFontSize: 10,
+      totalFontSize: 15,
+      logoWidth: 110,
+      logoHeight: 85,
+      margin: 50
+    },
+    "TEMPLATE_BUSINESS": {
+      titleFontSize: 28,
+      headerFontSize: 12,
+      contentFontSize: 11,
+      tableFontSize: 10,
+      totalFontSize: 14,
+      logoWidth: 100,
+      logoHeight: 80,
+      margin: 50
+    }
+  };
+
+  const styles = templateStyles[templateId] || templateStyles["TEMPLATE_CLASSIC"];
+
   // Add watermark if provided
   if (watermarkText || branding?.watermarkText) {
     const watermark = watermarkText || branding.watermarkText;
@@ -217,7 +273,7 @@ function applyTemplate(
   // Header with logo
   if (branding?.logoUrl) {
     try {
-      doc.image(branding.logoUrl, 50, 50, { width: 100, height: 80 });
+      doc.image(branding.logoUrl, 50, 50, { width: styles.logoWidth, height: styles.logoHeight });
     } catch (e) {
       // Logo failed to load, continue
     }
@@ -229,13 +285,13 @@ function applyTemplate(
   if (branding?.companyDetails) {
     const company = branding.companyDetails;
     doc
-      .fontSize(18)
+      .fontSize(styles.headerFontSize + 4)
       .font('Helvetica-Bold')
       .text(company.name || 'Company', 50, startY);
 
     startY += 25;
 
-    doc.fontSize(10).font('Helvetica');
+    doc.fontSize(styles.contentFontSize).font('Helvetica');
 
     if (company.address) {
       doc.text(company.address, 50, startY);
@@ -258,12 +314,12 @@ function applyTemplate(
   startY += 20;
 
   // Invoice title and status
-  doc.fontSize(28).font('Helvetica-Bold').text('INVOICE', 50, startY);
+  doc.fontSize(styles.titleFontSize).font('Helvetica-Bold').text('INVOICE', 50, startY);
 
   startY += 35;
 
   // Invoice details
-  doc.fontSize(11);
+  doc.fontSize(styles.contentFontSize);
   const detailsX = 350;
 
   doc
@@ -314,10 +370,10 @@ function applyTemplate(
   startY += 35;
 
   // Bill To section
-  doc.font('Helvetica-Bold').fontSize(12).text('BILL TO:', 50, startY);
+  doc.font('Helvetica-Bold').fontSize(styles.headerFontSize).text('BILL TO:', 50, startY);
   startY += 20;
 
-  doc.fontSize(11).font('Helvetica');
+  doc.fontSize(styles.contentFontSize).font('Helvetica');
 
   if (clientDetails.name) {
     doc.text(clientDetails.name, 50, startY);
@@ -351,7 +407,7 @@ function applyTemplate(
 
   // Table header
   doc.rect(tableX, tableY, 500, 25).fillAndStroke(primaryColor, primaryColor);
-  doc.fillColor('white').font('Helvetica-Bold').fontSize(11);
+  doc.fillColor('white').font('Helvetica-Bold').fontSize(styles.tableFontSize);
 
   doc.text('Description', col1 + 10, tableY + 8);
   doc.text('Qty', col2 + 10, tableY + 8);
@@ -371,7 +427,7 @@ function applyTemplate(
     const amount = quantity * price;
     subtotal += amount;
 
-    doc.fontSize(10).font('Helvetica');
+    doc.fontSize(styles.tableFontSize).font('Helvetica');
     doc.text(item.description || 'Item', col1 + 10, itemY);
     doc.text(quantity.toString(), col2 + 10, itemY);
     doc.text(`$${price.toFixed(2)}`, col3 + 10, itemY);
@@ -405,7 +461,7 @@ function applyTemplate(
   }
 
   // Total
-  doc.font('Helvetica-Bold').fontSize(14);
+  doc.font('Helvetica-Bold').fontSize(styles.totalFontSize);
   doc.text('TOTAL:', col3 + 10, itemY);
   doc.fillColor(primaryColor).text(`$${(subtotal + tax).toFixed(2)}`, col4 + 10, itemY);
   doc.fillColor(textColor);
@@ -415,7 +471,7 @@ function applyTemplate(
 
   if (branding?.footerNote) {
     doc
-      .fontSize(10)
+      .fontSize(styles.contentFontSize - 1)
       .font('Helvetica-Italic')
       .text(branding.footerNote, 50, footerY, { align: 'center', width: 500 });
 

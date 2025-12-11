@@ -1,0 +1,376 @@
+diff --git a/lib/screens/invoices/invoice_audit_screen.dart b/lib/screens/invoices/invoice_audit_screen.dart
+new file mode 100644
+index 0000000..2196795
+--- /dev/null
++++ b/lib/screens/invoices/invoice_audit_screen.dart
+@@ -0,0 +1,134 @@
++import 'package:flutter/material.dart';
++import '../../services/invoice_audit_service.dart';
++
++class InvoiceAuditScreen extends StatefulWidget {
++  const InvoiceAuditScreen({Key? key}) : super(key: key);
++
++  @override
++  State<InvoiceAuditScreen> createState() => _InvoiceAuditScreenState();
++}
++
++class _InvoiceAuditScreenState extends State<InvoiceAuditScreen> {
++  final InvoiceAuditService _service = InvoiceAuditService();
++  final TextEditingController _searchController = TextEditingController();
++  String _search = '';
++
++  String _formatDate(DateTime dt) {
++    return dt.toLocal().toString().split('.').first;
++  }
++
++  @override
++  void initState() {
++    super.initState();
++    _searchController.addListener(() {
++      setState(() {
++        _search = _searchController.text.trim().toLowerCase();
++      });
++    });
++  }
++
++  @override
++  void dispose() {
++    _searchController.dispose();
++    super.dispose();
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Scaffold(
++      appBar: AppBar(
++        title: const Text('Invoice Audit Log'),
++      ),
++      body: Column(
++        children: [
++          Padding(
++            padding: const EdgeInsets.all(12.0),
++            child: TextField(
++              controller: _searchController,
++              decoration: const InputDecoration(
++                labelText: 'Search by invoice number or invoice ID',
++                prefixIcon: Icon(Icons.search),
++                border: OutlineInputBorder(),
++              ),
++            ),
++          ),
++          Expanded(
++            child: StreamBuilder<List<InvoiceAuditEntry>>(
++              stream: _service.streamAuditEntries(),
++              builder: (context, snapshot) {
++                if (snapshot.connectionState == ConnectionState.waiting) {
++                  return const Center(child: CircularProgressIndicator());
++                }
++                if (snapshot.hasError) {
++                  return Center(child: Text('Error: ${snapshot.error}'));
++                }
++                final entries = snapshot.data ?? [];
++                final filtered = _search.isEmpty
++                    ? entries
++                    : entries.where((e) {
++                        final inv = e.invoiceNumber.toLowerCase();
++                        final id = (e.invoiceId ?? '').toLowerCase();
++                        return inv.contains(_search) || id.contains(_search);
++                      }).toList();
++
++                if (filtered.isEmpty) {
++                  return const Center(
++                    child: Text(
++                      'No audit records yet.\nCreate some invoices to see history here.',
++                      textAlign: TextAlign.center,
++                    ),
++                  );
++                }
++
++                return ListView.builder(
++                  itemCount: filtered.length,
++                  itemBuilder: (context, index) {
++                    final e = filtered[index];
++                    final contextSource = e.context?['source'] ?? '';
++                    final hasInvoice = (e.invoiceId ?? '').isNotEmpty;
++                    return Card(
++                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
++                      child: ListTile(
++                        leading: const Icon(Icons.history),
++                        title: Text(
++                          e.invoiceNumber,
++                          style: const TextStyle(fontWeight: FontWeight.bold),
++                        ),
++                        subtitle: Column(
++                          crossAxisAlignment: CrossAxisAlignment.start,
++                          children: [
++                            Text('Allocated: ${_formatDate(e.allocatedAt)}'),
++                            Text('Number: ${e.number} • By: ${e.allocatedBy}'),
++                            if (contextSource is String && contextSource.isNotEmpty)
++                              Text('Source: $contextSource'),
++                            if ((e.invoiceId ?? '').isNotEmpty)
++                              Text('Linked invoice: ${e.invoiceId}'),
++                          ],
++                        ),
++                        trailing: Column(
++                          mainAxisAlignment: MainAxisAlignment.center,
++                          children: [
++                            if (hasInvoice)
++                              Chip(
++                                label: const Text('Linked'),
++                                backgroundColor: Colors.green.shade100,
++                              )
++                            else
++                              Chip(
++                                label: const Text('Unlinked'),
++                                backgroundColor: Colors.grey.shade200,
++                              ),
++                          ],
++                        ),
++                      ),
++                    );
++                  },
++                );
++              },
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++}
+diff --git a/lib/services/invoice_audit_service.dart b/lib/services/invoice_audit_service.dart
+new file mode 100644
+index 0000000..e78c0dc
+--- /dev/null
++++ b/lib/services/invoice_audit_service.dart
+@@ -0,0 +1,230 @@
++import 'package:cloud_firestore/cloud_firestore.dart';
++import 'package:firebase_auth/firebase_auth.dart';
++
++class InvoiceAuditEntry {
++  final String id;
++  final String invoiceNumber;
++  final int number;
++  final DateTime allocatedAt;
++  final String allocatedBy;
++  final String? invoiceId;
++  final Map<String, dynamic>? context;
++
++  InvoiceAuditEntry({
++    required this.id,
++    required this.invoiceNumber,
++    required this.number,
++    required this.allocatedAt,
++    required this.allocatedBy,
++    this.invoiceId,
++    this.context,
++  });
++
++  factory InvoiceAuditEntry.fromDoc(DocumentSnapshot doc) {
++    final data = doc.data() as Map<String, dynamic>? ?? {};
++    return InvoiceAuditEntry(
++      id: doc.id,
++      invoiceNumber: data['invoiceNumber'] ?? '',
++      number: (data['number'] ?? 0) is int
++          ? data['number'] as int
++          : int.tryParse('${data['number']}') ?? 0,
++      allocatedAt: (data['allocatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
++      allocatedBy: data['allocatedBy'] ?? '',
++      invoiceId: data['invoiceId'] as String?,
++      context: (data['context'] as Map?)?.cast<String, dynamic>(),
++    );
++  }
++}
++
++class InvoiceAuditService {
++  final FirebaseFirestore _db = FirebaseFirestore.instance;
++  final FirebaseAuth _auth = FirebaseAuth.instance;
++
++  Stream<List<InvoiceAuditEntry>> streamAuditEntries({int limit = 200}) {
++    final uid = _auth.currentUser?.uid;
++    if (uid == null) {
++      // Return empty stream if not logged in
++      return const Stream<List<InvoiceAuditEntry>>.empty();
++    }
++    return _db
++        .collection('users')
++        .doc(uid)
++        .collection('invoice_sequence')
++        .orderBy('allocatedAt', descending: true)
++        .limit(limit)
++        .snapshots()
++        .map((snap) => snap.docs.map(InvoiceAuditEntry.fromDoc).toList());
++  }
++
++  /// Retrieves invoice audit history for a user
++  /// Returns list of audit records from invoice_sequence collection
++  Future<List<Map<String, dynamic>>> getAuditHistory(String uid) async {
++    try {
++      final query = await _db
++          .collection('users')
++          .doc(uid)
++          .collection('invoice_sequence')
++          .orderBy('allocatedAt', descending: true)
++          .limit(100)
++          .get();
++
++      return query.docs.map((doc) {
++        final data = doc.data();
++        return {
++          'id': doc.id,
++          'invoiceNumber': data['invoiceNumber'] as String? ?? 'N/A',
++          'number': data['number'] as int? ?? 0,
++          'allocatedAt': data['allocatedAt'] as Timestamp?,
++          'allocatedBy': data['allocatedBy'] as String?,
++          'context': data['context'] as Map<String, dynamic>?,
++          'invoiceId': data['invoiceId'] as String?,
++        };
++      }).toList();
++    } catch (e) {
++      throw Exception('Failed to load audit history: ${e.toString()}');
++    }
++  }
++
++  /// Retrieves audit history filtered by date range
++  Future<List<Map<String, dynamic>>> getAuditHistoryByDateRange(
++    String uid,
++    DateTime startDate,
++    DateTime endDate,
++  ) async {
++    try {
++      final query = await _db
++          .collection('users')
++          .doc(uid)
++          .collection('invoice_sequence')
++          .where('allocatedAt',
++              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
++          .where('allocatedAt', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
++          .orderBy('allocatedAt', descending: true)
++          .get();
++
++      return query.docs.map((doc) {
++        final data = doc.data();
++        return {
++          'id': doc.id,
++          'invoiceNumber': data['invoiceNumber'] as String? ?? 'N/A',
++          'number': data['number'] as int? ?? 0,
++          'allocatedAt': data['allocatedAt'] as Timestamp?,
++          'allocatedBy': data['allocatedBy'] as String?,
++          'context': data['context'] as Map<String, dynamic>?,
++          'invoiceId': data['invoiceId'] as String?,
++        };
++      }).toList();
++    } catch (e) {
++      throw Exception(
++          'Failed to load audit history for date range: ${e.toString()}');
++    }
++  }
++
++  /// Retrieves a specific audit record by invoice number
++  Future<Map<String, dynamic>?> getAuditByInvoiceNumber(
++    String uid,
++    String invoiceNumber,
++  ) async {
++    try {
++      final query = await _db
++          .collection('users')
++          .doc(uid)
++          .collection('invoice_sequence')
++          .where('invoiceNumber', isEqualTo: invoiceNumber)
++          .limit(1)
++          .get();
++
++      if (query.docs.isEmpty) {
++        return null;
++      }
++
++      final doc = query.docs.first;
++      final data = doc.data();
++      return {
++        'id': doc.id,
++        'invoiceNumber': data['invoiceNumber'] as String? ?? 'N/A',
++        'number': data['number'] as int? ?? 0,
++        'allocatedAt': data['allocatedAt'] as Timestamp?,
++        'allocatedBy': data['allocatedBy'] as String?,
++        'context': data['context'] as Map<String, dynamic>?,
++        'invoiceId': data['invoiceId'] as String?,
++      };
++    } catch (e) {
++      throw Exception('Failed to load audit record: ${e.toString()}');
++    }
++  }
++
++  /// Retrieves audit records by invoice ID
++  Future<List<Map<String, dynamic>>> getAuditByInvoiceId(
++    String uid,
++    String invoiceId,
++  ) async {
++    try {
++      final query = await _db
++          .collection('users')
++          .doc(uid)
++          .collection('invoice_sequence')
++          .where('invoiceId', isEqualTo: invoiceId)
++          .orderBy('allocatedAt', descending: true)
++          .get();
++
++      return query.docs.map((doc) {
++        final data = doc.data();
++        return {
++          'id': doc.id,
++          'invoiceNumber': data['invoiceNumber'] as String? ?? 'N/A',
++          'number': data['number'] as int? ?? 0,
++          'allocatedAt': data['allocatedAt'] as Timestamp?,
++          'allocatedBy': data['allocatedBy'] as String?,
++          'context': data['context'] as Map<String, dynamic>?,
++          'invoiceId': data['invoiceId'] as String?,
++        };
++      }).toList();
++    } catch (e) {
++      throw Exception('Failed to load audit records for invoice: ${e.toString()}');
++    }
++  }
++
++  /// Retrieves total count of audit records for a user
++  Future<int> getAuditCount(String uid) async {
++    try {
++      final query = await _db
++          .collection('users')
++          .doc(uid)
++          .collection('invoice_sequence')
++          .count()
++          .get();
++
++      return query.count ?? 0;
++    } catch (e) {
++      throw Exception('Failed to get audit count: ${e.toString()}');
++    }
++  }
++
++  /// Streams audit history for real-time updates
++  Stream<List<Map<String, dynamic>>> watchAuditHistory(String uid) {
++    return _db
++        .collection('users')
++        .doc(uid)
++        .collection('invoice_sequence')
++        .orderBy('allocatedAt', descending: true)
++        .limit(100)
++        .snapshots()
++        .map((query) {
++      return query.docs.map((doc) {
++        final data = doc.data();
++        return {
++          'id': doc.id,
++          'invoiceNumber': data['invoiceNumber'] as String? ?? 'N/A',
++          'number': data['number'] as int? ?? 0,
++          'allocatedAt': data['allocatedAt'] as Timestamp?,
++          'allocatedBy': data['allocatedBy'] as String?,
++          'context': data['context'] as Map<String, dynamic>?,
++          'invoiceId': data['invoiceId'] as String?,
++        };
++      }).toList();
++    }).handleError((e) {
++      throw Exception('Failed to watch audit history: ${e.toString()}');
++    });
++  }
++}

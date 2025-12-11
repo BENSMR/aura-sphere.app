@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { writeAuditEntry } from '../audit/auditHelpers';
 
 const db = admin.firestore();
 
@@ -75,8 +76,32 @@ export const rewardUser = functions.https.onCall(async (data, context) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    return { newBalance, tokenAmount };
+    return { newBalance, tokenAmount, oldBalance: currentBalance };
   });
+
+  // Write to unified audit trail (after transaction succeeds)
+  try {
+    await writeAuditEntry('wallet', userId, {
+      actor: {
+        uid: callerUid,
+        role: callerIsAdmin ? 'admin' : 'user'
+      },
+      action: `token.${action}`,
+      source: 'functions:rewardUser',
+      before: { balance: result.oldBalance },
+      after: { balance: result.newBalance },
+      meta: {
+        amount: result.tokenAmount,
+        awardType: action,
+        awardedBy: callerUid,
+        metadata: metadata || {}
+      },
+      tags: ['token', 'reward', action]
+    });
+  } catch (auditErr) {
+    console.error(`[audit-error] wallet_${userId}: token.${action}`, auditErr);
+    // Don't throw — wallet was updated successfully, audit is secondary
+  }
 
   return { success: true, tokensAwarded: result.tokenAmount, newBalance: result.newBalance };
 });

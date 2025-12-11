@@ -8,6 +8,7 @@ import '../screens/crm/crm_contact_screen.dart';
 import '../screens/crm/crm_contact_detail.dart';
 import '../screens/crm/crm_ai_insights_screen.dart';
 import '../screens/invoices/payment_history_screen.dart';
+import '../screens/invoices/invoice_audit_screen.dart';
 import '../data/models/crm_model.dart';
 
 class AppRoutes {
@@ -32,6 +33,7 @@ class AppRoutes {
   static const String invoiceCreate = '/invoice-create';
   static const String invoiceEdit = '/invoice-edit';
   static const String paymentHistory = '/payment-history';
+  static const String invoiceAudit = '/invoices/audit';
   
   static const String crm = '/crm';
   static const String crmNew = '/crm/new';
@@ -96,6 +98,11 @@ class AppRoutes {
         final invoice = settings.arguments;
         return MaterialPageRoute(
           builder: (_) => const PaymentHistoryScreen(),
+          settings: settings,
+        );
+      case invoiceAudit:
+        return MaterialPageRoute(
+          builder: (_) => const InvoiceAuditScreen(),
           settings: settings,
         );
       default:

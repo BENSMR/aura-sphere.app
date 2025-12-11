@@ -1,0 +1,281 @@
+diff --git a/lib/providers/branding_provider.dart b/lib/providers/branding_provider.dart
+index 1234567..2345678 100644
+--- a/lib/providers/branding_provider.dart
++++ b/lib/providers/branding_provider.dart
+@@ -5,6 +5,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
+ class BrandingProvider extends ChangeNotifier {
+   final FirebaseFirestore _db = FirebaseFirestore.instance;
+   Map<String, dynamic>? settings;
+   bool loading = false;
++
++  // Template constants
++  static const String TEMPLATE_CLASSIC = 'TEMPLATE_CLASSIC';
++  static const String TEMPLATE_MODERN = 'TEMPLATE_MODERN';
++  static const String TEMPLATE_MINIMAL = 'TEMPLATE_MINIMAL';
++  static const String TEMPLATE_ELEGANT = 'TEMPLATE_ELEGANT';
++  static const String TEMPLATE_BUSINESS = 'TEMPLATE_BUSINESS';
++
++  static const List<String> availableTemplates = [
++    TEMPLATE_CLASSIC,
++    TEMPLATE_MODERN,
++    TEMPLATE_MINIMAL,
++    TEMPLATE_ELEGANT,
++    TEMPLATE_BUSINESS,
++  ];
+ 
+   Future<void> load(String uid) async {
+@@ -21,4 +35,12 @@ class BrandingProvider extends ChangeNotifier {
+     settings = {...(settings ?? {}), ...newSettings};
+     notifyListeners();
+   }
++
++  Future<void> selectTemplate(String uid, String templateId) async {
++    await _db.collection('users').doc(uid).collection('branding').doc('settings').set({'templateId': templateId}, SetOptions(merge: true));
++    settings = {...(settings ?? {}), 'templateId': templateId};
++    notifyListeners();
++  }
++
++  String? getTemplateId() {
++    return settings?['templateId'] as String?;
++  }
+ }
+diff --git a/lib/screens/settings/template_gallery_screen.dart b/lib/screens/settings/template_gallery_screen.dart
+new file mode 100644
+index 0000000..3456789
+--- /dev/null
++++ b/lib/screens/settings/template_gallery_screen.dart
+@@ -0,0 +1,210 @@
++import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
++import '../../providers/branding_provider.dart';
++import 'package:firebase_auth/firebase_auth.dart';
++
++class TemplateGalleryScreen extends StatefulWidget {
++  const TemplateGalleryScreen({Key? key}) : super(key: key);
++
++  @override
++  State<TemplateGalleryScreen> createState() => _TemplateGalleryScreenState();
++}
++
++class _TemplateGalleryScreenState extends State<TemplateGalleryScreen> {
++  String? _selectedTemplate;
++  bool _saving = false;
++
++  @override
++  void initState() {
++    super.initState();
++    final provider = Provider.of<BrandingProvider>(context, listen: false);
++    _selectedTemplate = provider.getTemplateId() ?? BrandingProvider.TEMPLATE_CLASSIC;
++  }
++
++  Future<void> _saveTemplate() async {
++    if (_selectedTemplate == null) return;
++    
++    final uid = FirebaseAuth.instance.currentUser!.uid;
++    setState(() => _saving = true);
++    
++    try {
++      final provider = Provider.of<BrandingProvider>(context, listen: false);
++      await provider.selectTemplate(uid, _selectedTemplate!);
++      
++      if (mounted) {
++        ScaffoldMessenger.of(context).showSnackBar(
++          SnackBar(content: Text('Template "$_selectedTemplate" selected')),
++        );
++      }
++    } catch (e) {
++      if (mounted) {
++        ScaffoldMessenger.of(context).showSnackBar(
++          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
++        );
++      }
++    } finally {
++      if (mounted) setState(() => _saving = false);
++    }
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Scaffold(
++      appBar: AppBar(title: const Text('Invoice Templates')),
++      body: SingleChildScrollView(
++        padding: const EdgeInsets.all(16),
++        child: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            const Text('Select a template for your invoices', style: TextStyle(fontSize: 14, color: Colors.grey)),
++            const SizedBox(height: 24),
++            GridView.builder(
++              shrinkWrap: true,
++              physics: const NeverScrollableScrollPhysics(),
++              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
++                crossAxisCount: 2,
++                crossAxisSpacing: 16,
++                mainAxisSpacing: 16,
++                childAspectRatio: 0.85,
++              ),
++              itemCount: BrandingProvider.availableTemplates.length,
++              itemBuilder: (context, index) {
++                final template = BrandingProvider.availableTemplates[index];
++                final isSelected = _selectedTemplate == template;
++                
++                return _buildTemplateCard(template, isSelected);
++              },
++            ),
++            const SizedBox(height: 32),
++            SizedBox(
++              width: double.infinity,
++              child: ElevatedButton(
++                onPressed: _saving ? null : _saveTemplate,
++                style: ElevatedButton.styleFrom(
++                  padding: const EdgeInsets.symmetric(vertical: 16),
++                  backgroundColor: Colors.blue,
++                ),
++                child: _saving
++                    ? const SizedBox(
++                        height: 20,
++                        width: 20,
++                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
++                      )
++                    : const Text(
++                        'Apply Template',
++                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
++                      ),
++              ),
++            ),
++          ],
++        ),
++      ),
++    );
++  }
++
++  Widget _buildTemplateCard(String templateId, bool isSelected) {
++    final Map<String, Map<String, dynamic>> templateDetails = {
++      BrandingProvider.TEMPLATE_CLASSIC: {
++        'title': 'Classic',
++        'description': 'Traditional professional style',
++        'icon': Icons.description,
++        'color': Colors.blue,
++      },
++      BrandingProvider.TEMPLATE_MODERN: {
++        'title': 'Modern',
++        'description': 'Contemporary design',
++        'icon': Icons.trending_up,
++        'color': Colors.purple,
++      },
++      BrandingProvider.TEMPLATE_MINIMAL: {
++        'title': 'Minimal',
++        'description': 'Clean and simple',
++        'icon': Icons.square,
++        'color': Colors.grey,
++      },
++      BrandingProvider.TEMPLATE_ELEGANT: {
++        'title': 'Elegant',
++        'description': 'Premium sophisticated look',
++        'icon': Icons.diamond,
++        'color': Colors.amber,
++      },
++      BrandingProvider.TEMPLATE_BUSINESS: {
++        'title': 'Business',
++        'description': 'Corporate standard',
++        'icon': Icons.business,
++        'color': Colors.indigo,
++      },
++    };
++
++    final details = templateDetails[templateId] ?? {};
++
++    return GestureDetector(
++      onTap: () {
++        setState(() => _selectedTemplate = templateId);
++      },
++      child: Container(
++        decoration: BoxDecoration(
++          border: Border.all(
++            color: isSelected ? (details['color'] as Color?) ?? Colors.blue : Colors.grey[300]!,
++            width: isSelected ? 3 : 1,
++          ),
++          borderRadius: BorderRadius.circular(12),
++          color: isSelected ? (details['color'] as Color?)?.withOpacity(0.05) : Colors.white,
++        ),
++        child: Padding(
++          padding: const EdgeInsets.all(16),
++          child: Column(
++            mainAxisAlignment: MainAxisAlignment.center,
++            children: [
++              Container(
++                padding: const EdgeInsets.all(12),
++                decoration: BoxDecoration(
++                  color: (details['color'] as Color?)?.withOpacity(0.2) ?? Colors.blue.withOpacity(0.2),
++                  shape: BoxShape.circle,
++                ),
++                child: Icon(
++                  details['icon'] as IconData? ?? Icons.description,
++                  size: 32,
++                  color: details['color'] as Color? ?? Colors.blue,
++                ),
++              ),
++              const SizedBox(height: 12),
++              Text(
++                details['title'] as String? ?? 'Template',
++                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
++                textAlign: TextAlign.center,
++              ),
++              const SizedBox(height: 4),
++              Text(
++                details['description'] as String? ?? '',
++                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
++                textAlign: TextAlign.center,
++              ),
++              const SizedBox(height: 8),
++              if (isSelected)
++                Container(
++                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
++                  decoration: BoxDecoration(
++                    color: details['color'] as Color? ?? Colors.blue,
++                    borderRadius: BorderRadius.circular(4),
++                  ),
++                  child: const Row(
++                    mainAxisSize: MainAxisSize.min,
++                    children: [
++                      Icon(Icons.check, size: 14, color: Colors.white),
++                      SizedBox(width: 4),
++                      Text('Selected', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
++                    ],
++                  ),
++                ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
+diff --git a/lib/config/app_routes.dart b/lib/config/app_routes.dart
+index 1234567..2345678 100644
+--- a/lib/config/app_routes.dart
++++ b/lib/config/app_routes.dart
+@@ -15,6 +15,7 @@ import '../screens/invoice/invoice_template_select_screen.dart';
+ import '../screens/invoices/payment_history_screen.dart';
+ import '../screens/expenses/expense_scanner_screen.dart';
+ import '../screens/settings/invoice_branding_screen.dart';
++import '../screens/settings/template_gallery_screen.dart';
+ import '../screens/waitlist_screen.dart';
+ 
+ class AppRoutes {
+@@ -38,6 +39,7 @@ class AppRoutes {
+   static const String crypto = '/crypto';
+   static const String profile = '/profile';
+   static const String invoiceBranding = '/settings/invoice-branding';
++  static const String templateGallery = '/settings/templates';
+   static const String waitlist = '/waitlist';
+ 
+   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
+@@ -86,6 +88,8 @@ class AppRoutes {
+       case invoiceBranding:
+         return MaterialPageRoute(builder: (_) => const InvoiceBrandingScreen());
++      case templateGallery:
++        return MaterialPageRoute(builder: (_) => const TemplateGalleryScreen());
+       case waitlist:
+         final args = settings.arguments as Map<String, dynamic>?;
+         final feature = args?['feature'] as String? ?? 'Feature';

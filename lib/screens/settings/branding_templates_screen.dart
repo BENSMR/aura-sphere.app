@@ -337,29 +337,3 @@ class _BrandingTemplatesScreenState extends State<BrandingTemplatesScreen> {
     return luminance > 0.5 ? Colors.black : Colors.white;
   }
 }
-
-class BrandingTemplate {
-  final String id;
-  final String name;
-  final String description;
-  final String primaryColor;
-  final String accentColor;
-
-  BrandingTemplate({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.primaryColor,
-    required this.accentColor,
-  });
-
-  factory BrandingTemplate.fromJson(Map<String, dynamic> json) {
-    return BrandingTemplate(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String,
-      primaryColor: json['primaryColor'] as String,
-      accentColor: json['accentColor'] as String,
-    );
-  }
-}

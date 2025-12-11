@@ -104,7 +104,7 @@ class InvoicePdfService {
   /// Client information section
   static pw.Widget _buildClientSection(InvoiceModel invoice) {
     final dateFormat = DateFormat('MMM dd, yyyy');
-    final createdDate = dateFormat.format(invoice.createdAt.toDate());
+    final createdDate = dateFormat.format(invoice.createdAt);
     final dueDate = invoice.dueDate != null
         ? dateFormat.format(invoice.dueDate!)
         : 'Not specified';

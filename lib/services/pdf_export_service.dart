@@ -158,7 +158,7 @@ class PdfExportService {
                 style: const pw.TextStyle(fontSize: 12),
               ),
               pw.Text(
-                'Date: ${_formatDate(invoice.createdAt.toDate())}',
+                'Date: ${_formatDate(invoice.createdAt)}',
                 style: const pw.TextStyle(fontSize: 12),
               ),
               pw.SizedBox(height: 20),
@@ -309,7 +309,7 @@ class PdfExportService {
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
-              'Invoice Date: ${_formatDate(invoice.createdAt.toDate())}',
+              'Invoice Date: ${_formatDate(invoice.createdAt)}',
             ),
             pw.Text(
               'Due Date: ${_formatDate(invoice.dueDate ?? DateTime.now())}',

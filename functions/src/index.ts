@@ -101,3 +101,4 @@ export { grantAdminRole, revokeAdminRole, listAdmins, getAdminStatus, getMyAdmin
 export { archiveOldAuditEntries, archiveAuditManually } from './audit/archiveAudit';
 export { exportAudit } from './audit/exportAudit';
 export { detectExpenseAnomalies, detectInvoiceAnomalies, detectAuditAnomalies, resolveAnomaly, queryAnomalies } from './audit/anomalyDetection';
+export { scanAnomaliesScheduled, scanAnomaliesManual } from './audit/anomalyScanner';

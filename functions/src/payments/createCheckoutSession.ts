@@ -8,7 +8,7 @@ const STRIPE_SECRET = functions.config().stripe?.secret || process.env.STRIPE_SE
 if (!STRIPE_SECRET) {
   console.error("❌ STRIPE SECRET not found. Set functions config: firebase functions:config:set stripe.secret=\"sk_...\"");
 }
-const stripe = new Stripe(STRIPE_SECRET || "", { apiVersion: "2024-04-10" });
+const stripe = new Stripe(STRIPE_SECRET || "", { apiVersion: "2022-11-15" });
 
 export const createCheckoutSession = functions.https.onCall(async (data, context) => {
   try {

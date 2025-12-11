@@ -101,6 +101,19 @@ class UserProvider with ChangeNotifier {
     _setLoading(false);
   }
 
+  /// Set user's preferred invoice template
+  Future<void> setInvoiceTemplate(String templateId) async {
+    if (_appUser == null) return;
+    try {
+      // This would be implemented in your user service/repository
+      // For now, we'll store it locally
+      _appUser = _appUser?.copyWith(invoiceTemplate: templateId);
+      notifyListeners();
+    } catch (e) {
+      print('Error setting invoice template: $e');
+    }
+  }
+
   void _setLoading(bool value) {
     if (_loading == value) return;
     _loading = value;

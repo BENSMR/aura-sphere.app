@@ -1,363 +1,696 @@
-/// Tax Service - Country-aware VAT/GST/Sales Tax calculation
-/// 
-/// Supports VAT (EU), GST (Canada/Australia), and Sales Tax (USA)
-/// Rates updated for 2025
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_core/firebase_core.dart';
 
+/// Service for tax calculations and tax rule management
+/// 
+/// Supports:
+/// - Calculating VAT and sales tax by country (via Cloud Functions)
+/// - EU reverse charge rules (B2B)
+/// - Reading tax rules from Firestore
+/// - Multi-country tax compliance
+/// - Currency conversion with daily exchange rates
+/// - Intelligent tax determination based on company/contact
+/// - Real-time tax status monitoring via queuing system
 class TaxService {
-  /// Detect standard VAT rate by country code
-  /// Returns decimal rate (e.g., 0.20 for 20%)
-  /// 
-  /// Supported countries:
-  /// - EU: FR, ES, MA, UK, DE, NL, BE, IT, AT, PL, GR, CZ, PT
-  /// - North Africa: MA, TN, DZ, EG
-  /// - Middle East: AE, SA, KW, QA, OM
-  /// - Americas: US, CA, MX, BR, AR
-  /// - APAC: AU, NZ, JP, SG, MY, TH
-  static double detectVATRate(String countryCode) {
-    switch (countryCode.toUpperCase()) {
-      // European Union (VAT)
-      case "FR":
-        return 0.20; // France - TVA standard
-      case "ES":
-        return 0.21; // Spain - IVA standard
-      case "MA":
-        return 0.20; // Morocco - TVA standard
-      case "UK":
-        return 0.20; // United Kingdom - VAT standard
-      case "DE":
-        return 0.19; // Germany - Mehrwertsteuer
-      case "NL":
-        return 0.21; // Netherlands - BTW
-      case "BE":
-        return 0.21; // Belgium - TVA/BTW
-      case "IT":
-        return 0.22; // Italy - IVA standard
-      case "AT":
-        return 0.20; // Austria - Mehrwertsteuer
-      case "PL":
-        return 0.23; // Poland - VAT standard
-      case "GR":
-        return 0.24; // Greece - VAT standard
-      case "CZ":
-        return 0.21; // Czech Republic - DPH
-      case "PT":
-        return 0.23; // Portugal - IVA standard
+  static const String TAX_MATRIX_PATH = 'config/tax_matrix';
+  static const String FX_RATES_PATH = 'config/fx_rates';
 
-      // North Africa (VAT)
-      case "TN":
-        return 0.19; // Tunisia - TVA
-      case "DZ":
-        return 0.19; // Algeria - TVA
-      case "EG":
-        return 0.14; // Egypt - VAT
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFunctions _functions = FirebaseFunctions.instanceFor(
+    app: Firebase.app(),
+    region: 'us-central1',
+  );
 
-      // Middle East (VAT)
-      case "AE":
-        return 0.05; // UAE - VAT
-      case "SA":
-        return 0.15; // Saudi Arabia - VAT
-      case "KW":
-        return 0.00; // Kuwait - No VAT
-      case "QA":
-        return 0.00; // Qatar - No VAT
-      case "OM":
-        return 0.00; // Oman - No VAT
-      case "BH":
-        return 0.00; // Bahrain - No VAT
-
-      // North America (GST/HST/Sales Tax)
-      case "US":
-        return 0.00; // USA - No federal VAT (state-specific)
-      case "CA":
-        return 0.13; // Canada - average (5% GST + 8% PST/QST)
-      case "MX":
-        return 0.16; // Mexico - IVA
-
-      // South America
-      case "BR":
-        return 0.17; // Brazil - ICMS/PIS/COFINS (simplified)
-      case "AR":
-        return 0.21; // Argentina - IVA standard
-      case "CL":
-        return 0.19; // Chile - IVA
-
-      // Asia-Pacific (GST/VAT)
-      case "AU":
-        return 0.10; // Australia - GST
-      case "NZ":
-        return 0.15; // New Zealand - GST
-      case "JP":
-        return 0.10; // Japan - Consumption Tax
-      case "SG":
-        return 0.08; // Singapore - GST
-      case "MY":
-        return 0.06; // Malaysia - SST
-      case "TH":
-        return 0.07; // Thailand - VAT
-      case "IN":
-        return 0.18; // India - GST (standard)
-      case "ID":
-        return 0.10; // Indonesia - VAT
-
-      // Default to 20% (common EU rate)
-      default:
-        return 0.20;
-    }
-  }
-
-  /// Get country-specific tax name
-  /// Returns localized tax name (e.g., "VAT", "GST", "IVA")
-  static String getTaxName(String countryCode) {
-    switch (countryCode.toUpperCase()) {
-      case "US":
-      case "MX":
-        return "Sales Tax";
-      case "CA":
-        return "GST/HST";
-      case "AU":
-      case "NZ":
-      case "SG":
-      case "MY":
-      case "TH":
-      case "IN":
-      case "ID":
-        return "GST";
-      case "JP":
-        return "Consumption Tax";
-      case "BR":
-      case "AR":
-      case "CL":
-        return "Tax";
-      case "ES":
-      case "IT":
-      case "PT":
-        return "IVA";
-      case "FR":
-      case "MA":
-      case "TN":
-      case "DZ":
-        return "TVA";
-      case "DE":
-      case "AT":
-        return "Mehrwertsteuer";
-      case "NL":
-      case "BE":
-        return "BTW";
-      case "CZ":
-        return "DPH";
-      case "AE":
-      case "SA":
-      case "EG":
-        return "VAT";
-      default:
-        return "VAT";
-    }
-  }
-
-  /// Calculate tax amount from gross price
-  /// 
-  /// Example:
-  /// - Gross: 100 USD, Country: FR (20%)
-  /// - Returns: 16.67 (tax portion of gross)
-  static double calculateTaxFromGross(double grossAmount, String countryCode) {
-    final rate = detectVATRate(countryCode);
-    return grossAmount - (grossAmount / (1 + rate));
-  }
-
-  /// Calculate gross amount from net price + tax
-  /// 
-  /// Example:
-  /// - Net: 100 USD, Country: FR (20%)
-  /// - Returns: 120.00 (net + tax)
-  static double calculateGrossFromNet(double netAmount, String countryCode) {
-    final rate = detectVATRate(countryCode);
-    return netAmount * (1 + rate);
-  }
-
-  /// Calculate net amount from gross price
-  /// 
-  /// Example:
-  /// - Gross: 120 USD, Country: FR (20%)
-  /// - Returns: 100.00 (without tax)
-  static double calculateNetFromGross(double grossAmount, String countryCode) {
-    final rate = detectVATRate(countryCode);
-    if (rate == 0) return grossAmount;
-    return grossAmount / (1 + rate);
-  }
-
-  /// Format tax display string
-  /// 
-  /// Example output: "VAT (20%)" or "GST (13%)"
-  static String formatTaxDisplay(String countryCode) {
-    final taxName = getTaxName(countryCode);
-    final rate = (detectVATRate(countryCode) * 100).toStringAsFixed(0);
-    return "$taxName ($rate%)";
-  }
-
-  /// Check if country is VAT-applicable (EU + selected others)
-  static bool isVATApplicable(String countryCode) {
-    final rate = detectVATRate(countryCode);
-    return rate > 0;
-  }
-
-  /// Get full country details for tax purposes
-  /// Returns: {code, name, taxName, rate, isVATApplicable}
-  static Map<String, dynamic> getCountryTaxDetails(String countryCode) {
-    final code = countryCode.toUpperCase();
-    final countryNames = {
-      "FR": "France",
-      "ES": "Spain",
-      "MA": "Morocco",
-      "AE": "United Arab Emirates",
-      "UK": "United Kingdom",
-      "DE": "Germany",
-      "NL": "Netherlands",
-      "BE": "Belgium",
-      "IT": "Italy",
-      "AT": "Austria",
-      "PL": "Poland",
-      "GR": "Greece",
-      "CZ": "Czech Republic",
-      "PT": "Portugal",
-      "TN": "Tunisia",
-      "DZ": "Algeria",
-      "EG": "Egypt",
-      "SA": "Saudi Arabia",
-      "KW": "Kuwait",
-      "QA": "Qatar",
-      "OM": "Oman",
-      "BH": "Bahrain",
-      "US": "United States",
-      "CA": "Canada",
-      "MX": "Mexico",
-      "BR": "Brazil",
-      "AR": "Argentina",
-      "CL": "Chile",
-      "AU": "Australia",
-      "NZ": "New Zealand",
-      "JP": "Japan",
-      "SG": "Singapore",
-      "MY": "Malaysia",
-      "TH": "Thailand",
-      "IN": "India",
-      "ID": "Indonesia",
-    };
-
-    final rate = detectVATRate(code);
-    final taxName = getTaxName(code);
-    final countryName = countryNames[code] ?? "Unknown";
-
-    return {
-      "code": code,
-      "name": countryName,
-      "taxName": taxName,
-      "rate": rate,
-      "ratePercentage": "${(rate * 100).toStringAsFixed(0)}%",
-      "isVATApplicable": rate > 0,
-      "displayFormat": formatTaxDisplay(code),
-    };
-  }
-
-  /// List all supported countries with tax details
-  static List<Map<String, dynamic>> getAllSupportedCountries() {
-    final codes = [
-      "FR",
-      "ES",
-      "MA",
-      "AE",
-      "UK",
-      "DE",
-      "NL",
-      "BE",
-      "IT",
-      "AT",
-      "PL",
-      "GR",
-      "CZ",
-      "PT",
-      "TN",
-      "DZ",
-      "EG",
-      "SA",
-      "KW",
-      "QA",
-      "OM",
-      "BH",
-      "US",
-      "CA",
-      "MX",
-      "BR",
-      "AR",
-      "CL",
-      "AU",
-      "NZ",
-      "JP",
-      "SG",
-      "MY",
-      "TH",
-      "IN",
-      "ID",
-    ];
-    return codes.map((code) => getCountryTaxDetails(code)).toList();
-  }
-
-  /// Detect VAT rate from user profile (async)
-  /// 
-  /// Fetches user's country from `users/{uid}/profile/country`
-  /// and returns corresponding VAT rate
-  /// 
-  /// Example:
-  /// ```dart
-  /// final rate = await TaxService.detectVATRateForUserCountry(uid);
-  /// ```
-  static Future<double> detectVATRateForUserCountry(String uid) async {
+  /// Determine tax and currency intelligently based on company/contact
+  ///
+  /// This method integrates with the finance module to:
+  /// 1. Load company (seller) to get default country & currency
+  /// 2. Load contact (buyer) to get country & type (B2B/B2C)
+  /// 3. Determine applicable tax based on both locations
+  /// 4. Handle EU B2B reverse charge (if applicable)
+  /// 5. Convert currencies if needed
+  ///
+  /// Parameters:
+  ///   - amount: Base amount before tax
+  ///   - fromCurrency: Original currency (e.g., 'EUR')
+  ///   - companyId: Seller/organization ID (Firestore lookup)
+  ///   - contactId: Buyer/recipient ID (Firestore lookup)
+  ///   - country: Optional override country code
+  ///   - direction: 'sale' (invoice) or 'purchase' (expense/PO)
+  ///   - customerIsBusiness: Whether buyer is a business (B2B)
+  ///
+  /// Returns:
+  ///   {
+  ///     'success': true,
+  ///     'amount': 1000.0,
+  ///     'fromCurrency': 'EUR',
+  ///     'country': 'FR',
+  ///     'currency': 'EUR',
+  ///     'taxRate': 0.20,
+  ///     'taxAmount': 200.0,
+  ///     'total': 1200.0,
+  ///     'taxBreakdown': {
+  ///       'type': 'vat',
+  ///       'rate': 0.20,
+  ///       'standard': true,
+  ///       'country': 'FR',
+  ///       'reverseCharge': false,
+  ///       'appliedLogic': 'Standard French VAT'
+  ///     },
+  ///     'conversionHint': null,
+  ///     'note': 'Tax calculated by server'
+  ///   }
+  Future<Map<String, dynamic>> determineTaxAndCurrency({
+    required double amount,
+    String? fromCurrency,
+    String? companyId,
+    String? contactId,
+    String? country,
+    String direction = 'sale',
+    bool customerIsBusiness = false,
+  }) async {
     try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
+      final callable = _functions.httpsCallable('determineTaxAndCurrency');
+      final response = await callable.call({
+        'amount': amount,
+        'fromCurrency': fromCurrency,
+        'companyId': companyId,
+        'contactId': contactId,
+        'country': country,
+        'direction': direction,
+        'customerIsBusiness': customerIsBusiness,
+      });
+
+      final data = Map<String, dynamic>.from(response.data as Map);
+      return data;
+    } catch (e) {
+      print('❌ Error determining tax: $e');
+      rethrow;
+    }
+  }
+
+  /// Convert between currencies using daily exchange rates
+  ///
+  /// Parameters:
+  ///   - amount: Amount to convert
+  ///   - from: Source currency (e.g., 'EUR')
+  ///   - to: Target currency (e.g., 'USD')
+  ///
+  /// Returns:
+  ///   {
+  ///     'success': true,
+  ///     'amount': 1000.0,
+  ///     'converted': 1080.0,
+  ///     'rate': 1.08,
+  ///     'from': 'EUR',
+  ///     'to': 'USD',
+  ///     'timestamp': '2025-12-10T14:30:00Z'
+  ///   }
+  Future<Map<String, dynamic>> convertCurrency({
+    required double amount,
+    required String from,
+    required String to,
+  }) async {
+    try {
+      final callable = _functions.httpsCallable('convertCurrency');
+      final response = await callable.call({
+        'amount': amount,
+        'from': from,
+        'to': to,
+      });
+
+      final data = Map<String, dynamic>.from(response.data as Map);
+      return data;
+    } catch (e) {
+      print('❌ Error converting currency: $e');
+      rethrow;
+    }
+  }
+
+  /// Calculates tax for an amount in a specific country
+  /// Supports VAT (Europe) and sales tax (US, etc.)
+  /// 
+  /// Parameters:
+  ///   - country: ISO country code (e.g., "FR", "DE", "US")
+  ///   - amount: Base amount before tax
+  ///   - customerIsBusiness: true for B2B (enables reverse charge)
+  ///   - direction: "sale" (invoice) or "purchase" (expense)
+  ///   - vatOverride: Optional manual override for VAT rate
+  /// 
+  /// Returns: {
+  ///   "success": true,
+  ///   "tax": 20.0,           // Calculated tax amount
+  ///   "total": 120.0,        // Amount + tax
+  ///   "rate": 0.20,          // Applied tax rate
+  ///   "note": "..."          // Optional explanation
+  /// }
+  Future<Map<String, dynamic>> calculateTax({
+    required double amount,
+    required String country,
+    bool customerIsBusiness = false,
+    String direction = 'sale',
+    double? vatOverride,
+  }) async {
+    try {
+      final callable = _functions.httpsCallable('calculateTax');
+      final response = await callable.call({
+        'country': country.toUpperCase(),
+        'amount': amount,
+        'direction': direction,
+        'customerIsBusiness': customerIsBusiness,
+        if (vatOverride != null) 'vatRate': vatOverride,
+      });
+
+      final data = Map<String, dynamic>.from(response.data as Map);
+      return data;
+    } catch (e) {
+      print('❌ Error calculating tax: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetches tax rules for a specific country
+  /// 
+  /// Returns: {
+  ///   "country": "FR",
+  ///   "region": "EU",
+  ///   "vat": {
+  ///     "standard": 0.20,
+  ///     "reduced": [0.10, 0.055],
+  ///     "isEu": true,
+  ///     "has_vat": true
+  ///   },
+  ///   "sales_tax": null
+  /// }
+  Future<Map<String, dynamic>?> getTaxRule(String country) async {
+    try {
+      final doc = await _firestore
+          .doc('$TAX_MATRIX_PATH/${country.toUpperCase()}')
           .get();
 
-      final country =
-          (userDoc.data()?['profile']?['country'] ?? 'US')
-              .toString()
-              .toUpperCase();
+      if (!doc.exists) {
+        return null;
+      }
 
-      return detectVATRate(country);
+      return doc.data();
     } catch (e) {
-      // Default to 20% on error
-      return 0.20;
+      print('❌ Error fetching tax rule for $country: $e');
+      return null;
     }
   }
-}
 
-/// Example Usage:
-/// 
-/// ```dart
-/// // Get VAT rate for France (sync)
-/// final frenchRate = TaxService.detectVATRate('FR');
-/// // Output: 0.20 (20%)
-/// 
-/// // Get VAT rate from user profile (async)
-/// final userRate = await TaxService.detectVATRateForUserCountry(uid);
-/// // Output: 0.20 (from user's country)
-/// 
-/// // Calculate gross from net
-/// final gross = TaxService.calculateGrossFromNet(100, 'FR');
-/// // Output: 120.00
-/// 
-/// // Calculate tax from gross
-/// final tax = TaxService.calculateTaxFromGross(120, 'FR');
-/// // Output: 20.00
-/// 
-/// // Get formatted display
-/// final display = TaxService.formatTaxDisplay('FR');
-/// // Output: "VAT (20%)"
-/// 
-/// // Get full country details
-/// final details = TaxService.getCountryTaxDetails('AE');
-/// // Output: {code: "AE", name: "United Arab Emirates", taxName: "VAT", 
-/// //          rate: 0.05, ratePercentage: "5%", isVATApplicable: true,
-/// //          displayFormat: "VAT (5%)"}
-/// ```
+  /// Gets standard VAT rate for a country
+  /// Returns null if country not found or doesn't use VAT
+  Future<double?> getStandardVatRate(String country) async {
+    try {
+      final rule = await getTaxRule(country);
+      if (rule == null) return null;
+
+      final vat = rule['vat'] as Map<String, dynamic>?;
+      if (vat == null) return null;
+
+      return _toDouble(vat['standard']);
+    } catch (e) {
+      print('❌ Error getting VAT rate: $e');
+      return null;
+    }
+  }
+
+  /// Gets all reduced VAT rates for a country
+  /// Returns empty list if country doesn't have reduced rates
+  Future<List<double>> getReducedVatRates(String country) async {
+    try {
+      final rule = await getTaxRule(country);
+      if (rule == null) return [];
+
+      final vat = rule['vat'] as Map<String, dynamic>?;
+      if (vat == null) return [];
+
+      final reduced = vat['reduced'] as List?;
+      if (reduced == null) return [];
+
+      return reduced
+          .map((r) => _toDouble(r))
+          .whereType<double>()
+          .toList();
+    } catch (e) {
+      print('❌ Error getting reduced VAT rates: $e');
+      return [];
+    }
+  }
+
+  /// Checks if country is in EU (for reverse charge rules)
+  Future<bool> isEuCountry(String country) async {
+    try {
+      final rule = await getTaxRule(country);
+      if (rule == null) return false;
+
+      final vat = rule['vat'] as Map<String, dynamic>?;
+      if (vat == null) return false;
+
+      return vat['isEu'] as bool? ?? false;
+    } catch (e) {
+      print('❌ Error checking if EU country: $e');
+      return false;
+    }
+  }
+
+  /// Checks if country uses VAT system
+  Future<bool> usesVat(String country) async {
+    try {
+      final rule = await getTaxRule(country);
+      if (rule == null) return false;
+
+      final vat = rule['vat'] as Map<String, dynamic>?;
+      if (vat == null) return false;
+
+      return vat['has_vat'] as bool? ?? false;
+    } catch (e) {
+      print('❌ Error checking VAT system: $e');
+      return false;
+    }
+  }
+
+  /// Gets all available countries with tax rules
+  /// Useful for country selector dropdowns
+  Future<List<String>> getAvailableCountries() async {
+    try {
+      final collection = await _firestore
+          .collection(TAX_MATRIX_PATH)
+          .limit(100)
+          .get();
+
+      final countries = collection.docs
+          .map((doc) => (doc.data()['country'] as String?) ?? doc.id)
+          .toList();
+
+      countries.sort();
+      return countries;
+    } catch (e) {
+      print('❌ Error fetching available countries: $e');
+      return [];
+    }
+  }
+
+  /// Calculates total price including tax
+  /// Convenience method combining tax calculation
+  /// 
+  /// Returns: {
+  ///   "baseAmount": 100.0,
+  ///   "taxAmount": 20.0,
+  ///   "totalAmount": 120.0,
+  ///   "taxRate": 0.20
+  /// }
+  Future<Map<String, double>?> calculateTotalWithTax({
+    required String country,
+    required double baseAmount,
+    bool customerIsBusiness = false,
+  }) async {
+    try {
+      final result = await calculateTax(
+        country: country,
+        amount: baseAmount,
+        customerIsBusiness: customerIsBusiness,
+      );
+
+      if (result['success'] != true) {
+        return null;
+      }
+
+      return {
+        'baseAmount': baseAmount,
+        'taxAmount': result['tax'] as double? ?? 0.0,
+        'totalAmount': result['total'] as double? ?? baseAmount,
+        'taxRate': result['rate'] as double? ?? 0.0,
+      };
+    } catch (e) {
+      print('❌ Error calculating total with tax: $e');
+      return null;
+    }
+  }
+
+  /// Get cached exchange rates from Firestore (config/fx_rates)
+  /// 
+  /// Returns: {
+  ///   'EUR': 1.0,
+  ///   'USD': 1.08,
+  ///   'GBP': 0.86,
+  ///   'CHF': 0.95,
+  ///   'JPY': 162.0,
+  ///   ...
+  /// }
+  /// 
+  /// Throws if config/fx_rates document doesn't exist
+  Future<Map<String, dynamic>> getCachedExchangeRates() async {
+    try {
+      final doc = await _firestore
+          .collection('config')
+          .doc('fx_rates')
+          .get();
+
+      if (!doc.exists) {
+        throw Exception('Exchange rates not yet cached. Run syncFxRates first.');
+      }
+
+      return Map<String, dynamic>.from(doc.data() ?? {});
+    } catch (e) {
+      print('❌ Error getting cached exchange rates: $e');
+      rethrow;
+    }
+  }
+
+  /// Watch exchange rates in real-time from Firestore
+  /// 
+  /// Emits updates whenever exchange rates change (daily refresh)
+  /// 
+  /// Usage:
+  ///   taxService.watchExchangeRates().listen((rates) {
+  ///     print('Rates updated: $rates');
+  ///   });
+  Stream<Map<String, dynamic>> watchExchangeRates() {
+    return _firestore
+        .collection('config')
+        .doc('fx_rates')
+        .snapshots()
+        .map((snapshot) => snapshot.data() ?? {});
+  }
+
+  /// Get tax matrix (rules) for a specific country from cache
+  /// 
+  /// Returns: {
+  ///   'country': 'FR',
+  ///   'type': 'vat',
+  ///   'standardRate': 0.20,
+  ///   'reducedRates': [0.055, 0.10],
+  ///   'reverseChargeEligible': true,
+  ///   'eu': true,
+  ///   'lastUpdated': '2025-12-10'
+  /// }
+  Future<Map<String, dynamic>?> getTaxMatrixData(String country) async {
+    try {
+      final doc = await _firestore
+          .collection('config')
+          .doc('tax_matrix')
+          .collection('countries')
+          .doc(country.toUpperCase())
+          .get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      return Map<String, dynamic>.from(doc.data() ?? {});
+    } catch (e) {
+      print('❌ Error getting tax matrix for $country: $e');
+      rethrow;
+    }
+  }
+
+  /// Watch tax matrix (rules) for a specific country in real-time
+  /// 
+  /// Emits whenever tax rules change (e.g., government updates)
+  /// 
+  /// Usage:
+  ///   taxService.watchTaxMatrix('FR').listen((rules) {
+  ///     if (rules != null) print('Tax rules updated: $rules');
+  ///   });
+  Stream<Map<String, dynamic>?> watchTaxMatrix(String country) {
+    return _firestore
+        .collection('config')
+        .doc('tax_matrix')
+        .collection('countries')
+        .doc(country.toUpperCase())
+        .snapshots()
+        .map((snapshot) => snapshot.exists 
+            ? Map<String, dynamic>.from(snapshot.data() ?? {})
+            : null);
+  }
+
+  /// Get all available tax matrices (all countries)
+  /// 
+  /// Returns: {
+  ///   'FR': { 'standardRate': 0.20, ... },
+  ///   'DE': { 'standardRate': 0.19, ... },
+  ///   'IT': { 'standardRate': 0.22, ... },
+  ///   ...
+  /// }
+  Future<Map<String, Map<String, dynamic>>> getAllTaxMatrices() async {
+    try {
+      final snapshot = await _firestore
+          .collection('config')
+          .doc('tax_matrix')
+          .collection('countries')
+          .get();
+
+      final result = <String, Map<String, dynamic>>{};
+      for (final doc in snapshot.docs) {
+        result[doc.id] = Map<String, dynamic>.from(doc.data());
+      }
+      return result;
+    } catch (e) {
+      print('❌ Error getting all tax matrices: $e');
+      rethrow;
+    }
+  }
+
+  /// Watch invoice tax status from the tax queue in real-time
+  /// 
+  /// Monitors internal/tax_queue/requests for pending/completed calculations
+  /// 
+  /// Useful for showing: "Calculating tax..." or "Tax calculated: 20%"
+  Stream<Map<String, dynamic>?> watchInvoiceTaxStatus({
+    required String uid,
+    required String invoiceId,
+  }) {
+    return _firestore
+        .collection('internal')
+        .doc('tax_queue')
+        .collection('requests')
+        .where('uid', isEqualTo: uid)
+        .where('entityPath', isEqualTo: 'users/$uid/invoices/$invoiceId')
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.docs.isEmpty) return null;
+          return Map<String, dynamic>.from(snapshot.docs.first.data());
+        });
+  }
+
+  /// Check if an invoice's tax calculation is currently pending
+  /// 
+  /// Returns true if there's an active queue request for this invoice
+  Future<bool> isTaxCalculationPending({
+    required String uid,
+    required String invoiceId,
+  }) async {
+    try {
+      final snapshot = await _firestore
+          .collection('internal')
+          .doc('tax_queue')
+          .collection('requests')
+          .where('uid', isEqualTo: uid)
+          .where('entityPath', isEqualTo: 'users/$uid/invoices/$invoiceId')
+          .where('processed', isEqualTo: false)
+          .limit(1)
+          .get();
+
+      return snapshot.docs.isNotEmpty;
+    } catch (e) {
+      print('❌ Error checking tax calculation status: $e');
+      return false;
+    }
+  }
+
+  /// Get detailed status of a tax queue request
+  /// 
+  /// Returns: {
+  ///   'uid': 'user123',
+  ///   'entityPath': 'users/user123/invoices/inv456',
+  ///   'entityType': 'invoice',
+  ///   'processed': false,
+  ///   'attempts': 1,
+  ///   'createdAt': '2025-12-10T14:00:00Z',
+  ///   'processedAt': null,
+  ///   'lastError': null,
+  ///   'note': 'Queued for processing'
+  /// }
+  Future<Map<String, dynamic>?> getQueueRequestStatus({
+    required String uid,
+    required String queueRequestId,
+  }) async {
+    try {
+      final doc = await _firestore
+          .collection('internal')
+          .doc('tax_queue')
+          .collection('requests')
+          .doc(queueRequestId)
+          .get();
+
+      if (!doc.exists || doc.data()?['uid'] != uid) {
+        return null;
+      }
+
+      return Map<String, dynamic>.from(doc.data() ?? {});
+    } catch (e) {
+      print('❌ Error getting queue request status: $e');
+      return null;
+    }
+  }
+
+  /// Watch a specific tax queue request in real-time
+  /// 
+  /// Usage:
+  ///   taxService.watchQueueRequestStatus(
+  ///     uid: 'user123',
+  ///     queueRequestId: 'queue456'
+  ///   ).listen((status) {
+  ///     if (status?['processed'] == true) {
+  ///       print('Tax calculation complete!');
+  ///     }
+  ///   });
+  Stream<Map<String, dynamic>?> watchQueueRequestStatus({
+    required String uid,
+    required String queueRequestId,
+  }) {
+    return _firestore
+        .collection('internal')
+        .doc('tax_queue')
+        .collection('requests')
+        .doc(queueRequestId)
+        .snapshots()
+        .where((snapshot) => snapshot.exists && snapshot.data()?['uid'] == uid)
+        .map((snapshot) => Map<String, dynamic>.from(snapshot.data() ?? {}));
+  }
+
+  /// Retry a failed tax calculation by creating a new queue request
+  /// 
+  /// Called when a previous tax calculation failed and needs to be retried
+  /// 
+  /// Parameters:
+  ///   - uid: Current user ID
+  ///   - invoiceId: Invoice that failed tax calculation
+  ///   - previousQueueRequestId: The failed queue request (for audit)
+  ///
+  /// Returns the new queue request ID
+  Future<String?> retryFailedTaxCalculation({
+    required String uid,
+    required String invoiceId,
+    String? previousQueueRequestId,
+  }) async {
+    try {
+      final callable = _functions.httpsCallable('retryFailedTaxCalculation');
+      final response = await callable.call({
+        'uid': uid,
+        'invoiceId': invoiceId,
+        'previousQueueRequestId': previousQueueRequestId,
+      });
+
+      final data = response.data as Map?;
+      return data?['queueRequestId'] as String?;
+    } catch (e) {
+      print('❌ Error retrying failed tax calculation: $e');
+      return null;
+    }
+  }
+
+  /// Get list of all supported countries with their tax information
+  /// Useful for populating country selectors
+  /// 
+  /// Returns: ['FR', 'DE', 'IT', 'ES', 'GB', 'US', 'CA', 'AU', 'JP', ...]
+  Future<List<String>> getSupportedCountries() async {
+    try {
+      final matrices = await getAllTaxMatrices();
+      return matrices.keys.toList()..sort();
+    } catch (e) {
+      print('❌ Error getting supported countries: $e');
+      return [];
+    }
+  }
+
+  /// Format tax breakdown details for display
+  /// 
+  /// Input:
+  ///   {
+  ///     'type': 'vat',
+  ///     'rate': 0.20,
+  ///     'standard': true,
+  ///     'country': 'FR',
+  ///     'reverseCharge': false,
+  ///     'appliedLogic': 'Standard French VAT'
+  ///   }
+  /// 
+  /// Output: "VAT 20% (FR) - Standard French VAT"
+  static String formatTaxBreakdown(Map<String, dynamic>? breakdown) {
+    if (breakdown == null) return 'No tax information';
+
+    final type = (breakdown['type'] as String?)?.toUpperCase() ?? 'TAX';
+    final rate = breakdown['rate'] as double? ?? 0.0;
+    final country = breakdown['country'] as String? ?? '';
+    final logic = breakdown['appliedLogic'] as String? ?? '';
+
+    final parts = [
+      '$type ${formatTaxRate(rate)}',
+      if (country.isNotEmpty) '($country)',
+      if (logic.isNotEmpty) '- $logic',
+    ];
+
+    return parts.join(' ');
+  }
+
+  /// Format currency amount for display
+  /// 
+  /// Example: formatCurrency(1234.56, 'EUR') -> "€1,234.56"
+  static String formatCurrency(double amount, String currency) {
+    final currencySymbols = {
+      'EUR': '€',
+      'USD': '\$',
+      'GBP': '£',
+      'JPY': '¥',
+      'CHF': 'CHF',
+      'CAD': '\$',
+      'AUD': '\$',
+      'INR': '₹',
+    };
+
+    final symbol = currencySymbols[currency] ?? currency;
+    final formatted = amount.toStringAsFixed(2).replaceAllMapped(
+          RegExp(r'\B(?=(\d{3})+(?!\d))'),
+          (match) => ',',
+        );
+
+    return '$symbol$formatted';
+  }
+
+  /// Helper to safely convert dynamic to double
+  static double? _toDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  /// Formats tax rate as percentage string
+  /// Example: 0.20 -> "20%"
+  static String formatTaxRate(double rate) {
+    return '${(rate * 100).toStringAsFixed(1)}%';
+  }
+
+  /// Gets readable description of tax for UI display
+  /// Example: "VAT (20%)" or "EU Reverse Charge"
+  static String getTaxDescription(
+    Map<String, dynamic> result, {
+    String country = '',
+  }) {
+    if (result['note'] != null) {
+      return result['note'] as String;
+    }
+
+    final rate = result['rate'] as double? ?? 0.0;
+    if (rate == 0.0) {
+      return 'No tax applicable';
+    }
+
+    return '${formatTaxRate(rate)} tax';
+  }
+}

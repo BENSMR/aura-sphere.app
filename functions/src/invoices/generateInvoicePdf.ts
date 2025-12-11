@@ -461,7 +461,7 @@ export const generateInvoicePdf = functions
 
       // Launch Puppeteer with Cloud Run compatible settings
       const browser = await puppeteer.launch({
-        headless: "new",
+        headless: true,
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",

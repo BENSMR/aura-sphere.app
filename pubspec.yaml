@@ -13,16 +13,16 @@ dependencies:
 
   # Firebase
   firebase_core: ^3.6.0
-  firebase_auth: ^5.1.0
-  cloud_firestore: ^5.5.0
-  firebase_storage: ^12.3.1
+  firebase_auth: ^5.3.0
+  cloud_firestore: ^5.6.0
+  firebase_storage: ^12.4.10
   cloud_functions: ^5.0.4
 
   # Auth & social
   google_sign_in: ^6.2.2
 
   # State management
-  provider: ^6.0.5
+  provider: ^6.0.0
   flutter_riverpod: ^2.3.6
 
   # UI & Effects
@@ -39,17 +39,22 @@ dependencies:
   http: ^1.1.2
   shared_preferences: ^2.1.1
   image_picker: ^0.8.7
+  flutter_image_compress: ^1.1.0
+  file_picker: ^5.2.3
+  fluttertoast: ^8.0.9
   intl: ^0.19.0
   flutter_localizations:
     sdk: flutter
   lottie: ^2.4.0
-  pdf: ^3.11.3
-  printing: ^5.11.0
-  path_provider: ^2.0.14
+  pdf: ^3.10.4
+  printing: ^5.10.0
+  pdfx: ^2.5.0
+  path_provider: ^2.0.15
   uuid: ^4.0.0
   google_ml_kit: ^0.7.2
   path: ^1.8.3
-  url_launcher: ^6.2.0
+  url_launcher: ^6.1.7
+  fl_chart: ^0.66.0
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +69,12 @@ flutter:
   assets:
     - assets/images/
     - assets/animations/
+    - assets/invoices/
+    - assets/templates/classic_thumb.png
+    - assets/templates/modern_thumb.png
+    - assets/templates/minimal_thumb.png
+    - assets/templates/elegant_thumb.png
+    - assets/templates/business_thumb.png
     - lib/localization/
   fonts:
     - family: Inter

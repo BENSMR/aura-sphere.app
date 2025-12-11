@@ -22,7 +22,7 @@ if (sendgridKey) {
   console.warn("SendGrid key not set. Set with: firebase functions:config:set sendgrid.key=\"SG...\" sendgrid.sender=\"no-reply@yourdomain.com\"");
 }
 
-const stripe = new Stripe(stripeSecret, { apiVersion: "2024-04-10" });
+const stripe = new Stripe(stripeSecret, { apiVersion: "2022-11-15" });
 
 // Express app to handle raw body required by Stripe signature verification
 const app = express();
@@ -49,7 +49,8 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
         {
           const session = event.data.object as Stripe.Checkout.Session;
           const metadata = session.metadata || {};
-          const uid = metadata.uid;
+          // Support both 'uid' and 'userId' in metadata
+          const uid = metadata.uid || metadata.userId;
           const invoiceId = metadata.invoiceId;
           console.log(`checkout.session.completed for uid=${uid} invoiceId=${invoiceId}`);
 
@@ -154,6 +155,8 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
             // Mark invoice as paid with payment info
             await invRef.set({
               paymentVerified: true,
+              status: 'paid',
+              paymentStatus: 'paid',
               paidAt: admin.firestore.FieldValue.serverTimestamp(),
               lastPaymentProvider: 'stripe',
               lastCheckoutSessionId: session.id,
@@ -165,6 +168,37 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, r
               }
             }, { merge: true });
             console.log(`Invoice ${invoiceId} for user ${uid} marked as paid.`);
+
+            // Create payment timeline event if invoice has clientId
+            try {
+              const invSnap = await invRef.get();
+              const invData = invSnap.data();
+              if (invData?.clientId) {
+                const timelineRef = admin.firestore()
+                  .collection('users').doc(uid)
+                  .collection('clients').doc(invData.clientId)
+                  .collection('timeline').doc();
+                
+                await timelineRef.set({
+                  type: 'payment',
+                  title: 'Payment received',
+                  description: `Payment of ${((session.amount_total ?? 0)/100).toFixed(2)} ${session.currency?.toUpperCase()} received`,
+                  amount: (session.amount_total ?? 0) / 100,
+                  currency: session.currency?.toUpperCase() || 'USD',
+                  metadata: {
+                    invoiceId,
+                    paymentId: paymentId,
+                    provider: 'stripe',
+                    sessionId: session.id
+                  },
+                  createdBy: 'system',
+                  createdAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+                console.log(`Timeline event created for payment ${paymentId}`);
+              }
+            } catch (err) {
+              console.error('Failed to create timeline event:', err);
+            }
           } else {
             console.warn('Missing metadata on session; cannot reconcile invoice.');
           }

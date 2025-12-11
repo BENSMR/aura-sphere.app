@@ -14,7 +14,7 @@ class BusinessBranding {
   final String? signatureUrl;
   final CompanyDetails? companyDetails;
 
-  BusinessBranding({
+  const BusinessBranding({
     this.logoUrl,
     this.primaryColor,
     this.accentColor,
@@ -113,7 +113,7 @@ class CompanyDetails {
   final String? website;
   final String? address;
 
-  CompanyDetails({
+  const CompanyDetails({
     required this.name,
     this.phone,
     this.email,

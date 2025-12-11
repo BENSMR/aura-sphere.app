@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../models/invoice_model.dart';
+import '../../data/models/invoice_model.dart';
 import '../../models/payment_record.dart';
 import '../../services/payment_service.dart';
 import '../../providers/user_provider.dart';

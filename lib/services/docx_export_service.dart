@@ -140,7 +140,7 @@ class DocxExportService {
     String? footerText,
   }) {
     final invoiceNumber = '$brandingPrefix-${invoice.invoiceNumber}';
-    final issueDate = _formatDate(invoice.createdAt.toDate());
+    final issueDate = _formatDate(invoice.createdAt);
     final dueDate = _formatDate(invoice.dueDate ?? DateTime.now());
 
     // Basic DOCX XML structure
@@ -311,7 +311,7 @@ class DocxExportService {
     String? footerText,
   }) {
     final invoiceNumber = '$brandingPrefix-${invoice.invoiceNumber}';
-    final issueDate = _formatDate(invoice.createdAt.toDate());
+    final issueDate = _formatDate(invoice.createdAt);
     final dueDate = _formatDate(invoice.dueDate ?? DateTime.now());
 
     return '''<!DOCTYPE html>

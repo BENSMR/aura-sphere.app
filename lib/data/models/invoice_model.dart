@@ -1,5 +1,49 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum InvoiceStatus { draft, sent, paid, unpaid, overdue, partial, cancelled }
+
+class InvoiceItem {
+  final String id;
+  final String description;
+  final double quantity;
+  final double unitPrice;
+  final String? unit;
+  final double? discount; // Optional line item discount
+
+  InvoiceItem({
+    required this.id,
+    required this.description,
+    required this.quantity,
+    required this.unitPrice,
+    this.unit,
+    this.discount,
+  });
+
+  double get total => (quantity * unitPrice) - (discount ?? 0);
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'description': description,
+      'quantity': quantity,
+      'unitPrice': unitPrice,
+      'unit': unit,
+      'discount': discount,
+    };
+  }
+
+  factory InvoiceItem.fromMap(Map<String, dynamic> map) {
+    return InvoiceItem(
+      id: map['id'] ?? '',
+      description: map['description'] ?? '',
+      quantity: (map['quantity'] ?? 0).toDouble(),
+      unitPrice: (map['unitPrice'] ?? 0).toDouble(),
+      unit: map['unit'],
+      discount: map['discount']?.toDouble(),
+    );
+  }
+}
+
 class InvoiceModel {
   final String id;
   final String userId;
@@ -13,19 +57,23 @@ class InvoiceModel {
   final double total;
 
   final String currency; // "USD", "EUR", "MAD", etc.
-  final double taxRate;  // 0.20 = 20%
-  final String status;   // draft | sent | paid | overdue | canceled
+  final double taxRate; // 0.20 = 20%
+  final String status; // unpaid | paid | overdue
   final String? invoiceNumber; // INV-2024-001
   final DateTime? dueDate;
-  final DateTime? paidDate;
+  final DateTime? paymentDate;
+  final DateTime? paidDate; // Legacy field for PDF export
+  final DateTime? paidAt; // When invoice was marked as paid
   final String? pdfUrl; // Firebase Storage URL for PDF
-  final Timestamp createdAt;
-  final Timestamp? updatedAt;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final DateTime? lastReminderAt; // When last reminder was sent
   final String? projectId; // Link to project
   final List<String>? linkedExpenseIds; // Expenses linked to this invoice
   final double discount; // Absolute discount amount
   final String? notes; // Additional invoice notes
   final Map<String, dynamic>? audit; // Audit trail
+  final String? paymentMethod; // Payment method used
 
   InvoiceModel({
     required this.id,
@@ -43,22 +91,28 @@ class InvoiceModel {
     required this.createdAt,
     this.invoiceNumber,
     this.dueDate,
+    this.paymentDate,
     this.paidDate,
+    this.paidAt,
     this.pdfUrl,
     this.updatedAt,
+    this.lastReminderAt,
     this.projectId,
     this.linkedExpenseIds,
     this.discount = 0,
     this.notes,
     this.audit,
+    this.paymentMethod,
   });
 
   // Status helpers
   bool get isDraft => status == 'draft' || status == InvoiceStatus.draft.name;
   bool get isSent => status == 'sent' || status == InvoiceStatus.sent.name;
   bool get isPaid => status == 'paid' || status == InvoiceStatus.paid.name;
+  bool get isUnpaid => status == 'unpaid';
+  bool get isPartial => status == 'partial';
   bool get isOverdue => status == 'overdue' || status == InvoiceStatus.overdue.name;
-  bool get isCanceled => status == 'cancelled' || status == InvoiceStatus.cancelled.name;
+  bool get isCanceled => status == 'cancelled' || status == 'canceled' || status == InvoiceStatus.cancelled.name;
 
   // Expense linking
   bool get hasLinkedExpenses => linkedExpenseIds != null && linkedExpenseIds!.isNotEmpty;
@@ -69,6 +123,13 @@ class InvoiceModel {
 
   // Total with discount applied
   double get totalWithDiscount => total - (discount ?? 0);
+
+  // Days until or since due date
+  int? get daysUntilDue {
+    if (dueDate == null) return null;
+    final now = DateTime.now();
+    return dueDate!.difference(now).inDays;
+  }
 
   /// Calculate totals from items and tax rate
   static InvoiceModel calculateTotals({
@@ -81,16 +142,25 @@ class InvoiceModel {
     required String currency,
     required double taxRate,
     required String status,
-    required Timestamp createdAt,
+    required DateTime createdAt,
     String? invoiceNumber,
     DateTime? dueDate,
+    DateTime? paymentDate,
     DateTime? paidDate,
+    DateTime? paidAt,
     String? pdfUrl,
-    Timestamp? updatedAt,
+    DateTime? updatedAt,
+    DateTime? lastReminderAt,
+    String? projectId,
+    List<String>? linkedExpenseIds,
+    double discount = 0,
+    String? notes,
+    String? paymentMethod,
   }) {
-    final subtotal = items.fold<double>(0, (sum, item) => sum + item.total);
-    final tax = subtotal * taxRate;
-    final total = subtotal + tax;
+    final itemSubtotal = items.fold<double>(0, (sum, item) => sum + item.total);
+    final calculatedSubtotal = itemSubtotal - (discount ?? 0);
+    final calculatedTax = calculatedSubtotal * taxRate;
+    final calculatedTotal = calculatedSubtotal + calculatedTax;
 
     return InvoiceModel(
       id: id,
@@ -99,18 +169,26 @@ class InvoiceModel {
       clientName: clientName,
       clientEmail: clientEmail,
       items: items,
-      subtotal: subtotal,
-      tax: tax,
-      total: total,
+      subtotal: calculatedSubtotal,
+      tax: calculatedTax,
+      total: calculatedTotal,
       currency: currency,
       taxRate: taxRate,
       status: status,
-      createdAt: createdAt,
       invoiceNumber: invoiceNumber,
       dueDate: dueDate,
+      paymentDate: paymentDate,
       paidDate: paidDate,
+      paidAt: paidAt,
       pdfUrl: pdfUrl,
+      createdAt: createdAt,
       updatedAt: updatedAt,
+      lastReminderAt: lastReminderAt,
+      projectId: projectId,
+      linkedExpenseIds: linkedExpenseIds,
+      discount: discount,
+      notes: notes,
+      paymentMethod: paymentMethod,
     );
   }
 
@@ -130,15 +208,19 @@ class InvoiceModel {
     String? status,
     String? invoiceNumber,
     DateTime? dueDate,
+    DateTime? paymentDate,
     DateTime? paidDate,
+    DateTime? paidAt,
     String? pdfUrl,
-    Timestamp? createdAt,
-    Timestamp? updatedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? lastReminderAt,
     String? projectId,
     List<String>? linkedExpenseIds,
     double? discount,
     String? notes,
     Map<String, dynamic>? audit,
+    String? paymentMethod,
   }) {
     return InvoiceModel(
       id: id ?? this.id,
@@ -153,17 +235,21 @@ class InvoiceModel {
       currency: currency ?? this.currency,
       taxRate: taxRate ?? this.taxRate,
       status: status ?? this.status,
-      createdAt: createdAt ?? this.createdAt,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       dueDate: dueDate ?? this.dueDate,
+      paymentDate: paymentDate ?? this.paymentDate,
       paidDate: paidDate ?? this.paidDate,
+      paidAt: paidAt ?? this.paidAt,
       pdfUrl: pdfUrl ?? this.pdfUrl,
+      createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      lastReminderAt: lastReminderAt ?? this.lastReminderAt,
       projectId: projectId ?? this.projectId,
       linkedExpenseIds: linkedExpenseIds ?? this.linkedExpenseIds,
       discount: discount ?? this.discount,
       notes: notes ?? this.notes,
       audit: audit ?? this.audit,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
     );
   }
 
@@ -183,16 +269,20 @@ class InvoiceModel {
       'taxRate': taxRate,
       'status': status,
       'invoiceNumber': invoiceNumber,
-      'dueDate': dueDate,
-      'paidDate': paidDate,
+      'dueDate': dueDate != null ? Timestamp.fromDate(dueDate!) : null,
+      'paymentDate': paymentDate != null ? Timestamp.fromDate(paymentDate!) : null,
+      'paidDate': paidDate != null ? Timestamp.fromDate(paidDate!) : null,
+      'paidAt': paidAt != null ? Timestamp.fromDate(paidAt!) : null,
       'pdfUrl': pdfUrl,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt ?? Timestamp.now(),
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
+      'lastReminderAt': lastReminderAt != null ? Timestamp.fromDate(lastReminderAt!) : null,
       'projectId': projectId,
-      'linkedExpenseIds': linkedExpenseIds ?? [],
+      'linkedExpenseIds': linkedExpenseIds,
       'discount': discount,
       'notes': notes,
-      'audit': audit ?? {},
+      'paymentMethod': paymentMethod,
+      'audit': audit,
     };
   }
 
@@ -206,27 +296,29 @@ class InvoiceModel {
       clientName: data['clientName'] ?? '',
       clientEmail: data['clientEmail'] ?? '',
       items: (data['items'] as List<dynamic>?)
-          ?.map((item) => InvoiceItem.fromMap(item as Map<String, dynamic>))
-          .toList() ??
+              ?.map((item) => InvoiceItem.fromMap(item as Map<String, dynamic>))
+              .toList() ??
           [],
       subtotal: (data['subtotal'] ?? 0).toDouble(),
       tax: (data['tax'] ?? 0).toDouble(),
       total: (data['total'] ?? 0).toDouble(),
       currency: data['currency'] ?? 'USD',
       taxRate: (data['taxRate'] ?? 0).toDouble(),
-      status: data['status'] ?? 'draft',
-      createdAt: data['createdAt'] ?? Timestamp.now(),
+      status: data['status'] ?? 'unpaid',
       invoiceNumber: data['invoiceNumber'],
       dueDate: (data['dueDate'] as Timestamp?)?.toDate(),
+      paymentDate: (data['paymentDate'] as Timestamp?)?.toDate(),
       paidDate: (data['paidDate'] as Timestamp?)?.toDate(),
+      paidAt: (data['paidAt'] as Timestamp?)?.toDate(),
       pdfUrl: data['pdfUrl'],
-      updatedAt: data['updatedAt'],
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      lastReminderAt: (data['lastReminderAt'] as Timestamp?)?.toDate(),
       projectId: data['projectId'],
-      linkedExpenseIds: data['linkedExpenseIds'] != null
-          ? List<String>.from(data['linkedExpenseIds'] as List)
-          : null,
+      linkedExpenseIds: List<String>.from(data['linkedExpenseIds'] ?? []),
       discount: (data['discount'] ?? 0).toDouble(),
       notes: data['notes'],
+      paymentMethod: data['paymentMethod'],
       audit: data['audit'],
     );
   }
@@ -240,33 +332,62 @@ class InvoiceModel {
       clientName: json['clientName'] ?? '',
       clientEmail: json['clientEmail'] ?? '',
       items: (json['items'] as List<dynamic>?)
-          ?.map((item) => InvoiceItem.fromMap(item as Map<String, dynamic>))
-          .toList() ??
+              ?.map((item) => InvoiceItem.fromMap(item as Map<String, dynamic>))
+              .toList() ??
           [],
       subtotal: (json['subtotal'] ?? 0).toDouble(),
       tax: (json['tax'] ?? 0).toDouble(),
       total: (json['total'] ?? 0).toDouble(),
       currency: json['currency'] ?? 'USD',
       taxRate: (json['taxRate'] ?? 0).toDouble(),
-      status: json['status'] ?? 'draft',
-      createdAt: json['createdAt'] is Timestamp
-          ? json['createdAt']
-          : Timestamp.fromDate(DateTime.parse(json['createdAt'] ?? DateTime.now().toString())),
+      status: json['status'] ?? 'unpaid',
       invoiceNumber: json['invoiceNumber'],
-      dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate']) : null,
-      paidDate: json['paidDate'] != null ? DateTime.parse(json['paidDate']) : null,
-      pdfUrl: json['pdfUrl'],
-      updatedAt: json['updatedAt'] is Timestamp ? json['updatedAt'] : null,
-      projectId: json['projectId'],
-      linkedExpenseIds: json['linkedExpenseIds'] != null
-          ? List<String>.from(json['linkedExpenseIds'] as List)
+      dueDate: json['dueDate'] != null
+          ? (json['dueDate'] is Timestamp
+              ? (json['dueDate'] as Timestamp).toDate()
+              : DateTime.parse(json['dueDate'] as String))
           : null,
+      paymentDate: json['paymentDate'] != null
+          ? (json['paymentDate'] is Timestamp
+              ? (json['paymentDate'] as Timestamp).toDate()
+              : DateTime.parse(json['paymentDate'] as String))
+          : null,
+      paidDate: json['paidDate'] != null
+          ? (json['paidDate'] is Timestamp
+              ? (json['paidDate'] as Timestamp).toDate()
+              : DateTime.parse(json['paidDate'] as String))
+          : null,
+      paidAt: json['paidAt'] != null
+          ? (json['paidAt'] is Timestamp
+              ? (json['paidAt'] as Timestamp).toDate()
+              : DateTime.parse(json['paidAt'] as String))
+          : null,
+      pdfUrl: json['pdfUrl'],
+      createdAt: json['createdAt'] != null
+          ? (json['createdAt'] is Timestamp
+              ? (json['createdAt'] as Timestamp).toDate()
+              : DateTime.parse(json['createdAt'] as String))
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? (json['updatedAt'] is Timestamp
+              ? (json['updatedAt'] as Timestamp).toDate()
+              : DateTime.parse(json['updatedAt'] as String))
+          : null,
+      lastReminderAt: json['lastReminderAt'] != null
+          ? (json['lastReminderAt'] is Timestamp
+              ? (json['lastReminderAt'] as Timestamp).toDate()
+              : DateTime.parse(json['lastReminderAt'] as String))
+          : null,
+      projectId: json['projectId'],
+      linkedExpenseIds: List<String>.from(json['linkedExpenseIds'] ?? []),
       discount: (json['discount'] ?? 0).toDouble(),
       notes: json['notes'],
+      paymentMethod: json['paymentMethod'],
       audit: json['audit'],
     );
   }
 
+  /// Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -283,169 +404,41 @@ class InvoiceModel {
       'status': status,
       'invoiceNumber': invoiceNumber,
       'dueDate': dueDate?.toIso8601String(),
+      'paymentDate': paymentDate?.toIso8601String(),
       'paidDate': paidDate?.toIso8601String(),
+      'paidAt': paidAt?.toIso8601String(),
       'pdfUrl': pdfUrl,
-      'createdAt': createdAt.toDate().toIso8601String(),
-      'updatedAt': updatedAt?.toDate().toIso8601String(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+      'lastReminderAt': lastReminderAt?.toIso8601String(),
       'projectId': projectId,
-      'linkedExpenseIds': linkedExpenseIds ?? [],
+      'linkedExpenseIds': linkedExpenseIds,
       'discount': discount,
       'notes': notes,
-      'audit': audit ?? {},
+      'paymentMethod': paymentMethod,
     };
   }
 
-  /// Convert to map format required by Cloud Functions for export
-  ///
-  /// This method prepares invoice data for the exportInvoiceFormats
-  /// and generateInvoicePdf Cloud Functions.
-  ///
-  /// Returns a map with all required fields:
-  /// - invoiceNumber: Invoice identifier
-  /// - createdAt: ISO8601 formatted date
-  /// - dueDate: ISO8601 formatted due date
-  /// - items: List of invoice items with all details
-  /// - currency: Currency code (USD, EUR, etc.)
-  /// - subtotal: Subtotal before tax
-  /// - totalVat: Total VAT/tax amount
-  /// - discount: Discount amount (if any)
-  /// - total: Final total amount
-  /// - businessName: Your company name
-  /// - businessAddress: Your company address
-  /// - clientName: Client name
-  /// - clientEmail: Client email
-  /// - clientAddress: Client address
-  /// - notes: Invoice notes (optional)
-  /// - status: Invoice status
-  ///
-  /// Example:
-  /// ```dart
-  /// final data = invoice.toMapForExport();
-  /// final urls = await invoiceServiceClient.exportInvoiceAllFormats(data);
-  /// ```
+  /// Export as map for Excel/CSV
   Map<String, dynamic> toMapForExport({
-    String businessName = 'Your Business',
+    String businessName = '',
     String businessAddress = '',
   }) {
     return {
-      // Invoice metadata
-      'invoiceNumber': invoiceNumber ?? id,
-      'invoiceId': id,
-      'createdAt': createdAt.toDate().toIso8601String(),
-      'dueDate': (dueDate ?? DateTime.now().add(Duration(days: 30))).toIso8601String(),
-
-      // Invoice items with full details
-      'items': items
-          .map((item) => {
-                'id': item.toString().hashCode.toString(), // Generate ID if not present
-                'name': item.description,
-                'description': item.description,
-                'quantity': item.quantity,
-                'unitPrice': item.unitPrice,
-                'vatRate': taxRate, // Use invoice tax rate for items
-                'total': item.total,
-              })
-          .toList(),
-
-      // Financial details
-      'currency': currency,
-      'subtotal': subtotal,
-      'totalVat': tax,
-      'discount': discount ?? 0,
-      'total': total,
-
-      // Business information
       'businessName': businessName,
       'businessAddress': businessAddress,
-
-      // Client information
+      'invoiceNumber': invoiceNumber,
       'clientName': clientName,
       'clientEmail': clientEmail,
-      'clientAddress': '', // Not stored in current model, can be passed in
-
-      // Additional details
-      'notes': notes ?? '',
+      'amount': total,
+      'currency': currency,
       'status': status,
-      'taxRate': taxRate,
-      'linkedExpenseIds': linkedExpenseIds ?? [],
+      'dueDate': dueDate?.toIso8601String(),
+      'createdAt': createdAt.toIso8601String(),
+      'itemCount': items.length,
+      'subtotal': subtotal,
+      'tax': tax,
+      'discount': discount,
     };
-  }
-}
-
-/// Backward compatibility alias
-typedef Invoice = InvoiceModel;
-
-
-/// Individual invoice line item
-class InvoiceItem {
-  final String description;
-  final double quantity;
-  final double unitPrice;
-  final double total;
-
-  InvoiceItem({
-    required this.description,
-    required this.quantity,
-    required this.unitPrice,
-  }) : total = quantity * unitPrice;
-
-  factory InvoiceItem.fromMap(Map<String, dynamic> map) {
-    final qty = (map['quantity'] ?? 1).toDouble();
-    final price = (map['unitPrice'] ?? 0).toDouble();
-    return InvoiceItem(
-      description: map['description'] ?? '',
-      quantity: qty,
-      unitPrice: price,
-    );
-  }
-
-  factory InvoiceItem.fromJson(Map<String, dynamic> json) {
-    return InvoiceItem.fromMap(json);
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'description': description,
-      'quantity': quantity,
-      'unitPrice': unitPrice,
-      'total': total,
-    };
-  }
-
-  Map<String, dynamic> toJson() {
-    return toMap();
-  }
-
-  double get price => unitPrice;
-}
-
-/// Invoice status enum
-enum InvoiceStatus {
-  draft,
-  sent,
-  paid,
-  overdue,
-  cancelled;
-
-  String get label {
-    switch (this) {
-      case InvoiceStatus.draft:
-        return 'Draft';
-      case InvoiceStatus.sent:
-        return 'Sent';
-      case InvoiceStatus.paid:
-        return 'Paid';
-      case InvoiceStatus.overdue:
-        return 'Overdue';
-      case InvoiceStatus.cancelled:
-        return 'Cancelled';
-    }
-  }
-
-  static InvoiceStatus fromString(String status) {
-    return InvoiceStatus.values.firstWhere(
-      (e) => e.name == status,
-      orElse: () => InvoiceStatus.draft,
-    );
   }
 }

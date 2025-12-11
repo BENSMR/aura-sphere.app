@@ -118,6 +118,7 @@ class _InvoiceCreateScreenState extends State<InvoiceCreateScreen> {
                         final price = double.tryParse(_priceCtl.text) ?? 0.0;
                         final items = [
                           InvoiceItem(
+                            id: 'item_${DateTime.now().millisecondsSinceEpoch}',
                             description: _itemNameCtl.text.trim(),
                             quantity: qty,
                             unitPrice: price,
@@ -125,7 +126,7 @@ class _InvoiceCreateScreenState extends State<InvoiceCreateScreen> {
                         ];
 
                         final invoice = InvoiceModel(
-                          id: '',
+                          id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
                           userId: widget.currentUserId,
                           clientId: widget.contact.id,
                           clientName: widget.contact.name,
@@ -137,7 +138,7 @@ class _InvoiceCreateScreenState extends State<InvoiceCreateScreen> {
                           currency: 'EUR',
                           taxRate: 0.0,
                           status: 'draft',
-                          createdAt: Timestamp.now(),
+                          createdAt: DateTime.now(),
                           invoiceNumber: _invoiceNumber,
                           dueDate: DateTime.now().add(const Duration(days: 14)),
                           notes: _notesCtl.text.trim().isEmpty ? null : _notesCtl.text.trim(),

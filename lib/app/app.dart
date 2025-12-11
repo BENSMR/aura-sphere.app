@@ -7,11 +7,13 @@ import '../core/constants/config.dart';
 import 'theme.dart';
 import '../providers/user_provider.dart';
 import '../providers/business_provider.dart';
+import '../providers/client_provider.dart';
 import '../providers/crm_provider.dart';
 import '../providers/crm_insights_provider.dart';
 import '../providers/task_provider.dart';
 import '../providers/invoice_provider.dart';
 import '../providers/expense_provider.dart';
+import '../providers/branding_provider.dart';
 import '../screens/splash/splash_screen.dart';
 import '../services/firebase/auth_service.dart';
 import '../config/app_routes.dart';
@@ -39,6 +41,7 @@ class AuraSphereApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => BusinessProvider()),
         ChangeNotifierProvider(create: (_) => InvoiceProvider()),
+        ChangeNotifierProvider(create: (_) => ClientProvider()),
         ChangeNotifierProvider(
           create: (context) {
             final authService = AuthService();
@@ -62,6 +65,7 @@ class AuraSphereApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CrmInsightsProvider()),
         ChangeNotifierProvider(create: (_) => TaskProvider()),
         ChangeNotifierProvider(create: (_) => ExpenseProvider()),
+        ChangeNotifierProvider(create: (_) => BrandingProvider()),
       ],
       child: MaterialApp(
         title: Config.appName,

@@ -1,0 +1,369 @@
+diff --git a/functions/src/billing/generateInvoicePreview.ts b/functions/src/billing/generateInvoicePreview.ts
+new file mode 100644
+index 0000000..1234567
+--- /dev/null
++++ b/functions/src/billing/generateInvoicePreview.ts
+@@ -0,0 +1,47 @@
++import * as functions from "firebase-functions";
++import * as admin from "firebase-admin";
++import * as PDFDocument from "pdfkit";
++import * as StreamBuffers from "stream-buffers";
++
++if (!admin.apps.length) admin.initializeApp();
++
++export const generateInvoicePreview = functions.https.onCall(async (data, context) => {
++  try {
++    if (!context.auth || !context.auth.uid) {
++      throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
++    }
++    const uid = context.auth.uid;
++    const sample = data?.sampleInvoice || {};
++
++    const doc: any = new (PDFDocument as any)({ size: "A4", margin: 40 });
++    const stream = new StreamBuffers.WritableStreamBuffer({ initialSize: 100 * 1024, incrementAmount: 10 * 1024 });
++    doc.pipe(stream);
++
++    doc.fontSize(18).text(sample?.companyName ?? "Company Name", { align: "left" });
++    doc.fontSize(20).text("Invoice Preview", { align: "right" });
++    doc.moveDown();
++    doc.fontSize(12).text(`Invoice: ${sample?.invoiceNumber ?? "AURA-0001"}`);
++    doc.moveDown(1);
++    doc.text("Item 1 - Sample description", { continued: true });
++    doc.text(" 1 x 100.00", { align: "right" });
++    doc.moveDown();
++    doc.text("Total: 100.00 USD", { align: "right" });
++    doc.end();
++
++    const pdfBuffer = stream.getContents() as Buffer;
++    const bucket = admin.storage().bucket();
++    const filePath = `previews/${uid}/${Date.now()}.pdf`;
++    const file = bucket.file(filePath);
++    await file.save(pdfBuffer, { metadata: { contentType: "application/pdf" } });
++    const expires = Date.now() + 1000 * 60 * 60; // 1 hour
++    const [signedUrl] = await file.getSignedUrl({ action: "read", expires });
++    return { url: signedUrl };
++  } catch (err: any) {
++    throw new functions.https.HttpsError("internal", err.message || "Error generating preview");
++  }
++});
+diff --git a/functions/src/billing/generateInvoiceReceipt.ts b/functions/src/billing/generateInvoiceReceipt.ts
+index 1234567..2345678 100644
+--- a/functions/src/billing/generateInvoiceReceipt.ts
++++ b/functions/src/billing/generateInvoiceReceipt.ts
+@@ -1,6 +1,8 @@
+ import * as functions from "firebase-functions";
+ import * as admin from "firebase-admin";
+ import * as PDFDocument from "pdfkit";
+ import * as StreamBuffers from "stream-buffers";
++import * as sgMail from "@sendgrid/mail";
++import axios from "axios";
+ 
+ if (!admin.apps.length) {
+   admin.initializeApp();
+@@ -30,7 +32,12 @@ export const generateInvoiceReceipt = functions.https.onCall(async (data, conte
+       // Load business profile if exists
+       const businessRef = db.collection("users").doc(uid).collection("meta").doc("business");
+       const businessSnap = await businessRef.get();
+       const business = businessSnap.exists ? (businessSnap.data() as any) : {};
++
++      // Load branding settings if exists
++      const brandingRef = db.collection("users").doc(uid).collection("branding").doc("settings");
++      const brandingSnap = await brandingRef.get();
++      const branding = brandingSnap.exists ? (brandingSnap.data() as any) : {};
+ 
+       const doc: any = new (PDFDocument as any)({ size: "A4", margin: 40 });
+       const stream = new StreamBuffers.WritableStreamBuffer({
+@@ -42,10 +49,14 @@ export const generateInvoiceReceipt = functions.https.onCall(async (data, conte
+       doc.pipe(stream);
+ 
+       // Header: logo (if available), business name & contact
+-      const logoUrl = business?.logoUrl;
++      // Header: prefer branding.logoUrl, fallback to business.logoUrl
++      const logoUrl = (branding?.logoUrl) || (business?.logoUrl);
+ 
+-      // Business name & invoice title
+-      const businessName = business?.businessName || business?.company || "AuraSphere";
+-      doc.fontSize(18).text(businessName, 160, 50, { align: "left" });
+-      doc.fontSize(10).text(business?.address ?? "", 160, 72);
++      // Business name & invoice title (use branding companyDetails if supplied)
++      const businessName = (branding?.companyDetails?.name) || (business?.businessName) || (business?.company) || "AuraSphere";
++      doc.fontSize(18).fillColor(branding?.primaryColor || "#000000").text(businessName, 160, 50, { align: "left" });
++      const baddress = branding?.companyDetails?.address || business?.address || "";
++      if (baddress) doc.fontSize(10).fillColor(branding?.textColor || "#333333").text(baddress, 160, 72);
+ 
+       // ... rest of PDF generation ...
+@@ -53,16 +64,16 @@ export const generateInvoiceReceipt = functions.https.onCall(async (data, conte
+       // Footer
+-      doc.fontSize(9).text(business?.documentFooter ?? "Thank you for your business.", 40, doc.page.height - 80, { align: "center", width: doc.page.width - 80 });
++      const footerNote = branding?.footerNote || business?.documentFooter || "Thank you for your business.";
++      doc.fontSize(9).fillColor(branding?.textColor || "#333333").text(footerNote, 40, doc.page.height - 80, { align: "center", width: doc.page.width - 80 });
+ 
+       // Paid watermark if invoice is paid
+       if (invoice?.paymentStatus === "paid") {
+-        // simple rotated watermark
++        const watermark = branding?.watermarkText || "PAID";
++        doc.save();
+         doc.rotate(-45, { origin: [doc.page.width / 2, doc.page.height / 2] });
+-        doc.fontSize(60).opacity(0.08).text("PAID", doc.page.width / 4, doc.page.height / 2, { align: "center" });
++        doc.fontSize(60).fillColor(branding?.primaryColor || "#0A84FF").opacity(0.08).text(watermark, doc.page.width / 4, doc.page.height / 2, { align: "center" });
++        doc.restore();
+         doc.opacity(1);
+       }
+ 
+@@ -77,6 +88,7 @@ export const generateInvoiceReceipt = functions.https.onCall(async (data, conte
+       });
+ 
+       // Save URL to invoice doc
++      await invoiceRef.set({ receiptPdfUrl: signedUrl, brandingAppliedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+-      await invoiceRef.set({ receiptPdfUrl: signedUrl }, { merge: true });
+ 
+       // Auto-send receipt email via SendGrid if configured and customer email exists
+@@ -91,7 +103,6 @@ export const generateInvoiceReceipt = functions.https.onCall(async (data, conte
+             }
+           };
+ 
+           await sgMail.send(msg);
+           console.log(`Receipt emailed to ${customerEmail}`);
+-          // Optionally record that email was sent
+           await invoiceRef.set({ receiptEmailSentAt: admin.firestore.FieldValue.serverTimestamp(), receiptEmailTo: customerEmail }, { merge: true });
+         } catch (err) {
+           console.error("Failed to send receipt email:", err);
+diff --git a/functions/src/index.ts b/functions/src/index.ts
+index 1234567..2345678 100644
+--- a/functions/src/index.ts
++++ b/functions/src/index.ts
+@@ -1,3 +1,4 @@
+ export * from "./billing/sendReceiptEmail";
+ export * from "./billing/generateInvoiceReceipt";
++export * from "./billing/generateInvoicePreview";
+diff --git a/lib/providers/branding_provider.dart b/lib/providers/branding_provider.dart
+new file mode 100644
+index 0000000..1234567
+--- /dev/null
++++ b/lib/providers/branding_provider.dart
+@@ -0,0 +1,27 @@
++import 'package:flutter/material.dart';
++import 'package:cloud_firestore/cloud_firestore.dart';
++
++class BrandingProvider extends ChangeNotifier {
++  final FirebaseFirestore _db = FirebaseFirestore.instance;
++  Map<String, dynamic>? settings;
++  bool loading = false;
++
++  Future<void> load(String uid) async {
++    loading = true;
++    notifyListeners();
++    final snap = await _db.collection('users').doc(uid).collection('branding').doc('settings').get();
++    settings = snap.exists ? snap.data() : {};
++    loading = false;
++    notifyListeners();
++  }
++
++  Future<void> save(String uid, Map<String, dynamic> newSettings) async {
++    await _db.collection('users').doc(uid).collection('branding').doc('settings').set(newSettings, SetOptions(merge: true));
++    settings = {...(settings ?? {}), ...newSettings};
++    notifyListeners();
++  }
++}
+diff --git a/lib/services/branding_service.dart b/lib/services/branding_service.dart
+new file mode 100644
+index 0000000..1234567
+--- /dev/null
++++ b/lib/services/branding_service.dart
+@@ -0,0 +1,20 @@
++import 'dart:io';
++import 'package:firebase_storage/firebase_storage.dart';
++import 'package:cloud_firestore/cloud_firestore.dart';
++
++class BrandingService {
++  final FirebaseStorage _storage = FirebaseStorage.instance;
++  final FirebaseFirestore _db = FirebaseFirestore.instance;
++
++  Future<String> uploadFile(String uid, File file, String destPath) async {
++    final ref = _storage.ref().child('$destPath/${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}');
++    await ref.putFile(file);
++    final url = await ref.getDownloadURL();
++    return url;
++  }
++
++  Future<void> saveBranding(String uid, Map<String, dynamic> settings) async {
++    await _db.collection('users').doc(uid).collection('branding').doc('settings').set(settings, SetOptions(merge: true));
++  }
++}
+diff --git a/lib/screens/settings/invoice_branding_screen.dart b/lib/screens/settings/invoice_branding_screen.dart
+new file mode 100644
+index 0000000..1234567
+--- /dev/null
++++ b/lib/screens/settings/invoice_branding_screen.dart
+@@ -0,0 +1,195 @@
++import 'dart:io';
++import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
++import '../../providers/branding_provider.dart';
++import '../../services/branding_service.dart';
++import 'package:image_picker/image_picker.dart';
++import 'package:firebase_auth/firebase_auth.dart';
++import 'package:cloud_functions/cloud_functions.dart';
++import 'package:url_launcher/url_launcher_string.dart';
++
++class InvoiceBrandingScreen extends StatefulWidget {
++  const InvoiceBrandingScreen({Key? key}) : super(key: key);
++
++  @override
++  State<InvoiceBrandingScreen> createState() => _InvoiceBrandingScreenState();
++}
++
++class _InvoiceBrandingScreenState extends State<InvoiceBrandingScreen> {
++  final _primaryController = TextEditingController();
++  final _accentController = TextEditingController();
++  final _textController = TextEditingController();
++  final _footerController = TextEditingController();
++  final _watermarkController = TextEditingController();
++  bool _saving = false;
++  String? _logoUrl;
++  String? _signatureUrl;
++
++  @override
++  void initState() {
++    super.initState();
++    final uid = FirebaseAuth.instance.currentUser?.uid;
++    if (uid != null) {
++      final provider = Provider.of<BrandingProvider>(context, listen: false);
++      provider.load(uid).then((_) {
++        final s = provider.settings ?? {};
++        _primaryController.text = s['primaryColor'] ?? '#0A84FF';
++        _accentController.text = s['accentColor'] ?? '#00FFC8';
++        _textController.text = s['textColor'] ?? '#0D0D12';
++        _footerController.text = s['footerNote'] ?? '';
++        _watermarkController.text = s['watermarkText'] ?? 'PAID';
++        setState(() {
++          _logoUrl = s['logoUrl'];
++          _signatureUrl = s['signatureUrl'];
++        });
++      });
++    }
++  }
++
++  Future<void> _pickLogo() async {
++    final picker = ImagePicker();
++    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1200);
++    if (picked == null) return;
++    final file = File(picked.path);
++    final uid = FirebaseAuth.instance.currentUser!.uid;
++    setState(() => _saving = true);
++    final svc = BrandingService();
++    final url = await svc.uploadFile(uid, file, 'branding/logo');
++    setState(() {
++      _logoUrl = url;
++      _saving = false;
++    });
++  }
++
++  Future<void> _pickSignature() async {
++    final picker = ImagePicker();
++    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1200);
++    if (picked == null) return;
++    final file = File(picked.path);
++    final uid = FirebaseAuth.instance.currentUser!.uid;
++    setState(() => _saving = true);
++    final svc = BrandingService();
++    final url = await svc.uploadFile(uid, file, 'branding/signature');
++    setState(() {
++      _signatureUrl = url;
++      _saving = false;
++    });
++  }
++
++  Future<void> _save() async {
++    final uid = FirebaseAuth.instance.currentUser!.uid;
++    setState(() => _saving = true);
++    final svc = BrandingService();
++    final settings = {
++      'logoUrl': _logoUrl,
++      'signatureUrl': _signatureUrl,
++      'primaryColor': _primaryController.text.trim(),
++      'accentColor': _accentController.text.trim(),
++      'textColor': _textController.text.trim(),
++      'footerNote': _footerController.text.trim(),
++      'watermarkText': _watermarkController.text.trim(),
++    };
++    await svc.saveBranding(uid, settings);
++    final provider = Provider.of<BrandingProvider>(context, listen: false);
++    await provider.load(uid);
++    setState(() => _saving = false);
++    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Branding saved')));
++  }
++
++  Future<void> _preview() async {
++    final functions = FirebaseFunctions.instance;
++    final callable = functions.httpsCallable('generateInvoicePreview');
++    final sample = {
++      'companyName': 'Preview Company',
++      'invoiceNumber': 'AURA-PREVIEW-1'
++    };
++    final res = await callable.call({'sampleInvoice': sample});
++    final url = (res.data as Map)['url'] as String?;
++    if (url != null) await launchUrlString(url);
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Scaffold(
++      appBar: AppBar(title: const Text('Branding & Templates')),
++      body: SingleChildScrollView(
++        padding: const EdgeInsets.all(16),
++        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
++          const Text('Logo', style: TextStyle(fontWeight: FontWeight.bold)),
++          const SizedBox(height: 8),
++          _logoUrl != null
++              ? Image.network(_logoUrl!, width: 160, height: 80, fit: BoxFit.contain)
++              : Container(height: 80, color: Colors.grey[200], width: 160),
++          TextButton.icon(onPressed: _pickLogo, icon: const Icon(Icons.upload_file), label: const Text('Upload Logo')),
++          const SizedBox(height: 12),
++          const Text('Signature (optional)', style: TextStyle(fontWeight: FontWeight.bold)),
++          const SizedBox(height: 8),
++          _signatureUrl != null
++              ? Image.network(_signatureUrl!, width: 160, height: 80, fit: BoxFit.contain)
++              : Container(height: 80, color: Colors.grey[200], width: 160),
++          TextButton.icon(onPressed: _pickSignature, icon: const Icon(Icons.upload_file), label: const Text('Upload Signature')),
++          const SizedBox(height: 12),
++          const Text('Colors (hex)', style: TextStyle(fontWeight: FontWeight.bold)),
++          const SizedBox(height: 8),
++          TextField(controller: _primaryController, decoration: InputDecoration(labelText: 'Primary Color (#hex)')),
++          TextField(controller: _accentController, decoration: InputDecoration(labelText: 'Accent Color')),
++          TextField(controller: _textController, decoration: InputDecoration(labelText: 'Text Color')),
++          const SizedBox(height: 12),
++          TextField(controller: _footerController, decoration: InputDecoration(labelText: 'Footer note')),
++          TextField(controller: _watermarkController, decoration: InputDecoration(labelText: 'Watermark text')),
++          const SizedBox(height: 16),
++          Row(children: [
++            ElevatedButton(onPressed: _save, child: _saving ? CircularProgressIndicator(color: Colors.white) : Text('Save Branding')),
++            const SizedBox(width: 12),
++            OutlinedButton(onPressed: _preview, child: const Text('Preview Sample')),
++          ]),
++          const SizedBox(height: 18),
++          const Text('Live Preview', style: TextStyle(fontWeight: FontWeight.bold)),
++          const SizedBox(height: 8),
++          Card(
++            child: Padding(
++              padding: const EdgeInsets.all(12.0),
++              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
++                Row(children: [
++                  if (_logoUrl != null) Image.network(_logoUrl!, width: 100, height: 50),
++                  const SizedBox(width: 12),
++                  Text('Your Company', style: TextStyle(fontSize: 18, color: Colors.black))
++                ]),
++                const SizedBox(height: 8),
++                Text('Invoice • AURA-0001', style: TextStyle(fontWeight: FontWeight.w600)),
++                const SizedBox(height: 8),
++                Text('Customer: John Doe'),
++                const SizedBox(height: 8),
++                Text('Total: 100.00 EUR', style: TextStyle(fontWeight: FontWeight.bold)),
++              ]),
++            ),
++          )
++        ]),
++      ),
++    );
++  }
++}

@@ -335,7 +335,7 @@ class InvoiceDetailCardWithEmail extends StatelessWidget {
   Widget build(BuildContext context) {
     final invoiceNumber = invoice.invoiceNumber ?? invoice.id;
     final createdDate =
-        invoice.createdAt.toDate().toString().split(' ')[0];
+        invoice.createdAt.toString().split(' ')[0];
     final dueDate = invoice.dueDate != null
         ? invoice.dueDate!.toLocal().toString().split(' ')[0]
         : 'N/A';

@@ -48,7 +48,7 @@ class BrandingProfileService {
       if (response.data == null) return null;
 
       final data = response.data as Map<String, dynamic>;
-      return BusinessBranding.fromJson(data);
+      return BusinessBranding.fromFirestore(data);
     } catch (e) {
       print('Error fetching branding profile: $e');
       return null;
@@ -79,7 +79,7 @@ class BrandingProfileService {
       final response = await callable.call({});
 
       final data = response.data as Map<String, dynamic>;
-      return BusinessBranding.fromJson(data);
+      return BusinessBranding.fromFirestore(data);
     } catch (e) {
       print('Error fetching default branding: $e');
       // Return a hardcoded default if Cloud Function fails
@@ -113,7 +113,7 @@ class BrandingProfileService {
       }
 
       final branding = data['branding'] as Map<String, dynamic>;
-      return BusinessBranding.fromJson(branding);
+      return BusinessBranding.fromFirestore(branding);
     } catch (e) {
       print('Error creating branding from template: $e');
       rethrow;

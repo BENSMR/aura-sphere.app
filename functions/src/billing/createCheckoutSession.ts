@@ -13,7 +13,7 @@ if (!stripeSecret) {
   console.warn("Stripe secret not set in functions config. Set it with: firebase functions:config:set stripe.secret=\"sk_xxx\"");
 }
 
-const stripe = new Stripe(stripeSecret || "", { apiVersion: "2024-04-10" });
+const stripe = new Stripe(stripeSecret || "", { apiVersion: "2022-11-15" });
 
 /**
  * Callable function: createCheckoutSession

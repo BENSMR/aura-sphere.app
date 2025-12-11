@@ -7,6 +7,7 @@ class AppUser {
   final String lastName;
   final String avatarUrl;
   final int auraTokens;
+  final String? invoiceTemplate;
 
   AppUser({
     required this.uid,
@@ -15,6 +16,7 @@ class AppUser {
     required this.lastName,
     required this.avatarUrl,
     required this.auraTokens,
+    this.invoiceTemplate,
   });
 
   factory AppUser.fromFirestore(DocumentSnapshot doc) {
@@ -26,6 +28,27 @@ class AppUser {
       lastName: data['lastName'] ?? '',
       avatarUrl: data['avatarUrl'] ?? '',
       auraTokens: data['auraTokens'] != null ? (data['auraTokens'] as num).toInt() : 0,
+      invoiceTemplate: data['invoiceTemplate'] as String?,
+    );
+  }
+
+  AppUser copyWith({
+    String? uid,
+    String? email,
+    String? firstName,
+    String? lastName,
+    String? avatarUrl,
+    int? auraTokens,
+    String? invoiceTemplate,
+  }) {
+    return AppUser(
+      uid: uid ?? this.uid,
+      email: email ?? this.email,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      auraTokens: auraTokens ?? this.auraTokens,
+      invoiceTemplate: invoiceTemplate ?? this.invoiceTemplate,
     );
   }
 
@@ -36,6 +59,7 @@ class AppUser {
       'lastName': lastName,
       'avatarUrl': avatarUrl,
       'auraTokens': auraTokens,
+      'invoiceTemplate': invoiceTemplate,
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }

@@ -6,7 +6,7 @@ const db = admin.firestore();
 
 const STRIPE_SECRET = functions.config().stripe?.secret || process.env.STRIPE_SECRET;
 const STRIPE_WEBHOOK_SECRET = functions.config().stripe?.webhook_secret || process.env.STRIPE_WEBHOOK_SECRET;
-const stripe = new Stripe(STRIPE_SECRET || "", { apiVersion: "2024-04-10" });
+const stripe = new Stripe(STRIPE_SECRET || "", { apiVersion: "2022-11-15" });
 
 export const stripeWebhook = functions.https.onRequest(async (req, res) => {
   const sig = req.headers["stripe-signature"] as string | undefined;

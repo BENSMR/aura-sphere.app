@@ -10,7 +10,7 @@ class InvoiceService {
 
   /// Create invoice in Firestore and optionally generate exports by calling cloud function
   /// Returns the callable function response map if generatePdf==true, otherwise returns null.
-  static Future<Map<String, dynamic>?> createInvoice(Invoice invoice, {bool generatePdf = false}) async {
+  static Future<Map<String, dynamic>?> createInvoice(InvoiceModel invoice, {bool generatePdf = false}) async {
     // prepare map
     final map = invoice.toMap();
     // set createdAt server side
