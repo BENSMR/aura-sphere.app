@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions';
 import admin from 'firebase-admin';
+import { logAuditEvent, AuditType, AuditStatus, updateAuditStatus } from './auditLogger';
 
 const db = admin.firestore();
 const messaging = admin.messaging();
@@ -32,10 +33,23 @@ export const sendPushNotification = async (
   try {
     const { userId, title, body, notificationType, severity, actionUrl, data } = payload;
 
+    // Log as queued
+    const auditId = await logAuditEvent(
+      userId,
+      AuditType.PUSH_QUEUED,
+      AuditStatus.QUEUED,
+      undefined,
+      undefined,
+      { title, body, type: notificationType }
+    );
+
     // Get user's registered devices
     const devicesSnapshot = await db.collection('users').doc(userId).collection('devices').get();
     if (devicesSnapshot.empty) {
       logger.warn(`No devices registered for user ${userId}`);
+      if (auditId) {
+        await updateAuditStatus(auditId, AuditStatus.FAILED, 'No devices registered');
+      }
       return { success: false, error: 'No devices registered' };
     }
 
@@ -164,34 +178,35 @@ export const sendPushNotification = async (
         });
       } else {
         failureCount++;
-        const error = results[i] as PromiseRejectedResult;
+        const error = (results[i] as PromiseRejectedResult).reason;
         const deviceId = deviceDocs[i].id;
+        
+        logger.error(`Failed to send to device ${deviceId}: ${error?.code || error?.message}`);
         
         // Remove invalid tokens
         if (
-          error.reason?.code === 'messaging/invalid-registration-token' ||
-          error.reason?.code === 'messaging/registration-token-not-registered'
+          error?.code === 'messaging/invalid-registration-token' ||
+          error?.code === 'messaging/registration-token-not-registered'
         ) {
           await removeInvalidDevice(userId, deviceId);
         }
       }
     }
 
-    // Log notification to user's notification history
-    await logNotification(userId, {
-      type: notificationType,
-      title,
-      body,
-      severity: severity || 'low',
-      payload: data || {},
-      read: false,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      delivered: successCount > 0,
-      meta: {
-        sentToDevices: successCount,
-        failedDevices: failureCount,
-      },
-    });
+    // Update audit status
+    if (auditId) {
+      if (failureCount === 0) {
+        await updateAuditStatus(auditId, AuditStatus.SENT);
+      } else if (successCount === 0) {
+        await updateAuditStatus(auditId, AuditStatus.FAILED, `All ${failureCount} devices failed`);
+      } else {
+        await updateAuditStatus(
+          auditId,
+          AuditStatus.SENT,
+          `Partial delivery: ${successCount} sent, ${failureCount} failed`
+        );
+      }
+    }
 
     logger.info(`Push notification sent to user ${userId}: ${successCount} success, ${failureCount} failed`);
 

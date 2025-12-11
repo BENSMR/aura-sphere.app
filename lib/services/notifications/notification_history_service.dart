@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'notification_audit_service.dart';
 
 enum NotificationType { anomaly, invoice, inventory, system }
 
@@ -204,6 +205,19 @@ class NotificationHistoryService {
       }
 
       await batch.commit();
+      
+      // Log audit
+      final auditService = NotificationAuditService();
+      for (final doc in snapshot.docs) {
+        await auditService.recordAudit(
+          actor: userId,
+          targetUid: userId,
+          type: NotificationAuditType.notificationRead,
+          status: AuditStatus.sent,
+          eventId: doc.id,
+        );
+      }
+
       debugPrint('✅ All notifications marked as read');
       return true;
     } catch (e) {
@@ -224,6 +238,16 @@ class NotificationHistoryService {
           .collection('notifications')
           .doc(notificationId)
           .delete();
+
+      // Log audit
+      final auditService = NotificationAuditService();
+      await auditService.recordAudit(
+        actor: userId,
+        targetUid: userId,
+        type: NotificationAuditType.notificationDeleted,
+        status: AuditStatus.sent,
+        eventId: notificationId,
+      );
 
       debugPrint('✅ Notification deleted: $notificationId');
       return true;

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'notification_audit_service.dart';
 
 enum DevicePlatform { android, ios, web }
 
@@ -112,6 +113,17 @@ class DeviceService {
             },
           }, SetOptions(merge: true));
 
+      // Log audit event
+      final auditService = NotificationAuditService();
+      await auditService.recordAudit(
+        actor: userId,
+        targetUid: userId,
+        type: NotificationAuditType.deviceRegistered,
+        status: AuditStatus.sent,
+        eventId: deviceId,
+        metadata: {'platform': platform.name, 'deviceName': deviceName},
+      );
+
       debugPrint('✅ Device registered: $deviceId ($platform)');
       return true;
     } catch (e) {
@@ -168,6 +180,17 @@ class DeviceService {
             'lastSeen': FieldValue.serverTimestamp(),
           });
 
+      // Log audit event
+      final auditService = NotificationAuditService();
+      await auditService.recordAudit(
+        actor: userId,
+        targetUid: userId,
+        type: NotificationAuditType.preferencesUpdated,
+        status: AuditStatus.sent,
+        eventId: deviceId,
+        metadata: {'prefs': prefs.toMap()},
+      );
+
       debugPrint('✅ Device preferences updated: $deviceId');
       return true;
     } catch (e) {
@@ -188,6 +211,16 @@ class DeviceService {
           .collection('devices')
           .doc(deviceId)
           .delete();
+
+      // Log audit event
+      final auditService = NotificationAuditService();
+      await auditService.recordAudit(
+        actor: userId,
+        targetUid: userId,
+        type: NotificationAuditType.deviceRemoved,
+        status: AuditStatus.sent,
+        eventId: deviceId,
+      );
 
       debugPrint('✅ Device removed: $deviceId');
       return true;

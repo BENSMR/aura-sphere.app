@@ -561,6 +561,36 @@ service cloud.firestore {
       allow write: if false; // Server-only
     }
 
+    // Notifications Audit Collection - Immutable audit trail for all notifications
+    // Path: /notifications_audit/{auditId}
+    // Purpose: Track notification lifecycle (queued → sent/failed) for compliance and debugging
+    // Schema:
+    //   - actor: uid or 'server' (who triggered the notification)
+    //   - targetUid: uid (notification recipient)
+    //   - type: string (emailQueued, emailSent, emailFailed, pushQueued, pushSent, pushFailed, etc.)
+    //   - eventId: string (invoiceId, anomalyId, notificationId, deviceId, or null)
+    //   - status: string (queued, sent, failed, processing)
+    //   - error: optional string (error message if failed)
+    //   - createdAt: timestamp (when audit event was logged)
+    //   - metadata: object (delivery metadata, device info, etc.)
+    // Access Model:
+    //   - User can READ their own notification audit entries
+    //   - Admin can READ all notification audit entries
+    //   - Server can WRITE audit entries via Cloud Functions (admin SDK)
+    //   - Entries are IMMUTABLE (no client updates/deletes)
+    match /notifications_audit/{auditId} {
+      // Users can read their own audit entries
+      allow read: if request.auth != null && resource.data.targetUid == request.auth.uid;
+      
+      // Admins can read all audit entries
+      allow read: if request.auth != null && isAdmin();
+      
+      // Server (Cloud Functions) writes via admin SDK - client writes blocked
+      allow create: if false;
+      allow update: if false; // Immutable audit trail
+      allow delete: if false;
+    }
+
     // Fallback: deny everything else
     match /{document=**} {
       allow read, write: if false;

@@ -108,3 +108,4 @@ export { generateAIInsights, queryAIInsights } from './anomaly/generateAIInsight
 export { dailyAggregateScheduler, aggregateAnomaliesCallable } from './analytics/anomalyAggregator';
 export { sendEmailAlert, sendEmailAlertCallable, emailAnomalyAlert, emailInvoiceReminder, emailAlertPubSubHandler } from './notifications/emailAlert';
 export { sendPushNotification, sendPushNotificationCallable, pushAnomalyAlert, pushRiskAlert, registerDevice, removeFCMToken } from './notifications/pushNotification';
+export { logAuditEvent, getUserAudits, getFailedAudits, updateAuditStatus, getAuditStats, deleteOldAudits } from './notifications/auditLogger';
