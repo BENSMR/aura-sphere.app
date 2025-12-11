@@ -110,3 +110,4 @@ export { sendEmailAlert, sendEmailAlertCallable, emailAnomalyAlert, emailInvoice
 export { sendPushNotification, sendPushNotificationCallable, pushAnomalyAlert, pushRiskAlert, registerDevice, removeFCMToken } from './notifications/pushNotification';
 export { logAuditEvent, getUserAudits, getFailedAudits, updateAuditStatus, getAuditStats, deleteOldAudits } from './notifications/auditLogger';
 export { saveUserNotification, auditNotification, getUserDeviceTokens, sendPushToTokens } from './notifications/helpers';
+export { onAnomalyCreate, onInvoiceWriteNotification } from './notifications/sendPushOnEvent';
