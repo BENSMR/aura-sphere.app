@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 import '../../models/anomaly_model.dart';
+import '../../services/anomaly_service.dart';
+import '../../widgets/anomaly_card.dart';
+import 'package:intl/intl.dart';
 
-/// Anomaly Center Screen
-///
-/// Real-time dashboard for viewing and managing anomalies detected by the scanner.
-/// - Filter by entity type (invoice, expense, inventory, audit)
-/// - Filter by severity (critical, high, medium, low)
-/// - View detailed anomaly information
-/// - Mark anomalies as acknowledged
-/// - Track resolution status
 class AnomalyCenterScreen extends StatefulWidget {
   const AnomalyCenterScreen({Key? key}) : super(key: key);
 
@@ -19,604 +13,56 @@ class AnomalyCenterScreen extends StatefulWidget {
 }
 
 class _AnomalyCenterScreenState extends State<AnomalyCenterScreen> {
-  late FirebaseFirestore _firestore;
-  String? _selectedEntityType;
-  String? _selectedSeverity;
-  bool _showAcknowledged = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _firestore = FirebaseFirestore.instance;
-  }
-
-  /// Get filtered Firestore stream based on selected filters
-  Stream<List<AnomalyModel>> _getAnomaliesStream() {
-    Query query = _firestore.collection('anomalies');
-
-    // Filter by severity if selected
-    if (_selectedSeverity != null) {
-      query = query.where('severity', isEqualTo: _selectedSeverity);
-    }
-
-    // Filter by entity type if selected
-    if (_selectedEntityType != null) {
-      query = query.where('entityType', isEqualTo: _selectedEntityType);
-    }
-
-    // Filter by acknowledgment status
-    if (!_showAcknowledged) {
-      query = query.where('acknowledged', isEqualTo: false);
-    }
-
-    // Order by detected time (newest first)
-    query = query.orderBy('detectedAt', descending: true).limit(200);
-
-    return query.snapshots().map((snapshot) {
-      return snapshot.docs
-          .map((doc) => AnomalyModel.fromDoc(doc))
-          .toList();
-    });
-  }
-
-  /// Mark anomaly as acknowledged
-  Future<void> _acknowledgeAnomaly(String anomalyId) async {
-    try {
-      await _firestore.collection('anomalies').doc(anomalyId).update({
-        'acknowledged': true,
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Anomaly marked as acknowledged')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
-      }
-    }
-  }
-
-  /// Get color for severity
-  Color _getSeverityColor(String severity) {
-    switch (severity.toLowerCase()) {
-      case 'critical':
-        return Colors.red;
-      case 'high':
-        return Colors.orange;
-      case 'medium':
-        return Colors.amber;
-      case 'low':
-      default:
-        return Colors.blue;
-    }
-  }
-
-  /// Get icon for entity type
-  IconData _getEntityIcon(String? entityType) {
-    switch (entityType) {
-      case 'invoice':
-        return Icons.receipt;
-      case 'expense':
-        return Icons.money;
-      case 'inventory':
-        return Icons.warehouse;
-      case 'audit':
-        return Icons.security;
-      default:
-        return Icons.error;
-    }
-  }
-
-  /// Format timestamp to readable string
-  String _formatTime(DateTime dateTime) {
-    return DateFormat('MMM dd, yyyy HH:mm').format(dateTime);
-  }
-
-  /// Build severity badge
-  Widget _buildSeverityBadge(String severity) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: _getSeverityColor(severity).withOpacity(0.2),
-        border: Border.all(color: _getSeverityColor(severity)),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        severity.toUpperCase(),
-        style: TextStyle(
-          color: _getSeverityColor(severity),
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  /// Build anomaly card
-  Widget _buildAnomalyCard(AnomalyModel anomaly) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 2,
-      child: ExpansionTile(
-        title: Row(
-          children: [
-            Icon(
-              _getEntityIcon(anomaly.entityType),
-              color: _getSeverityColor(anomaly.severity),
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${anomaly.entityType.toUpperCase()}: ${anomaly.entityId}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatTime(anomaly.detectedAt.toDate()),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            _buildSeverityBadge(anomaly.severity),
-          ],
-        ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Score and reasons
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Anomaly Score: ${anomaly.score}/12',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Reasons:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      ...anomaly.reasons.map((reason) => Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          '• $reason',
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      )),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Recommended action
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    border: Border.all(color: Colors.blue[300]!),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Recommended Action',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: Colors.blue[900],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        anomaly.recommendedAction,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.blue[900],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Sample data if available
-                if (anomaly.sample != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sample Data',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...(anomaly.sample?.entries ?? []).map((entry) {
-                          final value = entry.value;
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Row(
-                              children: [
-                                Text(
-                                  '${entry.key}:',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 11,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    '$value',
-                                    style: const TextStyle(fontSize: 11),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-
-                // Additional metadata
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Entity ID',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        Text(
-                          anomaly.entityId,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'monospace',
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Run ID',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        Text(
-                          anomaly.runId ?? 'N/A',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'monospace',
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Action buttons
-                if (!anomaly.acknowledged)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _acknowledgeAnomaly(anomaly.id),
-                      icon: const Icon(Icons.check_circle),
-                      label: const Text('Mark as Acknowledged'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green[100],
-                      border: Border.all(color: Colors.green),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Acknowledged',
-                      style: TextStyle(
-                        color: Colors.green[900],
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  final AnomalyService _service = AnomalyService();
+  String _severityFilter = '';
+  String _entityTypeFilter = '';
+  bool _unackOnly = true;
+  int _limit = 200;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Anomaly Center'),
-        elevation: 2,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => setState(() {}),
+          ),
+          IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _openFilters,
+          )
+        ],
       ),
       body: Column(
         children: [
-          // Filter controls
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Filters',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    // Entity type filter
-                    FilterChip(
-                      onSelected: (selected) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => SimpleDialog(
-                            title: const Text('Filter by Entity Type'),
-                            children: [
-                              SimpleDialogOption(
-                                onPressed: () {
-                                  setState(() => _selectedEntityType = null);
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('All Types'),
-                              ),
-                              SimpleDialogOption(
-                                onPressed: () {
-                                  setState(
-                                    () => _selectedEntityType = 'invoice',
-                                  );
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Invoice'),
-                              ),
-                              SimpleDialogOption(
-                                onPressed: () {
-                                  setState(
-                                    () => _selectedEntityType = 'expense',
-                                  );
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Expense'),
-                              ),
-                              SimpleDialogOption(
-                                onPressed: () {
-                                  setState(
-                                    () => _selectedEntityType = 'inventory',
-                                  );
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Inventory'),
-                              ),
-                              SimpleDialogOption(
-                                onPressed: () {
-                                  setState(
-                                    () => _selectedEntityType = 'audit',
-                                  );
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Audit'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      selected: _selectedEntityType != null,
-                      label: _selectedEntityType != null
-                          ? Text(_selectedEntityType!.toUpperCase())
-                          : const Text('All Types'),
-                    ),
-
-                    // Severity filter
-                    FilterChip(
-                      onSelected: (selected) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => SimpleDialog(
-                            title: const Text('Filter by Severity'),
-                            children: [
-                              SimpleDialogOption(
-                                onPressed: () {
-                                  setState(() => _selectedSeverity = null);
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('All Levels'),
-                              ),
-                              SimpleDialogOption(
-                                onPressed: () {
-                                  setState(
-                                    () => _selectedSeverity = 'critical',
-                                  );
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Critical'),
-                              ),
-                              SimpleDialogOption(
-                                onPressed: () {
-                                  setState(
-                                    () => _selectedSeverity = 'high',
-                                  );
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('High'),
-                              ),
-                              SimpleDialogOption(
-                                onPressed: () {
-                                  setState(
-                                    () => _selectedSeverity = 'medium',
-                                  );
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Medium'),
-                              ),
-                              SimpleDialogOption(
-                                onPressed: () {
-                                  setState(
-                                    () => _selectedSeverity = 'low',
-                                  );
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Low'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      selected: _selectedSeverity != null,
-                      label: _selectedSeverity != null
-                          ? Text(_selectedSeverity!.toUpperCase())
-                          : const Text('All Levels'),
-                    ),
-
-                    // Show acknowledged toggle
-                    FilterChip(
-                      label: const Text('Acknowledged'),
-                      onSelected: (selected) {
-                        setState(() => _showAcknowledged = !_showAcknowledged);
-                      },
-                      selected: _showAcknowledged,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Anomalies list
+          _buildSummaryBar(),
           Expanded(
             child: StreamBuilder<List<AnomalyModel>>(
-              stream: _getAnomaliesStream(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+              stream: _service.streamAnomalies(
+                severity: _severityFilter.isEmpty ? null : _severityFilter,
+                entityType: _entityTypeFilter.isEmpty ? null : _entityTypeFilter,
+                onlyUnacknowledged: _unackOnly,
+                limit: _limit,
+              ),
+              builder: (context, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error, color: Colors.red, size: 48),
-                        const SizedBox(height: 16),
-                        Text('Error: ${snapshot.error}'),
-                      ],
-                    ),
-                  );
+                if (!snap.hasData || snap.data!.isEmpty) {
+                  return Center(child: Text('No anomalies found', style: Theme.of(context).textTheme.bodyMedium));
                 }
-
-                final anomalies = snapshot.data ?? [];
-
-                if (anomalies.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.check_circle,
-                          color: Colors.green[300],
-                          size: 64,
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'No anomalies detected',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _showAcknowledged
-                              ? 'No acknowledged anomalies found'
-                              : 'All anomalies have been reviewed',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
+                final items = snap.data!;
                 return ListView.builder(
-                  itemCount: anomalies.length,
-                  itemBuilder: (context, index) {
-                    return _buildAnomalyCard(anomalies[index]);
+                  itemCount: items.length,
+                  itemBuilder: (context, i) {
+                    final a = items[i];
+                    return AnomalyCard(
+                      anomaly: a,
+                      onTap: () => _openDetail(a),
+                      onAcknowledge: () => _acknowledge(a),
+                    );
                   },
                 );
               },
@@ -625,5 +71,208 @@ class _AnomalyCenterScreenState extends State<AnomalyCenterScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildSummaryBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      color: Colors.grey.shade100,
+      child: Row(
+        children: [
+          Chip(label: Text('Unack only: ${_unackOnly ? "Yes" : "No"}')),
+          const SizedBox(width: 8),
+          if (_severityFilter.isNotEmpty) Chip(label: Text('Severity: $_severityFilter')),
+          if (_entityTypeFilter.isNotEmpty) ...[
+            const SizedBox(width: 8),
+            Chip(label: Text('Type: $_entityTypeFilter')),
+          ],
+          const Spacer(),
+          TextButton.icon(
+            icon: const Icon(Icons.mark_email_read_outlined),
+            label: const Text('Acknowledge All Visible'),
+            onPressed: _ackAllVisible,
+          )
+        ],
+      ),
+    );
+  }
+
+  void _openFilters() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        String tmpSeverity = _severityFilter;
+        String tmpType = _entityTypeFilter;
+        bool tmpUnack = _unackOnly;
+        return StatefulBuilder(builder: (context, setModalState) {
+          return Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Row(children: [
+                Expanded(child: DropdownButtonFormField<String>(
+                  value: tmpSeverity.isEmpty ? null : tmpSeverity,
+                  decoration: const InputDecoration(labelText: 'Severity'),
+                  items: [
+                    DropdownMenuItem(child: Text('All'), value: ''),
+                    DropdownMenuItem(child: Text('critical'), value: 'critical'),
+                    DropdownMenuItem(child: Text('high'), value: 'high'),
+                    DropdownMenuItem(child: Text('medium'), value: 'medium'),
+                    DropdownMenuItem(child: Text('low'), value: 'low'),
+                  ],
+                  onChanged: (v) => setModalState(() => tmpSeverity = v ?? ''),
+                )),
+                const SizedBox(width: 12),
+                Expanded(child: TextFormField(
+                  initialValue: tmpType,
+                  decoration: const InputDecoration(labelText: 'Entity Type (invoice, expense, inventory, audit)'),
+                  onChanged: (v) => setModalState(() => tmpType = v.trim()),
+                ))
+              ]),
+              Row(
+                children: [
+                  Checkbox(value: tmpUnack, onChanged: (v) => setModalState(() => tmpUnack = v ?? true)),
+                  const Text('Only unacknowledged'),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _severityFilter = tmpSeverity;
+                        _entityTypeFilter = tmpType;
+                        _unackOnly = tmpUnack;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Apply'),
+                  )
+                ],
+              )
+            ]),
+          );
+        });
+      },
+    );
+  }
+
+  Future<void> _acknowledge(AnomalyModel a) async {
+    try {
+      // Replace with real user id retrieval from your auth provider
+      final actorUid = 'system-admin'; // TODO: use Provider or FirebaseAuth.currentUser.uid
+      await _service.acknowledge(a.id, actorUid: actorUid);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Anomaly acknowledged')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to acknowledge: $e')));
+      }
+    }
+  }
+
+  Future<void> _ackAllVisible() async {
+    // fetch visible anomalies and ack them
+    final snap = await FirebaseFirestore.instance.collection('anomalies')
+      .orderBy('detectedAt', descending: true)
+      .limit(_limit)
+      .get();
+    final actorUid = 'system-admin'; // TODO: replace
+    final batch = FirebaseFirestore.instance.batch();
+    for (final d in snap.docs) {
+      if (d.data()['acknowledged'] == true) continue;
+      batch.update(d.reference, {'acknowledged': true, 'acknowledgedBy': actorUid, 'acknowledgedAt': FieldValue.serverTimestamp()});
+    }
+    await batch.commit();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All visible anomalies acknowledged')));
+    }
+  }
+
+  void _openDetail(AnomalyModel a) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.7,
+        builder: (context, sc) {
+          return SingleChildScrollView(
+            controller: sc,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  Text('${a.entityType.toUpperCase()} • ${a.entityId}', style: Theme.of(context).textTheme.headlineSmall),
+                  const Spacer(),
+                  Chip(label: Text(a.severity, style: const TextStyle(color: Colors.white)), backgroundColor: _severityColor(a.severity)),
+                ]),
+                const SizedBox(height: 12),
+                Text('Score: ${a.score}', style: Theme.of(context).textTheme.bodyMedium),
+                const SizedBox(height: 8),
+                Text('Detected: ${DateFormat.yMd().add_jm().format(a.detectedAt.toDate())}', style: TextStyle(color: Colors.grey.shade600)),
+                const SizedBox(height: 12),
+                Text('Reasons:', style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 6),
+                ...a.reasons.map((r) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text('• $r'),
+                )),
+                const SizedBox(height: 12),
+                Text('Recommended Action:', style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 6),
+                Text(a.recommendedAction),
+                const SizedBox(height: 12),
+                if (a.sample != null) ...[
+                  Text('Sample Data:', style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
+                    child: Text(a.sample!.entries.map((e) => '${e.key}: ${e.value}').join('\n')),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                Row(children: [
+                  ElevatedButton.icon(
+                    onPressed: () => _acknowledge(a),
+                    icon: const Icon(Icons.check),
+                    label: const Text('Acknowledge'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      // navigate to linked entity if you have routes e.g. /invoices/:id
+                      Navigator.pop(context);
+                      // TODO: implement navigation to entity detail screen
+                    },
+                    icon: const Icon(Icons.open_in_new),
+                    label: const Text('Open Entity'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey.shade200, foregroundColor: Colors.black),
+                  )
+                ])
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Color _severityColor(String severity) {
+    switch (severity) {
+      case 'critical':
+        return Colors.red.shade700;
+      case 'high':
+        return Colors.orange.shade700;
+      case 'medium':
+        return Colors.amber.shade700;
+      default:
+        return Colors.green.shade600;
+    }
   }
 }
