@@ -38,6 +38,7 @@ import '../screens/expenses/expense_review_screen.dart';
 import '../screens/expenses/expense_detail_screen.dart';
 import '../screens/anomalies/anomaly_center_screen.dart';
 import '../screens/anomalies/alerts_center_screen.dart';
+import '../screens/anomalies/anomaly_dashboard_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -86,6 +87,7 @@ class AppRoutes {
   static const String expensesDetail = '/expenses/detail';
   static const String anomalies = '/anomalies';
   static const String alerts = '/alerts';
+  static const String anomalyDashboard = '/anomalies/dashboard';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -259,6 +261,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const AnomalyCenterScreen());
       case alerts:
         return MaterialPageRoute(builder: (_) => const AlertsCenterScreen());
+      case anomalyDashboard:
+        return MaterialPageRoute(builder: (_) => const AnomalyDashboardScreen());
       default:
         // Handle dynamic CRM detail route: /crm/:id
         if (settings.name != null && settings.name!.startsWith('/crm/') && settings.name != '/crm/ai-insights') {
