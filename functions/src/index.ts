@@ -105,3 +105,4 @@ export { anomalyScanner } from './anomaly/anomalyScanner';
 export { dailyAnomalyCount, queryAnomaliesDailyCount } from './anomaly/dailyAnomalyCount';
 export { generateAnomalyInsights, queryAnomalyInsights } from './anomaly/generateInsights';
 export { generateAIInsights, queryAIInsights } from './anomaly/generateAIInsights';
+export { dailyAggregateScheduler, aggregateAnomaliesCallable } from './analytics/anomalyAggregator';
