@@ -1,0 +1,263 @@
+{
+  "info": {
+    "name": "AuraSphere Pro - Notification System",
+    "description": "Test collection for notification Cloud Functions",
+    "version": "1.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Email Notifications",
+      "item": [
+        {
+          "name": "Send Basic Email Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"to\": \"test@example.com\",\n    \"subject\": \"Test Email Alert\",\n    \"html\": \"<h1>Test Email</h1><p>This is a basic test email.</p>\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/aurasphere-pro/us-central1/sendEmailAlert",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5001",
+              "path": ["aurasphere-pro", "us-central1", "sendEmailAlert"]
+            },
+            "description": "Send a basic email alert to a single recipient"
+          }
+        },
+        {
+          "name": "Send Anomaly Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"to\": \"admin@company.com\",\n    \"subject\": \"⚠️ High Severity Anomaly Detected\",\n    \"html\": \"<h2 style='color: red;'>Anomaly Alert</h2><p>Invoice INV-001 shows unusual activity.</p><p><strong>Severity:</strong> High</p><p><a href='https://app.com/invoices/1' style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;'>View Invoice</a></p>\",\n    \"userId\": \"user-001\",\n    \"type\": \"anomaly\",\n    \"severity\": \"high\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/aurasphere-pro/us-central1/sendEmailAlert",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5001",
+              "path": ["aurasphere-pro", "us-central1", "sendEmailAlert"]
+            },
+            "description": "Send an anomaly detection alert email"
+          }
+        },
+        {
+          "name": "Send Invoice Overdue Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"to\": \"accounting@company.com\",\n    \"cc\": \"manager@company.com\",\n    \"subject\": \"📋 Invoice Payment Due: INV-002\",\n    \"html\": \"<h2>Invoice Payment Overdue</h2><p>Invoice INV-002 is now 5 days overdue.</p><table style='width:100%; margin: 20px 0;'><tr><td><strong>Invoice Number:</strong></td><td>INV-002</td></tr><tr><td><strong>Amount:</strong></td><td>$1,000.00</td></tr><tr><td><strong>Due Date:</strong></td><td>December 6, 2025</td></tr></table><p><a href='https://app.com/invoices/2' style='background-color: #2196F3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;'>Pay Now</a></p>\",\n    \"userId\": \"user-002\",\n    \"type\": \"invoice\",\n    \"severity\": \"medium\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/aurasphere-pro/us-central1/sendEmailAlert",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5001",
+              "path": ["aurasphere-pro", "us-central1", "sendEmailAlert"]
+            },
+            "description": "Send an invoice overdue payment alert"
+          }
+        },
+        {
+          "name": "Send Email with CC and BCC",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"to\": \"primary@example.com\",\n    \"cc\": \"cc@example.com\",\n    \"bcc\": \"archive@example.com\",\n    \"subject\": \"Multi-recipient Email Test\",\n    \"html\": \"<h2>Email with CC and BCC</h2><p>This email is sent to multiple recipients.</p><ul><li>Primary: primary@example.com</li><li>CC: cc@example.com</li><li>BCC: archive@example.com (hidden)</li></ul>\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/aurasphere-pro/us-central1/sendEmailAlert",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5001",
+              "path": ["aurasphere-pro", "us-central1", "sendEmailAlert"]
+            },
+            "description": "Send email with CC and BCC recipients"
+          }
+        },
+        {
+          "name": "Send Email with Array of Recipients",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"to\": [\"user1@example.com\", \"user2@example.com\", \"user3@example.com\"],\n    \"subject\": \"Broadcast Email\",\n    \"html\": \"<h2>Team Notification</h2><p>This is a broadcast email sent to multiple team members.</p>\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/aurasphere-pro/us-central1/sendEmailAlert",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5001",
+              "path": ["aurasphere-pro", "us-central1", "sendEmailAlert"]
+            },
+            "description": "Send email to multiple recipients using array"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SMS Notifications",
+      "item": [
+        {
+          "name": "Send SMS Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"phoneNumber\": \"+1234567890\",\n    \"message\": \"AuraSphere: Invoice INV-001 is overdue. Pay now: https://app.com/pay\",\n    \"userId\": \"user-003\",\n    \"type\": \"invoice\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/aurasphere-pro/us-central1/sendSmsAlert",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5001",
+              "path": ["aurasphere-pro", "us-central1", "sendSmsAlert"]
+            },
+            "description": "Send an SMS alert (requires Twilio configuration)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Push Notifications",
+      "item": [
+        {
+          "name": "Send Push Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"userId\": \"user-004\",\n    \"title\": \"Invoice Alert\",\n    \"body\": \"Invoice INV-001 is due today\",\n    \"type\": \"invoice\",\n    \"severity\": \"high\",\n    \"entityId\": \"INV-001\",\n    \"deepLink\": \"app://invoices/1\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/aurasphere-pro/us-central1/sendPushNotificationCallable",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5001",
+              "path": ["aurasphere-pro", "us-central1", "sendPushNotificationCallable"]
+            },
+            "description": "Send a push notification via Firebase Cloud Messaging"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Device Management",
+      "item": [
+        {
+          "name": "Register Device",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"userId\": \"user-005\",\n    \"fcmToken\": \"eUwZmFKeHdoWFZoQkx4XxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxOQ\",\n    \"deviceName\": \"iPhone 13 Pro\",\n    \"platform\": \"ios\",\n    \"osVersion\": \"17.0\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/aurasphere-pro/us-central1/registerDevice",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5001",
+              "path": ["aurasphere-pro", "us-central1", "registerDevice"]
+            },
+            "description": "Register a device for push notifications"
+          }
+        },
+        {
+          "name": "Remove FCM Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"userId\": \"user-005\",\n    \"fcmToken\": \"eUwZmFKeHdoWFZoQkx4XxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxOQ\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/aurasphere-pro/us-central1/removeFCMToken",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5001",
+              "path": ["aurasphere-pro", "us-central1", "removeFCMToken"]
+            },
+            "description": "Remove/unregister a device from push notifications"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:5001/aurasphere-pro/us-central1",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "test@example.com",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "test-user",
+      "type": "string"
+    }
+  ]
+}
