@@ -37,7 +37,7 @@
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
     "@types/axios": "^0.14.4",
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.10.3",
     "@types/nodemailer": "^7.0.4",
     "@types/pdfkit": "^0.12.12",
     "@types/stream-buffers": "^3.0.8",
