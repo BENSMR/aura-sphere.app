@@ -101,6 +101,15 @@ class UserProvider with ChangeNotifier {
     _setLoading(false);
   }
 
+  Future<void> sendPasswordResetEmail(String email) async {
+    _setLoading(true);
+    try {
+      await _authService.sendPasswordResetEmail(email);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Set user's preferred invoice template
   Future<void> setInvoiceTemplate(String templateId) async {
     if (_appUser == null) return;

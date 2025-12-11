@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/user_provider.dart';
 import 'signup_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -90,7 +91,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   validator: (v) => v == null || v.length < 6 ? 'Min 6 chars' : null,
                   onSaved: (v) => _password = v ?? '',
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                    ),
+                    child: const Text('Forgot password?'),
+                  ),
+                ),
+                const SizedBox(height: 8),
                 ElevatedButton(
                   onPressed: _busy ? null : _submitEmailSignIn,
                   child: _busy

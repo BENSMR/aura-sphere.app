@@ -105,6 +105,11 @@ class AuthService {
     } catch (_) {}
   }
 
+  // Send password reset email
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
+
   // Read app user live
   Stream<AppUser?> appUserStream(String uid) {
     return _fire.collection('users').doc(uid).snapshots().map((snap) {
