@@ -104,3 +104,4 @@ export { detectExpenseAnomalies, detectInvoiceAnomalies, detectAuditAnomalies, r
 export { anomalyScanner } from './anomaly/anomalyScanner';
 export { dailyAnomalyCount, queryAnomaliesDailyCount } from './anomaly/dailyAnomalyCount';
 export { generateAnomalyInsights, queryAnomalyInsights } from './anomaly/generateInsights';
+export { generateAIInsights, queryAIInsights } from './anomaly/generateAIInsights';
