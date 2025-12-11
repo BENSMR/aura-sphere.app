@@ -112,3 +112,4 @@ export { logAuditEvent, getUserAudits, getFailedAudits, updateAuditStatus, getAu
 export { saveUserNotification, auditNotification, getUserDeviceTokens, sendPushToTokens } from './notifications/helpers';
 export { onAnomalyCreate, onInvoiceWriteNotification } from './notifications/sendPushOnEvent';
 export { sendEmailAlertViaSmtp } from './notifications/sendEmailAlert';
+export { sendSmsAlert } from './notifications/sendSmsAlert';
