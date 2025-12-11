@@ -21,6 +21,30 @@ if (!admin.apps.length) admin.initializeApp();
 const db = admin.firestore();
 
 /**
+ * Configuration from environment
+ */
+const CONFIG = {
+  // Time window for scanning (hours)
+  WINDOW_HOURS: parseInt(process.env.ANOMALY_WINDOW_HOURS || '72', 10),
+  // Max documents per collection to scan
+  MAX_DOCS_PER_COLLECTION: parseInt(process.env.ANOMALY_MAX_DOCS_PER_COLLECTION || '500', 10),
+  // Slack alert threshold (0=low, 1=medium, 2=high, 3=critical)
+  SLACK_THRESHOLD: parseInt(process.env.ANOMALY_SLACK_THRESHOLD || '2', 10),
+  // Debug mode
+  DEBUG: process.env.ANOMALY_DEBUG === 'true',
+};
+
+// Severity level mapping
+const SEVERITY_LEVELS = {
+  low: 0,
+  medium: 1,
+  high: 2,
+  critical: 3,
+};
+
+type SeverityType = keyof typeof SEVERITY_LEVELS;
+
+/**
  * Statistical summary for a metric
  */
 interface MetricStats {
@@ -69,27 +93,50 @@ function isOutlier(value: number, stats: MetricStats): boolean {
  */
 async function scanExpenseAnomalies(): Promise<string[]> {
   const anomalyIds: string[] = [];
+  const windowMs = CONFIG.WINDOW_HOURS * 60 * 60 * 1000;
 
   try {
+    if (CONFIG.DEBUG) {
+      functions.logger.info('Starting expense anomaly scan', {
+        windowHours: CONFIG.WINDOW_HOURS,
+        maxDocsPerCollection: CONFIG.MAX_DOCS_PER_COLLECTION,
+      });
+    }
+
     // Get all users with expenses
     const usersSnapshot = await db.collection('users').get();
 
     for (const userDoc of usersSnapshot.docs) {
       const userId = userDoc.id;
-      const expensesSnapshot = await db
+      let expensesSnapshot = await db
         .collection('users')
         .doc(userId)
         .collection('expenses')
         .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(
-          new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
+          new Date(Date.now() - windowMs),
         ))
+        .orderBy('createdAt', 'desc')
+        .limit(CONFIG.MAX_DOCS_PER_COLLECTION)
         .get();
 
-      if (expensesSnapshot.size < 5) continue; // Need minimum data
+      if (expensesSnapshot.size < 5) {
+        if (CONFIG.DEBUG) {
+          functions.logger.info(`Insufficient expenses for user ${userId}: ${expensesSnapshot.size}`);
+        }
+        continue;
+      }
 
       // Calculate stats on amounts
       const amounts = expensesSnapshot.docs.map(d => (d.data().amount as number) || 0);
       const stats = calculateStats(amounts);
+
+      if (CONFIG.DEBUG) {
+        functions.logger.info(`Expense stats for ${userId}`, {
+          count: stats.count,
+          mean: stats.mean,
+          stdDev: stats.stdDev,
+        });
+      }
 
       // Scan current expenses for outliers
       for (const expenseDoc of expensesSnapshot.docs) {
@@ -98,11 +145,14 @@ async function scanExpenseAnomalies(): Promise<string[]> {
 
         // Check 1: Statistical outlier
         if (isOutlier(amount, stats)) {
+          const severity = amount > stats.mean + 3 * stats.stdDev ? 'high' : 'medium';
+          const severityLevel = SEVERITY_LEVELS[severity];
+
           const anomalyId = db.collection('anomalies').doc().id;
           await db.collection('anomalies').doc(anomalyId).set({
             entityType: 'expense',
             entityId: expenseDoc.id,
-            severity: amount > stats.mean + 3 * stats.stdDev ? 'high' : 'medium',
+            severity,
             message: `Expense amount (${expense.currency} ${amount}) is statistical outlier. Normal range: ${stats.mean.toFixed(2)} ± ${stats.stdDev.toFixed(2)}`,
             recommendedAction: 'Review expense for accuracy. Verify receipt and merchant details.',
             context: {
@@ -114,6 +164,16 @@ async function scanExpenseAnomalies(): Promise<string[]> {
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             resolved: false,
           });
+
+          // Send Slack if above threshold
+          if (severityLevel >= CONFIG.SLACK_THRESHOLD) {
+            await sendSecurityAlert(
+              `Expense Anomaly Detected: ${severity.toUpperCase()}`,
+              `Amount: ${expense.currency} ${amount}\nUser: ${userId}\nNormal: ${stats.mean.toFixed(2)} ± ${stats.stdDev.toFixed(2)}`,
+              { anomalyId, userId, amount, severity },
+            );
+          }
+
           anomalyIds.push(anomalyId);
         }
 
@@ -146,6 +206,15 @@ async function scanExpenseAnomalies(): Promise<string[]> {
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             resolved: false,
           });
+
+          if (SEVERITY_LEVELS.medium >= CONFIG.SLACK_THRESHOLD) {
+            await sendSecurityAlert(
+              'Expense Anomaly: Merchant Concentration',
+              `${topMerchant} in ${(merchantConcentration * 100).toFixed(0)}% of expenses for user ${userId}`,
+              { anomalyId, userId, topMerchant, concentration: merchantConcentration },
+            );
+          }
+
           anomalyIds.push(anomalyId);
         }
       }
@@ -162,31 +231,44 @@ async function scanExpenseAnomalies(): Promise<string[]> {
  */
 async function scanInvoiceAnomalies(): Promise<string[]> {
   const anomalyIds: string[] = [];
+  const windowMs = CONFIG.WINDOW_HOURS * 60 * 60 * 1000;
 
   try {
+    if (CONFIG.DEBUG) {
+      functions.logger.info('Starting invoice anomaly scan', { windowHours: CONFIG.WINDOW_HOURS });
+    }
+
     const usersSnapshot = await db.collection('users').get();
 
     for (const userDoc of usersSnapshot.docs) {
       const userId = userDoc.id;
-      const invoicesSnapshot = await db
+      let invoicesSnapshot = await db
         .collection('users')
         .doc(userId)
         .collection('invoices')
+        .orderBy('createdAt', 'desc')
+        .limit(CONFIG.MAX_DOCS_PER_COLLECTION)
         .get();
 
-      if (invoicesSnapshot.size < 3) continue;
+      if (invoicesSnapshot.size < 3) {
+        if (CONFIG.DEBUG) {
+          functions.logger.info(`Insufficient invoices for user ${userId}: ${invoicesSnapshot.size}`);
+        }
+        continue;
+      }
 
       // Check 1: Payment collection rate
       const paid = invoicesSnapshot.docs.filter(d => d.data().status === 'paid').length;
       const paymentRate = paid / invoicesSnapshot.size;
 
       if (paymentRate < 0.3) {
-        // Less than 30% payment rate is concerning
+        const severity = 'high';
+        const severityLevel = SEVERITY_LEVELS[severity];
         const anomalyId = db.collection('anomalies').doc().id;
         await db.collection('anomalies').doc(anomalyId).set({
           entityType: 'invoice',
           entityId: userId,
-          severity: 'high',
+          severity,
           message: `Low payment collection rate: ${(paymentRate * 100).toFixed(0)}% (${paid}/${invoicesSnapshot.size})`,
           recommendedAction: 'Review outstanding invoices and follow up with clients.',
           context: {
@@ -197,16 +279,24 @@ async function scanInvoiceAnomalies(): Promise<string[]> {
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           resolved: false,
         });
+
+        if (severityLevel >= CONFIG.SLACK_THRESHOLD) {
+          await sendSecurityAlert(
+            `Invoice Anomaly: Low Payment Rate (${severity.toUpperCase()})`,
+            `User: ${userId}\nPayment Rate: ${(paymentRate * 100).toFixed(0)}% (${paid}/${invoicesSnapshot.size})`,
+            { anomalyId, userId, paymentRate },
+          );
+        }
+
         anomalyIds.push(anomalyId);
       }
 
       // Check 2: Invoice amount variance
       const amounts = invoicesSnapshot.docs.map(d => (d.data().amount as number) || 0);
       const stats = calculateStats(amounts);
-      const coefficient = stats.stdDev / stats.mean; // Coefficient of variation
+      const coefficient = stats.stdDev / stats.mean;
 
       if (coefficient > 1.5) {
-        // High variance in invoice amounts
         const anomalyId = db.collection('anomalies').doc().id;
         await db.collection('anomalies').doc(anomalyId).set({
           entityType: 'invoice',
@@ -272,7 +362,11 @@ async function scanUserBehaviorAnomalies(): Promise<string[]> {
   const anomalyIds: string[] = [];
 
   try {
-    const usersSnapshot = await db.collection('users').get();
+    if (CONFIG.DEBUG) {
+      functions.logger.info('Starting user behavior anomaly scan');
+    }
+
+    const usersSnapshot = await db.collection('users').limit(CONFIG.MAX_DOCS_PER_COLLECTION).get();
 
     for (const userDoc of usersSnapshot.docs) {
       const userId = userDoc.id;
@@ -288,11 +382,13 @@ async function scanUserBehaviorAnomalies(): Promise<string[]> {
         if (dayOfWeek === 0 || dayOfWeek === 6 || hourOfDay < 6 || hourOfDay > 22) {
           // Only flag if they're an admin
           if (userData.role === 'admin') {
+            const severity = 'medium';
+            const severityLevel = SEVERITY_LEVELS[severity];
             const anomalyId = db.collection('anomalies').doc().id;
             await db.collection('anomalies').doc(anomalyId).set({
               entityType: 'audit',
               entityId: userId,
-              severity: 'medium',
+              severity,
               message: `Admin access outside business hours: ${lastAccess.toISOString()}`,
               recommendedAction: 'Verify if this admin access was authorized.',
               context: {
@@ -303,6 +399,15 @@ async function scanUserBehaviorAnomalies(): Promise<string[]> {
               createdAt: admin.firestore.FieldValue.serverTimestamp(),
               resolved: false,
             });
+
+            if (severityLevel >= CONFIG.SLACK_THRESHOLD) {
+              await sendSecurityAlert(
+                `Security: Admin Access Outside Business Hours`,
+                `User: ${userId}\nTime: ${lastAccess.toISOString()}`,
+                { anomalyId, userId, timestamp: lastAccess.toISOString() },
+              );
+            }
+
             anomalyIds.push(anomalyId);
           }
         }
@@ -326,7 +431,12 @@ export const scanAnomaliesScheduled = functions.pubsub
     const allAnomalyIds: string[] = [];
 
     try {
-      functions.logger.info('Starting anomaly scan');
+      functions.logger.info('Starting anomaly scan', {
+        windowHours: CONFIG.WINDOW_HOURS,
+        maxDocsPerCollection: CONFIG.MAX_DOCS_PER_COLLECTION,
+        slackThreshold: CONFIG.SLACK_THRESHOLD,
+        debug: CONFIG.DEBUG,
+      });
 
       // Run all scans in parallel
       const [expenseAnomalies, invoiceAnomalies, behaviorAnomalies] = await Promise.all([
@@ -346,13 +456,14 @@ export const scanAnomaliesScheduled = functions.pubsub
         durationMs: duration,
       });
 
-      // Send alert if critical anomalies found
+      // Send alert if many anomalies found (beyond threshold)
       if (expenseAnomalies.length + invoiceAnomalies.length > 5) {
         await sendSecurityAlert(
           'Anomaly Scan: Multiple Issues Detected',
-          `Scan found ${allAnomalyIds.length} anomalies:\n- Expenses: ${expenseAnomalies.length}\n- Invoices: ${invoiceAnomalies.length}\n- Behavior: ${behaviorAnomalies.length}`,
+          `Scan found ${allAnomalyIds.length} anomalies:\n- Expenses: ${expenseAnomalies.length}\n- Invoices: ${invoiceAnomalies.length}\n- Behavior: ${behaviorAnomalies.length}\n- Window: last ${CONFIG.WINDOW_HOURS} hours`,
           {
             scanDuration: duration,
+            windowHours: CONFIG.WINDOW_HOURS,
             timestamp: new Date().toISOString(),
           },
         );
