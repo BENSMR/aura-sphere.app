@@ -86,6 +86,7 @@ class Alert {
   });
 
   factory Alert.fromAnomaly(AnomalyModel anomaly) {
+    final dateTime = anomaly.detectedAt.toDate();
     return Alert(
       id: 'anomaly_${anomaly.id}',
       type: AlertType.anomaly,
@@ -94,10 +95,10 @@ class Alert {
       message: anomaly.reasons.join(', '),
       actionUrl: '/anomaly/${anomaly.id}',
       actionLabel: 'Review Anomaly',
-      createdAt: anomaly.detectedAt,
+      createdAt: dateTime,
       resolved: anomaly.acknowledged,
-      resolvedBy: anomaly.resolution,
-      resolvedAt: anomaly.detectedAt,
+      resolvedBy: anomaly.owner,
+      resolvedAt: dateTime,
     );
   }
 }
@@ -147,7 +148,7 @@ class _AlertsCenterScreenState extends State<AlertsCenterScreen> {
     return query.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         try {
-          final anomaly = AnomalyModel.fromFirestore(doc);
+          final anomaly = AnomalyModel.fromDoc(doc);
           return Alert.fromAnomaly(anomaly);
         } catch (e) {
           return null;

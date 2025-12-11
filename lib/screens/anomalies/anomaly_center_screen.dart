@@ -54,7 +54,7 @@ class _AnomalyCenterScreenState extends State<AnomalyCenterScreen> {
 
     return query.snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => AnomalyModel.fromFirestore(doc))
+          .map((doc) => AnomalyModel.fromDoc(doc))
           .toList();
     });
   }
@@ -164,7 +164,7 @@ class _AnomalyCenterScreenState extends State<AnomalyCenterScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _formatTime(anomaly.detectedAt),
+                    _formatTime(anomaly.detectedAt.toDate()),
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
