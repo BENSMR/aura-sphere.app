@@ -106,3 +106,5 @@ export { dailyAnomalyCount, queryAnomaliesDailyCount } from './anomaly/dailyAnom
 export { generateAnomalyInsights, queryAnomalyInsights } from './anomaly/generateInsights';
 export { generateAIInsights, queryAIInsights } from './anomaly/generateAIInsights';
 export { dailyAggregateScheduler, aggregateAnomaliesCallable } from './analytics/anomalyAggregator';
+export { sendEmailAlert, sendEmailAlertCallable, emailAnomalyAlert, emailInvoiceReminder, emailAlertPubSubHandler } from './notifications/emailAlert';
+export { sendPushNotification, sendPushNotificationCallable, pushAnomalyAlert, pushRiskAlert, registerFCMToken, removeFCMToken } from './notifications/pushNotification';

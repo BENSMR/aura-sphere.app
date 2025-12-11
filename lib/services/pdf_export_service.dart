@@ -1,7 +1,11 @@
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
 import '../data/models/invoice_model.dart';
 import '../core/utils/logger.dart';
 
@@ -531,5 +535,174 @@ class PdfExportService {
   /// Helper: Format date for PDF
   String _formatDate(DateTime date) {
     return '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  /// Save PDF to device storage
+  Future<File?> savePDFToDevice({
+    required Uint8List pdfBytes,
+    required String fileName,
+  }) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final path = '${directory.path}/$fileName';
+      final file = File(path);
+      await file.writeAsBytes(pdfBytes);
+      logger.info('✅ PDF saved to: $path');
+      return file;
+    } catch (e) {
+      logger.error('❌ Error saving PDF: $e');
+      return null;
+    }
+  }
+
+  /// Print PDF
+  Future<void> printPDF({
+    required Uint8List pdfBytes,
+    required String documentName,
+  }) async {
+    try {
+      await Printing.layoutPdf(
+        onLayout: (_) => pdfBytes,
+        name: documentName,
+      );
+      logger.info('✅ PDF sent to printer: $documentName');
+    } catch (e) {
+      logger.error('❌ Error printing PDF: $e');
+    }
+  }
+
+  /// Preview PDF
+  Future<void> previewPDF({
+    required Uint8List pdfBytes,
+    required String documentName,
+  }) async {
+    try {
+      await Printing.layoutPdf(
+        onLayout: (_) => pdfBytes,
+        name: documentName,
+      );
+      logger.info('✅ PDF preview opened: $documentName');
+    } catch (e) {
+      logger.error('❌ Error previewing PDF: $e');
+    }
+  }
+
+  /// Share PDF
+  Future<void> sharePDF({
+    required Uint8List pdfBytes,
+    required String fileName,
+  }) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final path = '${directory.path}/$fileName';
+      final file = File(path);
+      await file.writeAsBytes(pdfBytes);
+      
+      /// Share file using your share package
+      /// Example:
+      /// await Share.shareFiles([path], text: 'Invoice');
+      
+      logger.info('✅ PDF ready to share: $path');
+    } catch (e) {
+      logger.error('❌ Error preparing PDF for sharing: $e');
+    }
+  }
+
+  /// Generate receipt PDF (simplified format for receipts)
+  Future<Uint8List> generateReceiptPdf({
+    required String receiptNumber,
+    required DateTime receiptDate,
+    required String merchantName,
+    required List<Map<String, dynamic>> items,
+    required double total,
+    required String currency,
+    required String paymentMethod,
+  }) async {
+    try {
+      final pdf = pw.Document();
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat(80.0 * PdfPageFormat.mm, double.infinity),
+          margin: const pw.EdgeInsets.all(10),
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text(
+                  merchantName,
+                  style: pw.TextStyle(
+                    fontSize: 16,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 8),
+                pw.Text(
+                  'Receipt #${receiptNumber}',
+                  style: const pw.TextStyle(fontSize: 10),
+                ),
+                pw.Text(
+                  receiptDate.toString().split(' ')[0],
+                  style: const pw.TextStyle(fontSize: 10),
+                ),
+                pw.SizedBox(height: 8),
+                pw.Divider(),
+                pw.SizedBox(height: 8),
+                ...items.map((item) {
+                  return pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Expanded(
+                        child: pw.Text(
+                          item['description'] ?? '',
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
+                      ),
+                      pw.Text(
+                        '$currency${item['amount']}',
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                    ],
+                  );
+                }).toList(),
+                pw.SizedBox(height: 8),
+                pw.Divider(),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      'Total:',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
+                    pw.Text(
+                      '$currency$total',
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 8),
+                pw.Text(
+                  'Payment: $paymentMethod',
+                  style: const pw.TextStyle(fontSize: 10),
+                ),
+                pw.SizedBox(height: 16),
+                pw.Text(
+                  'Thank you!',
+                  style: const pw.TextStyle(fontSize: 10),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+
+      return pdf.save();
+    } catch (e) {
+      logger.error('❌ Error generating receipt PDF: $e');
+      rethrow;
+    }
   }
 }

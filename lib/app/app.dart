@@ -14,6 +14,7 @@ import '../providers/task_provider.dart';
 import '../providers/invoice_provider.dart';
 import '../providers/expense_provider.dart';
 import '../providers/branding_provider.dart';
+import '../providers/theme_provider.dart';
 import '../screens/splash/splash_screen.dart';
 import '../services/firebase/auth_service.dart';
 import '../config/app_routes.dart';
@@ -38,7 +39,7 @@ class AuraSphereApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
+      providers: [ThemeProvider()),
         ChangeNotifierProvider(create: (_) => BusinessProvider()),
         ChangeNotifierProvider(create: (_) => InvoiceProvider()),
         ChangeNotifierProvider(create: (_) => ClientProvider()),
@@ -52,6 +53,13 @@ class AuraSphereApp extends StatelessWidget {
             // Wire InvoiceProvider to UserProvider for lifecycle hooks
             final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
             userProvider.setInvoiceProvider(invoiceProvider);
+            // Initialize theme provider when user logs in
+            final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+            userProvider.addListener(() {
+              if (userProvider.user != null) {
+                themeProvider.initialize(userProvider.user!.uid);
+              }
+            });
             return userProvider;
           },
         ),
@@ -67,11 +75,16 @@ class AuraSphereApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ExpenseProvider()),
         ChangeNotifierProvider(create: (_) => BrandingProvider()),
       ],
-      child: MaterialApp(
-        title: Config.appName,
-        theme: AppTheme.light(),
-        initialRoute: AppRoutes.splash, // where lifecycle hooks are applied
-        onGenerateRoute: AppRoutes.onGenerateRoute,
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            title: Config.appName,
+            theme: themeProvider.getTheme(),
+            initialRoute: AppRoutes.splash,
+            onGenerateRoute: AppRoutes.onGenerateRoute,
+            debugShowCheckedModeBanner: false,
+          );
+        }rateRoute,
         debugShowCheckedModeBanner: false,
       ),
     );
