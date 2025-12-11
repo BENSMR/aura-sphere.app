@@ -103,3 +103,4 @@ export { exportAudit } from './audit/exportAudit';
 export { detectExpenseAnomalies, detectInvoiceAnomalies, detectAuditAnomalies, resolveAnomaly, queryAnomalies } from './audit/anomalyDetection';
 export { anomalyScanner } from './anomaly/anomalyScanner';
 export { dailyAnomalyCount, queryAnomaliesDailyCount } from './anomaly/dailyAnomalyCount';
+export { generateAnomalyInsights, queryAnomalyInsights } from './anomaly/generateInsights';
