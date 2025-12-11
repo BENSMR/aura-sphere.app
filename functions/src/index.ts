@@ -111,3 +111,4 @@ export { sendPushNotification, sendPushNotificationCallable, pushAnomalyAlert, p
 export { logAuditEvent, getUserAudits, getFailedAudits, updateAuditStatus, getAuditStats, deleteOldAudits } from './notifications/auditLogger';
 export { saveUserNotification, auditNotification, getUserDeviceTokens, sendPushToTokens } from './notifications/helpers';
 export { onAnomalyCreate, onInvoiceWriteNotification } from './notifications/sendPushOnEvent';
+export { sendEmailAlertViaSmtp } from './notifications/sendEmailAlert';
