@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_functions/firebase_functions.dart';
 import 'package:flutter/foundation.dart';
 
 enum AlertType { anomaly, invoice, expense, payment, system }
@@ -71,13 +70,10 @@ class EmailAlertRecord {
 
 class EmailAlertService {
   final FirebaseFirestore _firestore;
-  final FirebaseFunctions _functions;
 
   EmailAlertService({
     FirebaseFirestore? firestore,
-    FirebaseFunctions? functions,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _functions = functions ?? FirebaseFunctions.instance;
+  })  : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Send email alert via Cloud Function
   /// Returns true if alert was accepted for sending
@@ -105,16 +101,19 @@ class EmailAlertService {
         metadata: metadata,
       );
 
-      final callable = _functions.httpsCallable('sendEmailAlertCallable');
-      final result = await callable.call(payload.toMap());
+      // Store alert in Firestore - Cloud Function will process via Firestore trigger
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('emailAlerts')
+          .add({
+        ...payload.toMap(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'processed': false,
+      });
 
-      if (result.data != null && result.data['success'] == true) {
-        debugPrint('✅ Email alert sent: $subject');
-        return true;
-      }
-
-      debugPrint('❌ Email alert failed: ${result.data['error']}');
-      return false;
+      debugPrint('✅ Email alert queued: $subject');
+      return true;
     } catch (e) {
       debugPrint('❌ Email alert error: $e');
       return false;

@@ -24,7 +24,7 @@ interface SendResult {
 
 /**
  * Send push notification to user(s)
- * Retrieves FCM tokens and sends via Firebase Cloud Messaging
+ * Retrieves FCM tokens from devices and sends via Firebase Cloud Messaging
  */
 export const sendPushNotification = async (
   payload: PushNotificationPayload
@@ -32,46 +32,59 @@ export const sendPushNotification = async (
   try {
     const { userId, title, body, notificationType, severity, actionUrl, data } = payload;
 
-    // Get user's FCM tokens
-    const userDoc = await db.collection('users').doc(userId).get();
-    if (!userDoc.exists) {
-      return { success: false, error: 'User not found' };
+    // Get user's registered devices
+    const devicesSnapshot = await db.collection('users').doc(userId).collection('devices').get();
+    if (devicesSnapshot.empty) {
+      logger.warn(`No devices registered for user ${userId}`);
+      return { success: false, error: 'No devices registered' };
     }
 
-    const fcmTokens = userDoc.data()?.fcmTokens || [];
-    if (fcmTokens.length === 0) {
-      logger.warn(`No FCM tokens for user ${userId}`);
-      return { success: false, error: 'No FCM tokens registered' };
+    // Filter devices by notification preferences
+    const deviceDocs = devicesSnapshot.docs.filter((doc) => {
+      const prefs = doc.data().prefs || {};
+      
+      // Check if 'all' notifications are enabled
+      if (!prefs.all) return false;
+
+      // Check specific notification type
+      const typeKey = notificationType.toLowerCase();
+      if (typeKey === 'anomaly') return prefs.anomalies !== false;
+      if (typeKey === 'invoice') return prefs.invoices !== false;
+      if (typeKey === 'inventory') return prefs.inventory !== false;
+      return true;
+    });
+
+    if (deviceDocs.length === 0) {
+      logger.info(`Notification type ${notificationType} disabled for all devices of user ${userId}`);
+      return { success: false, error: 'Notification type disabled on all devices' };
     }
 
-    // Check notification preferences
+    // Check quiet hours for non-critical notifications
+    let skipQuietHours = false;
+    if (severity === 'critical') {
+      skipQuietHours = true;
+    }
+
+    // Get user preferences
     const prefsDoc = await db
-      .collection('users')
-      .doc(userId)
-      .collection('preferences')
-      .doc('notifications')
-      .get();
+        .collection('users')
+        .doc(userId)
+        .collection('preferences')
+        .doc('notifications')
+        .get();
     const prefs = prefsDoc.data() || {};
-
-    // Check if this notification type is enabled
-    if (prefs.disabledNotifications?.includes(notificationType)) {
-      logger.info(`Notification type ${notificationType} disabled for user ${userId}`);
-      return { success: false, error: 'Notification type disabled by user' };
-    }
 
     // Check quiet hours
     const now = new Date().getHours();
-    if (prefs.quietHoursEnabled && prefs.quietHoursStart && prefs.quietHoursEnd) {
+    if (!skipQuietHours && prefs.quietHoursEnabled && prefs.quietHoursStart && prefs.quietHoursEnd) {
       const start = parseInt(prefs.quietHoursStart);
       const end = parseInt(prefs.quietHoursEnd);
       
-      // If end < start, quiet hours span midnight
       const inQuietHours = end > start 
         ? (now >= start && now < end)
         : (now >= start || now < end);
 
-      // Only skip non-critical notifications during quiet hours
-      if (inQuietHours && severity !== 'critical') {
+      if (inQuietHours) {
         logger.info(`Quiet hours active for user ${userId}, skipping ${notificationType}`);
         return { success: false, error: 'Quiet hours active' };
       }
@@ -82,7 +95,6 @@ export const sendPushNotification = async (
       notification: {
         title,
         body,
-        ...(severity && { customData: JSON.stringify({ severity }) }),
       },
       webpush: {
         notification: {
@@ -102,15 +114,6 @@ export const sendPushNotification = async (
           },
         },
       },
-      android: {
-        priority: severity === 'critical' ? 'high' : 'normal',
-        notification: {
-          title,
-          body,
-          clickAction: actionUrl || process.env.APP_URL,
-          channelId: `${notificationType}-${severity || 'normal'}`,
-        },
-      },
       data: {
         notificationType,
         severity: severity || 'low',
@@ -119,10 +122,13 @@ export const sendPushNotification = async (
       },
     };
 
-    // Send to all user tokens
+    // Send to all device tokens
     const results = await Promise.allSettled(
-      fcmTokens.map((token: string) =>
-        messaging.send({
+      deviceDocs.map((doc: any) => {
+        const token = doc.data().token;
+        const platform = doc.data().platform;
+        
+        return messaging.send({
           notification: message.notification,
           webpush: message.webpush,
           apns: message.apns,
@@ -137,11 +143,11 @@ export const sendPushNotification = async (
           },
           data: message.data,
           token,
-        })
-      )
+        });
+      })
     );
 
-    // Count successes/failures
+    // Count successes/failures and collect message IDs
     let successCount = 0;
     let failureCount = 0;
     const messageIds: string[] = [];
@@ -151,30 +157,40 @@ export const sendPushNotification = async (
         successCount++;
         const result = results[i] as PromiseFulfilledResult<string>;
         messageIds.push(result.value);
+        
+        // Update device lastSeen
+        await deviceDocs[i].ref.update({
+          lastSeen: admin.firestore.FieldValue.serverTimestamp(),
+        });
       } else {
         failureCount++;
         const error = results[i] as PromiseRejectedResult;
+        const deviceId = deviceDocs[i].id;
         
         // Remove invalid tokens
         if (
           error.reason?.code === 'messaging/invalid-registration-token' ||
           error.reason?.code === 'messaging/registration-token-not-registered'
         ) {
-          await removeInvalidToken(userId, fcmTokens[i] as string);
+          await removeInvalidDevice(userId, deviceId);
         }
       }
     }
 
-    // Log notification
+    // Log notification to user's notification history
     await logNotification(userId, {
+      type: notificationType,
       title,
       body,
-      notificationType,
       severity: severity || 'low',
-      sentAt: admin.firestore.FieldValue.serverTimestamp(),
-      status: 'sent',
-      successCount,
-      failureCount,
+      payload: data || {},
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      delivered: successCount > 0,
+      meta: {
+        sentToDevices: successCount,
+        failedDevices: failureCount,
+      },
     });
 
     logger.info(`Push notification sent to user ${userId}: ${successCount} success, ${failureCount} failed`);
@@ -291,16 +307,14 @@ export const pushRiskAlert = functions.firestore
   });
 
 /**
- * Helper: Remove invalid FCM token
+ * Helper: Remove invalid device
  */
-async function removeInvalidToken(userId: string, token: string): Promise<void> {
+async function removeInvalidDevice(userId: string, deviceId: string): Promise<void> {
   try {
-    await db.collection('users').doc(userId).update({
-      fcmTokens: admin.firestore.FieldValue.arrayRemove([token]),
-    });
-    logger.info(`Removed invalid token for user ${userId}`);
+    await db.collection('users').doc(userId).collection('devices').doc(deviceId).delete();
+    logger.info(`Removed invalid device ${deviceId} for user ${userId}`);
   } catch (error) {
-    logger.warn(`Failed to remove token: ${error}`);
+    logger.warn(`Failed to remove device: ${error}`);
   }
 }
 
@@ -312,7 +326,7 @@ async function logNotification(userId: string, data: any): Promise<void> {
     await db
       .collection('users')
       .doc(userId)
-      .collection('pushNotifications')
+      .collection('notifications')
       .add(data);
   } catch (error) {
     logger.warn(`Failed to log notification: ${error}`);
@@ -328,53 +342,58 @@ export const removeFCMToken = functions.https.onCall(async (data, context) => {
   }
 
   const userId = context.auth.uid;
-  const { token } = data;
+  const { deviceId } = data;
 
-  if (!token) {
-    throw new functions.https.HttpsError('invalid-argument', 'Token required');
+  if (!deviceId) {
+    throw new functions.https.HttpsError('invalid-argument', 'Device ID required');
   }
 
   try {
-    await db.collection('users').doc(userId).update({
-      fcmTokens: admin.firestore.FieldValue.arrayRemove([token]),
-    });
+    await removeInvalidDevice(userId, deviceId);
     return { success: true };
   } catch (error) {
-    logger.error(`Failed to remove FCM token: ${error}`);
-    throw new functions.https.HttpsError('internal', 'Failed to remove token');
+    logger.error(`Failed to remove device: ${error}`);
+    throw new functions.https.HttpsError('internal', 'Failed to remove device');
   }
 });
 
 /**
- * Callable: Register FCM token
+ * Callable: Register device with FCM token
  */
-export const registerFCMToken = functions.https.onCall(async (data, context) => {
+export const registerDevice = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User not authenticated');
   }
 
   const userId = context.auth.uid;
-  const { token } = data;
+  const { deviceId, token, platform } = data;
 
-  if (!token) {
-    throw new functions.https.HttpsError('invalid-argument', 'Token required');
+  if (!deviceId || !token || !platform) {
+    throw new functions.https.HttpsError('invalid-argument', 'Device ID, token, and platform required');
   }
 
   try {
-    // Add token if not already registered
-    const userDoc = await db.collection('users').doc(userId).get();
-    const existingTokens = userDoc.data()?.fcmTokens || [];
-
-    if (!existingTokens.includes(token)) {
-      await db.collection('users').doc(userId).update({
-        fcmTokens: admin.firestore.FieldValue.arrayUnion([token]),
-      });
+    const validPlatforms = ['android', 'ios', 'web'];
+    if (!validPlatforms.includes(platform)) {
+      throw new Error('Invalid platform');
     }
 
-    logger.info(`Registered FCM token for user ${userId}`);
+    await db.collection('users').doc(userId).collection('devices').doc(deviceId).set({
+      token,
+      platform,
+      lastSeen: admin.firestore.FieldValue.serverTimestamp(),
+      prefs: {
+        anomalies: true,
+        invoices: true,
+        inventory: true,
+        all: true,
+      },
+    }, { merge: true });
+
+    logger.info(`Device registered: ${deviceId} (${platform}) for user ${userId}`);
     return { success: true };
   } catch (error) {
-    logger.error(`Failed to register FCM token: ${error}`);
-    throw new functions.https.HttpsError('internal', 'Failed to register token');
+    logger.error(`Failed to register device: ${error}`);
+    throw new functions.https.HttpsError('internal', 'Failed to register device');
   }
 });

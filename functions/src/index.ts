@@ -107,4 +107,4 @@ export { generateAnomalyInsights, queryAnomalyInsights } from './anomaly/generat
 export { generateAIInsights, queryAIInsights } from './anomaly/generateAIInsights';
 export { dailyAggregateScheduler, aggregateAnomaliesCallable } from './analytics/anomalyAggregator';
 export { sendEmailAlert, sendEmailAlertCallable, emailAnomalyAlert, emailInvoiceReminder, emailAlertPubSubHandler } from './notifications/emailAlert';
-export { sendPushNotification, sendPushNotificationCallable, pushAnomalyAlert, pushRiskAlert, registerFCMToken, removeFCMToken } from './notifications/pushNotification';
+export { sendPushNotification, sendPushNotificationCallable, pushAnomalyAlert, pushRiskAlert, registerDevice, removeFCMToken } from './notifications/pushNotification';

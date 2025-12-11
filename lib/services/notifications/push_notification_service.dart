@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_functions/firebase_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
@@ -70,16 +69,10 @@ class PushNotificationRecord {
 class PushNotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FirebaseFirestore _firestore;
-  final FirebaseFunctions _functions;
-  final String? _userId;
 
   PushNotificationService({
     FirebaseFirestore? firestore,
-    FirebaseFunctions? functions,
-    String? userId,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _functions = functions ?? FirebaseFunctions.instance,
-        _userId = userId;
+  })  : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Initialize push notifications
   /// Call this in main.dart or when user logs in
@@ -134,15 +127,29 @@ class PushNotificationService {
   /// Register FCM token with backend
   Future<bool> registerFCMToken(String userId, String token) async {
     try {
-      final callable = _functions.httpsCallable('registerFCMToken');
-      final result = await callable.call({'token': token});
+      final fcmToken = await _messaging.getToken();
+      if (fcmToken == null) return false;
 
-      if (result.data != null && result.data['success'] == true) {
-        debugPrint('✅ FCM token registered');
-        return true;
-      }
+      // Register device in Firestore
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('devices')
+          .doc(fcmToken)
+          .set({
+        'token': fcmToken,
+        'platform': defaultTargetPlatform.name,
+        'lastSeen': FieldValue.serverTimestamp(),
+        'prefs': {
+          'anomalies': true,
+          'invoices': true,
+          'inventory': true,
+          'all': true,
+        },
+      }, SetOptions(merge: true));
 
-      return false;
+      debugPrint('✅ FCM token registered');
+      return true;
     } catch (e) {
       debugPrint('❌ Failed to register FCM token: $e');
       return false;
@@ -155,15 +162,16 @@ class PushNotificationService {
       final token = await _messaging.getToken();
       if (token == null) return true;
 
-      final callable = _functions.httpsCallable('removeFCMToken');
-      final result = await callable.call({'token': token});
+      // Remove device from Firestore
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('devices')
+          .doc(token)
+          .delete();
 
-      if (result.data != null && result.data['success'] == true) {
-        debugPrint('✅ FCM token removed');
-        return true;
-      }
-
-      return false;
+      debugPrint('✅ FCM token removed');
+      return true;
     } catch (e) {
       debugPrint('❌ Failed to remove FCM token: $e');
       return false;
@@ -181,26 +189,28 @@ class PushNotificationService {
     Map<String, String>? data,
   }) async {
     try {
-      final payload = PushNotificationPayload(
-        userId: userId,
-        title: title,
-        body: body,
-        notificationType: notificationType,
-        severity: severity,
-        actionUrl: actionUrl,
-        data: data,
-      );
+      // Store notification in Firestore - Cloud Function will process via trigger
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('notifications')
+          .add({
+        'type': notificationType.name,
+        'title': title,
+        'body': body,
+        'severity': severity.name,
+        'payload': {
+          'actionUrl': actionUrl,
+          'data': data ?? {},
+        },
+        'read': false,
+        'createdAt': FieldValue.serverTimestamp(),
+        'delivered': false,
+        'meta': {},
+      });
 
-      final callable = _functions.httpsCallable('sendPushNotificationCallable');
-      final result = await callable.call(payload.toMap());
-
-      if (result.data != null && result.data['success'] == true) {
-        debugPrint('✅ Push notification sent: $title');
-        return true;
-      }
-
-      debugPrint('❌ Push notification failed: ${result.data['error']}');
-      return false;
+      debugPrint('✅ Push notification queued: $title');
+      return true;
     } catch (e) {
       debugPrint('❌ Push notification error: $e');
       return false;
