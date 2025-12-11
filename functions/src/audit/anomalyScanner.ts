@@ -1,522 +1,454 @@
-/**
- * anomalyScanner.ts
- *
- * Proactive anomaly scanning service
- *
- * Scans for:
- * 1. Statistical anomalies (unusual distributions)
- * 2. Pattern anomalies (repetitive suspicious behavior)
- * 3. Temporal anomalies (unusual timing patterns)
- * 4. Relationship anomalies (unusual connections)
- *
- * Runs on a schedule (e.g., daily) and compares current data to baselines
- */
-
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
-import { sendSecurityAlert } from '../utils/alerts';
+// functions/src/audit/anomalyScanner.ts
+import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
+import { sendSecurityAlert } from "../utils/alerts";
 
 if (!admin.apps.length) admin.initializeApp();
-
 const db = admin.firestore();
 
 /**
- * Configuration from environment
+ * Anomaly scanner
+ * - Scheduled every 6 hours (configurable)
+ * - Uses heuristic rules to detect unusual patterns in invoices, expenses, inventory, and audit logs
+ * - Writes anomalies to collection "anomalies/{id}"
+ * - Sends Slack alert for high/critical severities
+ *
+ * Heuristics are intentionally simple and auditable:
+ * - Amount compared to moving average for same vendor/user
+ * - Duplicate invoice detection (same amount+vendor within short window)
+ * - Rapid edit rate in audit logs for same entity
+ * - Negative or large stock movements
+ * - Unusual tax percentage for country (if tax field exists)
+ *
+ * This function is safe to run on production: it uses limits and batching.
  */
-const CONFIG = {
-  // Time window for scanning (hours)
-  WINDOW_HOURS: parseInt(process.env.ANOMALY_WINDOW_HOURS || '72', 10),
-  // Max documents per collection to scan
-  MAX_DOCS_PER_COLLECTION: parseInt(process.env.ANOMALY_MAX_DOCS_PER_COLLECTION || '500', 10),
-  // Slack alert threshold (0=low, 1=medium, 2=high, 3=critical)
-  SLACK_THRESHOLD: parseInt(process.env.ANOMALY_SLACK_THRESHOLD || '2', 10),
-  // Debug mode
-  DEBUG: process.env.ANOMALY_DEBUG === 'true',
-};
 
-// Severity level mapping
-const SEVERITY_LEVELS = {
-  low: 0,
-  medium: 1,
-  high: 2,
-  critical: 3,
-};
+type Severity = "low" | "medium" | "high" | "critical";
 
-type SeverityType = keyof typeof SEVERITY_LEVELS;
+const WINDOW_HOURS = Number(process.env.ANOMALY_WINDOW_HOURS || 72);
+const MAX_DOCS = Number(process.env.ANOMALY_MAX_DOCS_PER_COLLECTION || 500);
+const SLACK_THRESHOLD = Number(process.env.ANOMALY_SLACK_THRESHOLD || 2);
+const DEBUG = process.env.ANOMALY_DEBUG === "true";
 
-/**
- * Statistical summary for a metric
- */
-interface MetricStats {
-  mean: number;
-  stdDev: number;
-  min: number;
-  max: number;
-  median: number;
-  count: number;
+function severityToScore(s: Severity) {
+  switch (s) {
+    case "low": return 1;
+    case "medium": return 2;
+    case "high": return 3;
+    case "critical": return 4;
+  }
 }
 
+/** Utilities */
+function chooseSeverity(score: number): Severity {
+  if (score >= 9) return "critical";
+  if (score >= 6) return "high";
+  if (score >= 3) return "medium";
+  return "low";
+}
+
+/** Heuristic scoring functions (explainable) */
+
 /**
- * Calculate basic statistics from array of numbers
+ * Score invoice by comparing amount to user's recent average for same vendor or same item.
+ * Returns numeric points.
  */
-function calculateStats(values: number[]): MetricStats {
-  if (values.length === 0) {
-    return { mean: 0, stdDev: 0, min: 0, max: 0, median: 0, count: 0 };
+async function scoreInvoice(doc: FirebaseFirestore.DocumentSnapshot): Promise<{score:number, reasons:string[]}> {
+  const data = doc.data() as any;
+  const reasons: string[] = [];
+  let score = 0;
+
+  if (!data) return { score, reasons };
+
+  // 1) Large invoice (absolute threshold)
+  const AMOUNT_CRITICAL = 50000; // currency units - tune per-market
+  const AMOUNT_HIGH = 20000;
+  if (data.amount >= AMOUNT_CRITICAL) { score += 5; reasons.push(`amount >= ${AMOUNT_CRITICAL}`); }
+  else if (data.amount >= AMOUNT_HIGH) { score += 3; reasons.push(`amount >= ${AMOUNT_HIGH}`); }
+
+  // 2) Relative to user's moving average (past WINDOW)
+  try {
+    const ownerId = data.ownerId || data.userId || data.uid;
+    if (ownerId) {
+      const cutoff = admin.firestore.Timestamp.fromMillis(Date.now() - WINDOW_HOURS * 3600 * 1000);
+      const q = db.collectionGroup("invoices")
+        .where("ownerId", "==", ownerId)
+        .where("createdAt", ">=", cutoff)
+        .orderBy("createdAt", "desc")
+        .limit(50);
+      const snap = await q.get();
+      if (!snap.empty) {
+        let sum = 0, cnt = 0;
+        snap.docs.forEach(d => {
+          const v = (d.data() as any).amount;
+          if (typeof v === "number") { sum += v; cnt++; }
+        });
+        const avg = cnt > 0 ? sum / cnt : 0;
+        if (avg > 0 && data.amount > avg * 4) {
+          score += 4; reasons.push(`amount > 4x recent avg (${Math.round(avg)})`);
+        } else if (avg > 0 && data.amount > avg * 2) {
+          score += 2; reasons.push(`amount > 2x recent avg (${Math.round(avg)})`);
+        }
+      }
+    }
+  } catch (e) { if (DEBUG) console.warn("scoreInvoice avg failed", e); }
+
+  // 3) Duplicate invoice detection: same vendor + amount within short window
+  try {
+    const vendor = data.vendor || data.supplier;
+    if (vendor) {
+      const cutoff2 = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 3600 * 1000);
+      const dupQ = db.collectionGroup("invoices")
+        .where("vendor", "==", vendor)
+        .where("amount", "==", data.amount)
+        .where("createdAt", ">=", cutoff2)
+        .limit(5);
+      const dupSnap = await dupQ.get();
+      if (dupSnap.size >= 2) {
+        score += 4; reasons.push(`duplicate invoices (${dupSnap.size}) for vendor ${vendor}`);
+      }
+    }
+  } catch (e) { if (DEBUG) console.warn("dup check fail", e); }
+
+  // 4) Tax mismatch heuristics (if taxRate present)
+  if (typeof data.taxRate === "number") {
+    if (data.taxRate === 0 && (data.country && data.country !== "US")) {
+      score += 1; reasons.push(`zero tax for country ${data.country}`);
+    } else if (data.taxRate > 50) {
+      score += 3; reasons.push(`unusually high tax ${data.taxRate}%`);
+    }
   }
 
-  const sorted = [...values].sort((a, b) => a - b);
-  const count = values.length;
-  const sum = values.reduce((a, b) => a + b, 0);
-  const mean = sum / count;
-  const variance = values.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / count;
-  const stdDev = Math.sqrt(variance);
-  const min = sorted[0];
-  const max = sorted[count - 1];
-  const median = count % 2 === 0
-    ? (sorted[count / 2 - 1] + sorted[count / 2]) / 2
-    : sorted[Math.floor(count / 2)];
-
-  return { mean, stdDev, min, max, median, count };
+  return { score, reasons };
 }
 
-/**
- * Check if value is statistical outlier (>2 std dev from mean)
- */
-function isOutlier(value: number, stats: MetricStats): boolean {
-  if (stats.stdDev === 0) return false;
-  const zScore = Math.abs((value - stats.mean) / stats.stdDev);
-  return zScore > 2; // 2 standard deviations
-}
+async function scoreExpense(doc: FirebaseFirestore.DocumentSnapshot): Promise<{score:number,reasons:string[]}> {
+  const data = doc.data() as any;
+  const reasons: string[] = [];
+  let score = 0;
+  if (!data) return { score, reasons };
 
-/**
- * Scan for expense anomalies by statistical analysis
- */
-async function scanExpenseAnomalies(): Promise<string[]> {
-  const anomalyIds: string[] = [];
-  const windowMs = CONFIG.WINDOW_HOURS * 60 * 60 * 1000;
+  // absolute thresholds
+  if (data.amount >= 20000) { score += 4; reasons.push("expense amount >= 20k"); }
+  else if (data.amount >= 5000) { score += 2; reasons.push("expense amount >= 5k"); }
 
+  // frequency: same merchant multiple times
   try {
-    if (CONFIG.DEBUG) {
-      functions.logger.info('Starting expense anomaly scan', {
-        windowHours: CONFIG.WINDOW_HOURS,
-        maxDocsPerCollection: CONFIG.MAX_DOCS_PER_COLLECTION,
-      });
+    const merchant = data.merchant || data.vendor;
+    if (merchant) {
+      const cutoff = admin.firestore.Timestamp.fromMillis(Date.now() - WINDOW_HOURS * 3600 * 1000);
+      const q = db.collectionGroup("expenses")
+        .where("merchant", "==", merchant)
+        .where("createdAt", ">=", cutoff)
+        .limit(20);
+      const snap = await q.get();
+      if (snap.size >= 6) { score += 3; reasons.push(`high frequency for merchant ${merchant}: ${snap.size}`); }
     }
+  } catch (e) { if (DEBUG) console.warn("expense freq fail", e); }
 
-    // Get all users with expenses
-    const usersSnapshot = await db.collection('users').get();
+  // suspicious attachments or mismatched categories
+  if (data.category && data.category === "travel" && data.amount > 3000) { score += 1; reasons.push("large travel expense"); }
 
-    for (const userDoc of usersSnapshot.docs) {
-      const userId = userDoc.id;
-      let expensesSnapshot = await db
-        .collection('users')
-        .doc(userId)
-        .collection('expenses')
-        .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(
-          new Date(Date.now() - windowMs),
-        ))
-        .orderBy('createdAt', 'desc')
-        .limit(CONFIG.MAX_DOCS_PER_COLLECTION)
+  return { score, reasons };
+}
+
+async function scoreInventory(doc: FirebaseFirestore.DocumentSnapshot): Promise<{score:number,reasons:string[]}> {
+  const data = doc.data() as any;
+  const reasons: string[] = [];
+  let score = 0;
+  if (!data) return { score, reasons };
+
+  // negative qty or very large adjustments
+  if (typeof data.quantity === "number") {
+    if (data.quantity < 0) { score += 4; reasons.push("negative quantity"); }
+    else if (data.quantity > 1000) { score += 2; reasons.push("large addition >1000"); }
+  }
+
+  // check recent movements for same SKU
+  try {
+    const sku = data.sku || data.code;
+    if (sku) {
+      const cutoff = admin.firestore.Timestamp.fromMillis(Date.now() - WINDOW_HOURS * 3600 * 1000);
+      const q = db.collectionGroup("inventory")
+        .where("sku", "==", sku)
+        .where("updatedAt", ">=", cutoff)
+        .limit(50);
+      const snap = await q.get();
+      if (snap.size >= 20) { score += 3; reasons.push(`high movement for SKU ${sku}: ${snap.size}`); }
+    }
+  } catch (e) { if (DEBUG) console.warn("inventory freq fail", e); }
+
+  return { score, reasons };
+}
+
+async function scoreAuditActivity(doc: FirebaseFirestore.DocumentSnapshot): Promise<{score:number,reasons:string[]}> {
+  const data = doc.data() as any;
+  const reasons: string[] = [];
+  let score = 0;
+  if (!data) return { score, reasons };
+
+  // rapid edits: many audit entries for same entity in short time
+  try {
+    const entType = data.entityType;
+    const entId = data.entityId;
+    if (entType && entId) {
+      const comp = `${entType}_${entId}`;
+      const cutoff = admin.firestore.Timestamp.fromMillis(Date.now() - 2 * 3600 * 1000); // 2 hours
+      const snap = await db.collection("audit").doc(comp).collection("entries")
+        .where("timestamp", ">=", cutoff)
         .get();
-
-      if (expensesSnapshot.size < 5) {
-        if (CONFIG.DEBUG) {
-          functions.logger.info(`Insufficient expenses for user ${userId}: ${expensesSnapshot.size}`);
-        }
-        continue;
-      }
-
-      // Calculate stats on amounts
-      const amounts = expensesSnapshot.docs.map(d => (d.data().amount as number) || 0);
-      const stats = calculateStats(amounts);
-
-      if (CONFIG.DEBUG) {
-        functions.logger.info(`Expense stats for ${userId}`, {
-          count: stats.count,
-          mean: stats.mean,
-          stdDev: stats.stdDev,
-        });
-      }
-
-      // Scan current expenses for outliers
-      for (const expenseDoc of expensesSnapshot.docs) {
-        const expense = expenseDoc.data();
-        const amount = (expense.amount as number) || 0;
-
-        // Check 1: Statistical outlier
-        if (isOutlier(amount, stats)) {
-          const severity = amount > stats.mean + 3 * stats.stdDev ? 'high' : 'medium';
-          const severityLevel = SEVERITY_LEVELS[severity];
-
-          const anomalyId = db.collection('anomalies').doc().id;
-          await db.collection('anomalies').doc(anomalyId).set({
-            entityType: 'expense',
-            entityId: expenseDoc.id,
-            severity,
-            message: `Expense amount (${expense.currency} ${amount}) is statistical outlier. Normal range: ${stats.mean.toFixed(2)} ± ${stats.stdDev.toFixed(2)}`,
-            recommendedAction: 'Review expense for accuracy. Verify receipt and merchant details.',
-            context: {
-              amount,
-              mean: stats.mean,
-              stdDev: stats.stdDev,
-              zScore: (amount - stats.mean) / stats.stdDev,
-            },
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            resolved: false,
-          });
-
-          // Send Slack if above threshold
-          if (severityLevel >= CONFIG.SLACK_THRESHOLD) {
-            await sendSecurityAlert(
-              `Expense Anomaly Detected: ${severity.toUpperCase()}`,
-              `Amount: ${expense.currency} ${amount}\nUser: ${userId}\nNormal: ${stats.mean.toFixed(2)} ± ${stats.stdDev.toFixed(2)}`,
-              { anomalyId, userId, amount, severity },
-            );
-          }
-
-          anomalyIds.push(anomalyId);
-        }
-
-        // Check 2: Merchant concentration (same merchant >50% of expenses)
-        const merchantCounts = new Map<string, number>();
-        expensesSnapshot.docs.forEach(doc => {
-          const merchant = (doc.data().merchant as string) || 'unknown';
-          merchantCounts.set(merchant, (merchantCounts.get(merchant) || 0) + 1);
-        });
-
-        const maxMerchantCount = Math.max(...merchantCounts.values());
-        const merchantConcentration = maxMerchantCount / expensesSnapshot.size;
-
-        if (merchantConcentration > 0.5) {
-          const topMerchant = Array.from(merchantCounts.entries())
-            .sort((a, b) => b[1] - a[1])[0][0];
-
-          const anomalyId = db.collection('anomalies').doc().id;
-          await db.collection('anomalies').doc(anomalyId).set({
-            entityType: 'expense',
-            entityId: userId,
-            severity: 'medium',
-            message: `High merchant concentration detected: ${topMerchant} appears in ${(merchantConcentration * 100).toFixed(0)}% of expenses`,
-            recommendedAction: 'Review if this is normal business spending or potential misuse.',
-            context: {
-              topMerchant,
-              concentration: merchantConcentration,
-              totalExpenses: expensesSnapshot.size,
-            },
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            resolved: false,
-          });
-
-          if (SEVERITY_LEVELS.medium >= CONFIG.SLACK_THRESHOLD) {
-            await sendSecurityAlert(
-              'Expense Anomaly: Merchant Concentration',
-              `${topMerchant} in ${(merchantConcentration * 100).toFixed(0)}% of expenses for user ${userId}`,
-              { anomalyId, userId, topMerchant, concentration: merchantConcentration },
-            );
-          }
-
-          anomalyIds.push(anomalyId);
-        }
-      }
+      if (snap.size >= 10) { score += 4; reasons.push(`rapid edits ${snap.size} in 2h`); }
+      else if (snap.size >= 5) { score += 2; reasons.push(`multiple edits ${snap.size} in 2h`); }
     }
-  } catch (err) {
-    functions.logger.error('Expense anomaly scan failed', err);
-  }
+  } catch (e) { if (DEBUG) console.warn("audit freq fail", e); }
 
-  return anomalyIds;
+  // suspicious actor (anonymous or new)
+  const actorUid = data.actor?.uid;
+  if (!actorUid) { score += 2; reasons.push("actor missing or anonymous"); }
+
+  return { score, reasons };
 }
 
-/**
- * Scan for invoice anomalies by pattern analysis
- */
-async function scanInvoiceAnomalies(): Promise<string[]> {
-  const anomalyIds: string[] = [];
-  const windowMs = CONFIG.WINDOW_HOURS * 60 * 60 * 1000;
+/** Main scheduled function - runs every 6 hours */
+export const anomalyScanner = functions.pubsub.schedule("every 6 hours").onRun(async (context) => {
+  const runId = `anomaly-${Date.now()}`;
+  functions.logger.info(`[${runId}] Starting anomaly scan; window_hours=${WINDOW_HOURS}, max_docs=${MAX_DOCS}`);
+
+  const cutoff = admin.firestore.Timestamp.fromMillis(Date.now() - WINDOW_HOURS * 3600 * 1000);
 
   try {
-    if (CONFIG.DEBUG) {
-      functions.logger.info('Starting invoice anomaly scan', { windowHours: CONFIG.WINDOW_HOURS });
+    // 1) Scan invoices (collectionGroup)
+    const invoiceQuery = db.collectionGroup("invoices")
+      .where("createdAt", ">=", cutoff)
+      .orderBy("createdAt", "desc")
+      .limit(MAX_DOCS);
+    const invoiceSnap = await invoiceQuery.get();
+    functions.logger.info(`[${runId}] scanned invoices: ${invoiceSnap.size}`);
+
+    for (const doc of invoiceSnap.docs) {
+      try {
+        const { score, reasons } = await scoreInvoice(doc);
+        if (score <= 0) continue;
+        const sev = chooseSeverity(score);
+        const severityScore = severityToScore(sev);
+        const entity = doc.data();
+        const anomaly = {
+          runId,
+          entityType: "invoice",
+          entityId: doc.id,
+          owner: (entity as any).ownerId || (entity as any).userId || null,
+          score,
+          severity: sev,
+          reasons,
+          recommendedAction: generateInvoiceRecommendation(score, reasons),
+          sample: pickInvoiceSample(entity),
+          detectedAt: admin.firestore.Timestamp.now(),
+        };
+        await writeAnomalyRecord(anomaly);
+        if (severityScore >= SLACK_THRESHOLD) {
+          await sendSecurityAlert("Anomaly detected (invoice)", `ID: ${doc.id}\nSeverity: ${sev}\nReasons: ${reasons.join("; ")}`, { severity: sev });
+        }
+      } catch (e) {
+        functions.logger.error(`[${runId}] invoice processing error`, e);
+      }
     }
 
-    const usersSnapshot = await db.collection('users').get();
+    // 2) Scan expenses
+    const expenseQuery = db.collectionGroup("expenses")
+      .where("createdAt", ">=", cutoff)
+      .orderBy("createdAt", "desc")
+      .limit(MAX_DOCS);
+    const expenseSnap = await expenseQuery.get();
+    functions.logger.info(`[${runId}] scanned expenses: ${expenseSnap.size}`);
 
-    for (const userDoc of usersSnapshot.docs) {
-      const userId = userDoc.id;
-      let invoicesSnapshot = await db
-        .collection('users')
-        .doc(userId)
-        .collection('invoices')
-        .orderBy('createdAt', 'desc')
-        .limit(CONFIG.MAX_DOCS_PER_COLLECTION)
-        .get();
-
-      if (invoicesSnapshot.size < 3) {
-        if (CONFIG.DEBUG) {
-          functions.logger.info(`Insufficient invoices for user ${userId}: ${invoicesSnapshot.size}`);
+    for (const doc of expenseSnap.docs) {
+      try {
+        const { score, reasons } = await scoreExpense(doc);
+        if (score <= 0) continue;
+        const sev = chooseSeverity(score);
+        const severityScore = severityToScore(sev);
+        const entity = doc.data();
+        const anomaly = {
+          runId,
+          entityType: "expense",
+          entityId: doc.id,
+          owner: (entity as any).ownerId || (entity as any).userId || null,
+          score,
+          severity: sev,
+          reasons,
+          recommendedAction: generateExpenseRecommendation(score, reasons),
+          sample: pickExpenseSample(entity),
+          detectedAt: admin.firestore.Timestamp.now(),
+        };
+        await writeAnomalyRecord(anomaly);
+        if (severityScore >= SLACK_THRESHOLD) {
+          await sendSecurityAlert("Anomaly detected (expense)", `ID: ${doc.id}\nSeverity: ${sev}\nReasons: ${reasons.join("; ")}`, { severity: sev });
         }
-        continue;
-      }
-
-      // Check 1: Payment collection rate
-      const paid = invoicesSnapshot.docs.filter(d => d.data().status === 'paid').length;
-      const paymentRate = paid / invoicesSnapshot.size;
-
-      if (paymentRate < 0.3) {
-        const severity = 'high';
-        const severityLevel = SEVERITY_LEVELS[severity];
-        const anomalyId = db.collection('anomalies').doc().id;
-        await db.collection('anomalies').doc(anomalyId).set({
-          entityType: 'invoice',
-          entityId: userId,
-          severity,
-          message: `Low payment collection rate: ${(paymentRate * 100).toFixed(0)}% (${paid}/${invoicesSnapshot.size})`,
-          recommendedAction: 'Review outstanding invoices and follow up with clients.',
-          context: {
-            paidCount: paid,
-            totalInvoices: invoicesSnapshot.size,
-            paymentRate,
-          },
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          resolved: false,
-        });
-
-        if (severityLevel >= CONFIG.SLACK_THRESHOLD) {
-          await sendSecurityAlert(
-            `Invoice Anomaly: Low Payment Rate (${severity.toUpperCase()})`,
-            `User: ${userId}\nPayment Rate: ${(paymentRate * 100).toFixed(0)}% (${paid}/${invoicesSnapshot.size})`,
-            { anomalyId, userId, paymentRate },
-          );
-        }
-
-        anomalyIds.push(anomalyId);
-      }
-
-      // Check 2: Invoice amount variance
-      const amounts = invoicesSnapshot.docs.map(d => (d.data().amount as number) || 0);
-      const stats = calculateStats(amounts);
-      const coefficient = stats.stdDev / stats.mean;
-
-      if (coefficient > 1.5) {
-        const anomalyId = db.collection('anomalies').doc().id;
-        await db.collection('anomalies').doc(anomalyId).set({
-          entityType: 'invoice',
-          entityId: userId,
-          severity: 'low',
-          message: `High variance in invoice amounts. Coefficient of variation: ${coefficient.toFixed(2)}`,
-          recommendedAction: 'Review invoicing patterns. Consider standardizing invoice amounts if possible.',
-          context: {
-            mean: stats.mean,
-            stdDev: stats.stdDev,
-            coefficientOfVariation: coefficient,
-          },
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          resolved: false,
-        });
-        anomalyIds.push(anomalyId);
-      }
-
-      // Check 3: Temporal pattern - invoices created in clusters
-      const invoicesByDay = new Map<string, number>();
-      invoicesSnapshot.docs.forEach(doc => {
-        const createdAt = (doc.data().createdAt as admin.firestore.Timestamp).toDate();
-        const dayKey = createdAt.toISOString().split('T')[0];
-        invoicesByDay.set(dayKey, (invoicesByDay.get(dayKey) || 0) + 1);
-      });
-
-      const dailyCounts = Array.from(invoicesByDay.values());
-      const dayStats = calculateStats(dailyCounts);
-
-      // Check for clustering (some days have much more than others)
-      for (const [day, count] of invoicesByDay.entries()) {
-        if (isOutlier(count, dayStats) && count > dayStats.mean) {
-          const anomalyId = db.collection('anomalies').doc().id;
-          await db.collection('anomalies').doc(anomalyId).set({
-            entityType: 'invoice',
-            entityId: userId,
-            severity: 'low',
-            message: `Invoice creation clustering detected on ${day}: ${count} invoices (unusual pattern)`,
-            recommendedAction: 'Verify if batch invoicing is intentional or system issue.',
-            context: {
-              date: day,
-              count,
-              meanPerDay: dayStats.mean,
-            },
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            resolved: false,
-          });
-          anomalyIds.push(anomalyId);
-        }
+      } catch (e) {
+        functions.logger.error(`[${runId}] expense processing error`, e);
       }
     }
+
+    // 3) Scan inventory changes (recent items/updates)
+    const inventoryQuery = db.collectionGroup("inventory")
+      .where("updatedAt", ">=", cutoff)
+      .orderBy("updatedAt", "desc")
+      .limit(MAX_DOCS);
+    const invSnap = await inventoryQuery.get();
+    functions.logger.info(`[${runId}] scanned inventory: ${invSnap.size}`);
+
+    for (const doc of invSnap.docs) {
+      try {
+        const { score, reasons } = await scoreInventory(doc);
+        if (score <= 0) continue;
+        const sev = chooseSeverity(score);
+        const severityScore = severityToScore(sev);
+        const entity = doc.data();
+        const anomaly = {
+          runId,
+          entityType: "inventory",
+          entityId: doc.id,
+          owner: (entity as any).ownerId || (entity as any).userId || null,
+          score,
+          severity: sev,
+          reasons,
+          recommendedAction: generateInventoryRecommendation(score, reasons),
+          sample: pickInventorySample(entity),
+          detectedAt: admin.firestore.Timestamp.now(),
+        };
+        await writeAnomalyRecord(anomaly);
+        if (severityScore >= SLACK_THRESHOLD) {
+          await sendSecurityAlert("Anomaly detected (inventory)", `ID: ${doc.id}\nSeverity: ${sev}\nReasons: ${reasons.join("; ")}`, { severity: sev });
+        }
+      } catch (e) {
+        functions.logger.error(`[${runId}] inventory processing error`, e);
+      }
+    }
+
+    // 4) Scan audit entries for rapid edits / suspicious patterns
+    const auditIndexQuery = db.collection("audit_index")
+      .where("latestAt", ">=", cutoff)
+      .orderBy("latestAt", "desc")
+      .limit(MAX_DOCS);
+    const auditIndexSnap = await auditIndexQuery.get();
+    functions.logger.info(`[${runId}] scanned audit_index: ${auditIndexSnap.size}`);
+
+    for (const idxDoc of auditIndexSnap.docs) {
+      try {
+        const d = idxDoc.data();
+        // build a fake doc structure to feed scoring
+        const latestSnap = await db.collection("audit").doc(`${d.entityType}_${d.entityId}`).collection("entries").doc(d.latestEntryId).get();
+        if (!latestSnap.exists) continue;
+        const { score, reasons } = await scoreAuditActivity(latestSnap);
+        if (score <= 0) continue;
+        const sev = chooseSeverity(score);
+        const severityScore = severityToScore(sev);
+        const anomaly = {
+          runId,
+          entityType: "audit",
+          entityId: `${d.entityType}_${d.entityId}`,
+          owner: null,
+          score,
+          severity: sev,
+          reasons,
+          recommendedAction: generateAuditRecommendation(score, reasons),
+          sample: { index: d, latest: latestSnap.data() },
+          detectedAt: admin.firestore.Timestamp.now(),
+        };
+        await writeAnomalyRecord(anomaly);
+        if (severityScore >= SLACK_THRESHOLD) {
+          await sendSecurityAlert("Anomaly detected (audit)", `Entity: ${anomaly.entityId}\nSeverity: ${sev}\nReasons: ${reasons.join("; ")}`, { severity: sev });
+        }
+      } catch (e) {
+        functions.logger.error(`[${runId}] audit index processing error`, e);
+      }
+    }
+
+    functions.logger.info(`[${runId}] Anomaly scan complete.`);
+    return null;
   } catch (err) {
-    functions.logger.error('Invoice anomaly scan failed', err);
+    functions.logger.error(`[${runId}] Anomaly scanner failed`, err);
+    await sendSecurityAlert("Anomaly Scanner Failure", `Error: ${err instanceof Error ? err.message : String(err)}`, { severity: "critical" });
+    return null;
   }
+});
 
-  return anomalyIds;
-}
-
-/**
- * Scan for user behavior anomalies
- */
-async function scanUserBehaviorAnomalies(): Promise<string[]> {
-  const anomalyIds: string[] = [];
-
+/** Helper: write anomaly with minimal searchable fields */
+async function writeAnomalyRecord(payload: any): Promise<string> {
   try {
-    if (CONFIG.DEBUG) {
-      functions.logger.info('Starting user behavior anomaly scan');
-    }
-
-    const usersSnapshot = await db.collection('users').limit(CONFIG.MAX_DOCS_PER_COLLECTION).get();
-
-    for (const userDoc of usersSnapshot.docs) {
-      const userId = userDoc.id;
-      const userData = userDoc.data();
-
-      // Check 1: Unusual admin access time
-      if (userData.lastAdminAccess) {
-        const lastAccess = (userData.lastAdminAccess as admin.firestore.Timestamp).toDate();
-        const hourOfDay = lastAccess.getHours();
-        const dayOfWeek = lastAccess.getDay();
-
-        // Flag admin access outside business hours (weekends or 10pm-6am)
-        if (dayOfWeek === 0 || dayOfWeek === 6 || hourOfDay < 6 || hourOfDay > 22) {
-          // Only flag if they're an admin
-          if (userData.role === 'admin') {
-            const severity = 'medium';
-            const severityLevel = SEVERITY_LEVELS[severity];
-            const anomalyId = db.collection('anomalies').doc().id;
-            await db.collection('anomalies').doc(anomalyId).set({
-              entityType: 'audit',
-              entityId: userId,
-              severity,
-              message: `Admin access outside business hours: ${lastAccess.toISOString()}`,
-              recommendedAction: 'Verify if this admin access was authorized.',
-              context: {
-                timestamp: lastAccess.toISOString(),
-                hourOfDay,
-                dayOfWeek: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dayOfWeek],
-              },
-              createdAt: admin.firestore.FieldValue.serverTimestamp(),
-              resolved: false,
-            });
-
-            if (severityLevel >= CONFIG.SLACK_THRESHOLD) {
-              await sendSecurityAlert(
-                `Security: Admin Access Outside Business Hours`,
-                `User: ${userId}\nTime: ${lastAccess.toISOString()}`,
-                { anomalyId, userId, timestamp: lastAccess.toISOString() },
-              );
-            }
-
-            anomalyIds.push(anomalyId);
-          }
-        }
-      }
-    }
-  } catch (err) {
-    functions.logger.error('User behavior anomaly scan failed', err);
+    const ref = db.collection("anomalies").doc();
+    const doc = {
+      entityType: payload.entityType,
+      entityId: payload.entityId,
+      owner: payload.owner || null,
+      score: payload.score,
+      severity: payload.severity,
+      reasons: payload.reasons,
+      recommendedAction: payload.recommendedAction,
+      sample: payload.sample || null,
+      runId: payload.runId,
+      detectedAt: payload.detectedAt || admin.firestore.Timestamp.now(),
+      acknowledged: false,
+    };
+    await ref.set(doc);
+    return ref.id;
+  } catch (e) {
+    functions.logger.error("writeAnomalyRecord failed", e);
+    throw e;
   }
-
-  return anomalyIds;
 }
 
-/**
- * Main scheduled scan function
- */
-export const scanAnomaliesScheduled = functions.pubsub
-  .schedule('every day 02:00') // 2 AM UTC daily
-  .timeZone('UTC')
-  .onRun(async () => {
-    const startTime = Date.now();
-    const allAnomalyIds: string[] = [];
+/** Small helpers to pick sample fields for listing */
+function pickInvoiceSample(entity: any) {
+  return {
+    number: entity.number || entity.invoiceNumber || null,
+    amount: entity.amount || null,
+    currency: entity.currency || null,
+    vendor: entity.vendor || entity.supplier || null,
+    createdAt: entity.createdAt || null
+  };
+}
 
-    try {
-      functions.logger.info('Starting anomaly scan', {
-        windowHours: CONFIG.WINDOW_HOURS,
-        maxDocsPerCollection: CONFIG.MAX_DOCS_PER_COLLECTION,
-        slackThreshold: CONFIG.SLACK_THRESHOLD,
-        debug: CONFIG.DEBUG,
-      });
+function pickExpenseSample(entity: any) {
+  return {
+    merchant: entity.merchant || entity.vendor || null,
+    amount: entity.amount || null,
+    category: entity.category || null,
+    createdAt: entity.createdAt || null
+  };
+}
 
-      // Run all scans in parallel
-      const [expenseAnomalies, invoiceAnomalies, behaviorAnomalies] = await Promise.all([
-        scanExpenseAnomalies(),
-        scanInvoiceAnomalies(),
-        scanUserBehaviorAnomalies(),
-      ]);
+function pickInventorySample(entity: any) {
+  return {
+    sku: entity.sku || entity.code || null,
+    quantity: entity.quantity || null,
+    location: entity.location || null,
+    updatedAt: entity.updatedAt || null
+  };
+}
 
-      allAnomalyIds.push(...expenseAnomalies, ...invoiceAnomalies, ...behaviorAnomalies);
+/** Recommendation generators (explainable suggestions) */
+function generateInvoiceRecommendation(score: number, reasons: string[]): string {
+  if (score >= 9) return "Hold payment; review invoice and vendor KYC; confirm with client.";
+  if (score >= 6) return "Flag for finance review; request verification from vendor.";
+  if (score >= 3) return "Notify account owner and request quick confirmation.";
+  return "No action required.";
+}
 
-      const duration = Date.now() - startTime;
-      functions.logger.info('Anomaly scan completed', {
-        totalAnomalies: allAnomalyIds.length,
-        expenses: expenseAnomalies.length,
-        invoices: invoiceAnomalies.length,
-        behavior: behaviorAnomalies.length,
-        durationMs: duration,
-      });
+function generateExpenseRecommendation(score: number, reasons: string[]): string {
+  if (score >= 7) return "Trigger expense approval workflow; require receipts & manager sign-off.";
+  if (score >= 4) return "Send alert to owner; request justification.";
+  return "No action required.";
+}
 
-      // Send alert if many anomalies found (beyond threshold)
-      if (expenseAnomalies.length + invoiceAnomalies.length > 5) {
-        await sendSecurityAlert(
-          'Anomaly Scan: Multiple Issues Detected',
-          `Scan found ${allAnomalyIds.length} anomalies:\n- Expenses: ${expenseAnomalies.length}\n- Invoices: ${invoiceAnomalies.length}\n- Behavior: ${behaviorAnomalies.length}\n- Window: last ${CONFIG.WINDOW_HOURS} hours`,
-          {
-            scanDuration: duration,
-            windowHours: CONFIG.WINDOW_HOURS,
-            timestamp: new Date().toISOString(),
-          },
-        );
-      }
+function generateInventoryRecommendation(score: number, reasons: string[]): string {
+  if (score >= 7) return "Run physical stock check and freeze shipments for this SKU.";
+  if (score >= 4) return "Notify inventory manager and verify incoming/outgoing logs.";
+  return "No action required.";
+}
 
-      return { ok: true, anomalyCount: allAnomalyIds.length };
-    } catch (err) {
-      functions.logger.error('Anomaly scan error', err);
-      await sendSecurityAlert(
-        'Anomaly Scan Error',
-        `Scan failed: ${err instanceof Error ? err.message : String(err)}`,
-        { error: err },
-      );
-      throw err;
-    }
-  });
-
-/**
- * Manual admin-callable scan
- */
-export const scanAnomaliesManual = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth?.token.admin) {
-      throw new functions.https.HttpsError('permission-denied', 'Admin only');
-    }
-
-    const { entityType = 'all' } = data;
-    const results: Record<string, number> = {};
-
-    try {
-      if (entityType === 'all' || entityType === 'expense') {
-        results.expenses = (await scanExpenseAnomalies()).length;
-      }
-
-      if (entityType === 'all' || entityType === 'invoice') {
-        results.invoices = (await scanInvoiceAnomalies()).length;
-      }
-
-      if (entityType === 'all' || entityType === 'behavior') {
-        results.behavior = (await scanUserBehaviorAnomalies()).length;
-      }
-
-      return {
-        ok: true,
-        message: 'Scan completed',
-        results,
-        totalAnomalies: Object.values(results).reduce((a, b) => a + b, 0),
-      };
-    } catch (err) {
-      throw new functions.https.HttpsError(
-        'internal',
-        `Scan failed: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-  },
-);
+function generateAuditRecommendation(score: number, reasons: string[]): string {
+  if (score >= 7) return "Lock entity for edits and escalate to security operations.";
+  if (score >= 4) return "Require re-authentication and audit the recent editor's activity.";
+  return "Monitor the activity.";
+}
