@@ -113,3 +113,4 @@ export { saveUserNotification, auditNotification, getUserDeviceTokens, sendPushT
 export { onAnomalyCreate, onInvoiceWrite } from './notifications/sendPushOnEvent';
 export { sendEmailAlert } from './notifications/sendEmailAlert';
 export { sendSmsAlert } from './notifications/sendSmsAlert';
+export { defaultEmailTemplate, renderTemplate, renderAlertEmail } from './notifications/emailTemplates';
