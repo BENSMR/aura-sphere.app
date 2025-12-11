@@ -528,6 +528,39 @@ service cloud.firestore {
       allow delete: if false; // Never delete anomalies (audit trail)
     }
 
+    // Analytics collection - admin/analyst read, server-write only
+    // Path: /analytics/{document=**}
+    // Purpose: Aggregated anomaly data, daily summaries, and insights
+    // Access: Admin/analyst read, server-write only (Cloud Functions)
+    match /analytics/{document=**} {
+      allow read: if request.auth != null && (isAdmin() || request.auth.token.auraRole == 'analyst');
+      allow write: if false; // Server-only via Cloud Functions (daily scheduler, aggregator)
+    }
+
+    // Analytics summary documents - quick-access daily/weekly summaries
+    match /analytics/anomaly_summary/{doc} {
+      allow read: if request.auth != null && (isAdmin() || request.auth.token.auraRole == 'analyst');
+      allow write: if false; // Server-only
+    }
+
+    // Analytics daily aggregates - per-day anomaly statistics
+    match /analytics/anomaly_daily/{doc} {
+      allow read: if request.auth != null && (isAdmin() || request.auth.token.auraRole == 'analyst');
+      allow write: if false; // Server-only
+    }
+
+    // Analytics insights - pattern analysis results
+    match /analytics/anomaly_insights/{doc} {
+      allow read: if request.auth != null && (isAdmin() || request.auth.token.auraRole == 'analyst');
+      allow write: if false; // Server-only
+    }
+
+    // Analytics AI insights - OpenAI-generated analysis
+    match /analytics/ai_insights/{doc} {
+      allow read: if request.auth != null && (isAdmin() || request.auth.token.auraRole == 'analyst');
+      allow write: if false; // Server-only
+    }
+
     // Fallback: deny everything else
     match /{document=**} {
       allow read, write: if false;
