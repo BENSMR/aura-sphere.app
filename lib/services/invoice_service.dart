@@ -567,37 +567,22 @@ class InvoiceService {
     }
   }
 
-  /// Mark an invoice as paid (overloaded version)
-  /// Updates status to 'paid' and records paidAt timestamp
-  Future<void> markInvoicePaid(String invoiceId) async {
-    try {
-      await _db
-          .collection('users')
-          .doc(_uid)
-          .collection('invoices')
-          .doc(invoiceId)
-          .update({
-        'status': 'paid',
-        'paidAt': Timestamp.now(),
-      });
-    } catch (e) {
-      print('markInvoicePaid error: $e');
-      rethrow;
+  /// Batch get invoices by ID
+  Future<List<DocumentSnapshot>> batchGetInvoices(List<String> invoiceIds) async {
+    if (invoiceIds.isEmpty) return [];
+    final chunks = <List<String>>[];
+    for (int i = 0; i < invoiceIds.length; i += 10) {
+      chunks.add(invoiceIds.sublist(i, i + 10 > invoiceIds.length ? invoiceIds.length : i + 10));
     }
-  }
 
-  /// Mark an invoice as unpaid
-  /// Clears paidAt and payment-related fields
-  Future<void> markInvoiceUnpaid(String invoiceId) async {
-    try {
-      await _db
-          .collection('users')
-          .doc(_uid)
-          .collection('invoices')
-          .doc(invoiceId)
-          .update({
-        'status': 'pending',
-        'paidAt': FieldValue.delete(),
+    final results = <DocumentSnapshot>[];
+    for (final chunk in chunks) {
+      final query = await _db.collection('invoices').where(FieldPath.documentId, whereIn: chunk).get();
+      results.addAll(query.docs);
+    }
+    return results;
+  }
+}
         'paymentAmount': FieldValue.delete(),
         'paymentMethod': FieldValue.delete(),
       });

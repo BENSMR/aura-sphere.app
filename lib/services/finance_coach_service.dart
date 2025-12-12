@@ -50,4 +50,4 @@ class FinanceCoachService {
       // Silent fail → proceed without confirmation
       return null;
     }
-  }
+  }}

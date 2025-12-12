@@ -116,6 +116,8 @@ class _TokenStoreScreenState extends State<TokenStoreScreen> {
               child: TokenFloatingText(
                 amount: _floatingAddAmount,
                 onFinish: () => setState(() => _showFloatingText = false),
+              ),
+            ),
         ],
       ),
     );

@@ -46,37 +46,7 @@ class _CRMListScreenState extends State<CRMListScreen> {
             _clientInvoiceMetrics[client.id] = {
               'total': invoices.length,
               'paid': statusCount['paid'] ?? 0,
-              'pending': statusCount['sent'] ?? 0 + statusCount['draft'] ?? 0,
-              'overdue': statusCount['overdue'] ?? 0,
-              'pendingAmount': pending,
-              'revenue': revenue,
-            };
-          });
-        }
-      } catch (e) {
-        print('Error loading invoice metrics for ${client.id}: $e');
-      }
-    }
-  }
-
-  /// Load invoice metrics for all clients
-  Future<void> _loadInvoiceMetrics() async {
-    final clients = context.read<ClientProvider>().clients;
-    for (final client in clients) {
-      try {
-        final invoices = await _invoiceService.getClientInvoices(client.id);
-        final statusCount =
-            await _invoiceService.getClientInvoiceStatusCount(client.id);
-        final pending =
-            await _invoiceService.getClientPendingAmount(client.id);
-        final revenue = await _invoiceService.getClientRevenue(client.id);
-
-        if (mounted) {
-          setState(() {
-            _clientInvoiceMetrics[client.id] = {
-              'total': invoices.length,
-              'paid': statusCount['paid'] ?? 0,
-              'pending': statusCount['sent'] ?? 0 + statusCount['draft'] ?? 0,
+              'pending': (statusCount['sent'] ?? 0) + (statusCount['draft'] ?? 0),
               'overdue': statusCount['overdue'] ?? 0,
               'pendingAmount': pending,
               'revenue': revenue,
