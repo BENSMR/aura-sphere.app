@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'animated_number.dart';
-import 'token_floating_text.dart';
 
 enum PaymentStatus { processing, success, timeout, error }
 
@@ -65,7 +64,7 @@ class PaymentStatusModal extends StatelessWidget {
               ),
 
               const SizedBox(height: 8),
-              Text(title, style: theme.textTheme.headline6),
+              Text(title, style: theme.textTheme.headlineSmall),
               const SizedBox(height: 6),
               Text(message, textAlign: TextAlign.center),
 
@@ -73,7 +72,7 @@ class PaymentStatusModal extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   "Elapsed: ${processingElapsed.inSeconds}s",
-                  style: theme.textTheme.caption,
+                  style: theme.textTheme.labelSmall,
                 ),
               ],
 
@@ -82,7 +81,7 @@ class PaymentStatusModal extends StatelessWidget {
                 Text('Pack: $packTitle'),
                 AnimatedNumber(
                   value: tokensAdded,
-                  style: theme.textTheme.headline5?.copyWith(
+                  style: theme.textTheme.headlineMedium?.copyWith(
                     color: Colors.greenAccent,
                     fontWeight: FontWeight.bold,
                   ),

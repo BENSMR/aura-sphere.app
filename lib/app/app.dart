@@ -38,7 +38,7 @@ Future<void> bootstrap() async {
   // Initialize deep link service for payment redirects
   try {
     _deepLinkService = DeepLinkService();
-    await _deepLinkService.init();
+    _deepLinkService.init();
   } catch (e) {
     debugPrint('Deep link service initialization error: $e');
   }

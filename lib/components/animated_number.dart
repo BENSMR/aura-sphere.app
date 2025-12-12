@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 class AnimatedNumber extends ImplicitlyAnimatedWidget {
   final num value;
@@ -22,8 +21,9 @@ class _AnimatedNumberState extends AnimatedWidgetBaseState<AnimatedNumber> {
 
   @override
   Widget build(BuildContext context) {
+    final value = (_numberTween?.evaluate(animation) ?? 0).toStringAsFixed(0);
     return Text(
-      _numberTween?.evaluate(animation)?.toStringAsFixed(0) ?? "0",
+      value,
       style: widget.style,
     );
   }
