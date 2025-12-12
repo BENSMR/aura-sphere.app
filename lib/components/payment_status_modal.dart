@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 enum PaymentStatus { processing, success, timeout, error }
 
@@ -30,14 +31,42 @@ class PaymentStatusModal extends StatelessWidget {
         return SizedBox(
           width: 72,
           height: 72,
-          child: CircularProgressIndicator(strokeWidth: 6),
+          child: Lottie.asset(
+            'assets/animations/payment_processing.json',
+            fit: BoxFit.contain,
+            repeat: true,
+          ),
         );
       case PaymentStatus.success:
-        return Icon(Icons.check_circle_outline, color: Colors.greenAccent, size: 72);
+        return SizedBox(
+          width: 72,
+          height: 72,
+          child: Lottie.asset(
+            'assets/animations/payment_success.json',
+            fit: BoxFit.contain,
+            repeat: false,
+          ),
+        );
       case PaymentStatus.timeout:
-        return Icon(Icons.hourglass_bottom, color: Colors.amber, size: 72);
+        return SizedBox(
+          width: 72,
+          height: 72,
+          child: Lottie.asset(
+            'assets/animations/payment_timeout.json',
+            fit: BoxFit.contain,
+            repeat: true,
+          ),
+        );
       case PaymentStatus.error:
-        return Icon(Icons.error_outline, color: Colors.redAccent, size: 72);
+        return SizedBox(
+          width: 72,
+          height: 72,
+          child: Lottie.asset(
+            'assets/animations/payment_error.json',
+            fit: BoxFit.contain,
+            repeat: false,
+          ),
+        );
     }
   }
 
