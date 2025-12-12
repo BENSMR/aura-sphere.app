@@ -133,3 +133,22 @@ export { onAnomalyCreate, onInvoiceWrite } from './notifications/sendPushOnEvent
 export { sendEmailAlert } from './notifications/sendEmailAlert';
 export { sendSmsAlert } from './notifications/sendSmsAlert';
 export { defaultEmailTemplate, renderTemplate, renderAlertEmail } from './notifications/emailTemplates';
+export { 
+  initializeLoyaltyConfig, 
+  initializeUserLoyaltyProfile, 
+  awardDailyBonus, 
+  recordPaymentTransaction, 
+  awardBadge, 
+  checkAndAwardMilestone, 
+  getUserLoyalty, 
+  getLoyaltyConfig, 
+  freezeUserStreak, 
+  getUserAuditLogs, 
+  cleanupOldAuditLogs 
+} from './loyalty/loyaltyManager';
+export { 
+  onPaymentSuccessUpdateLoyalty, 
+  processDailyBonusesScheduled, 
+  claimDailyBonus, 
+  getUserLoyaltyProfile 
+} from './loyalty/loyaltyFunctions';
