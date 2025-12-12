@@ -41,6 +41,12 @@ import '../screens/anomalies/alerts_center_screen.dart';
 import '../screens/anomalies/anomaly_dashboard_screen.dart';
 import '../screens/notifications/audit_history.dart';
 import '../screens/settings/timezone_settings.dart';
+import '../screens/settings/locale_settings.dart';
+import '../screens/settings/digest_settings.dart';
+import '../screens/ai/finance_coach_screen.dart';
+import '../screens/billing/token_shop_screen.dart';
+import '../screens/wallet/token_store_screen.dart';
+import '../screens/billing/payment_success_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -75,6 +81,12 @@ class AppRoutes {
   static const String invoiceBranding = '/settings/invoice-branding';
   static const String invoiceSettings = '/settings/invoice-settings';
   static const String timezoneSettings = '/settings/timezone';
+  static const String localeSettings = '/settings/locale';
+  static const String digestSettings = '/settings/digest';
+  static const String financeCoach = '/ai/coach';
+  static const String tokenShop = '/billing/tokens';
+  static const String tokenStore = '/wallet/tokens';
+  static const String paymentSuccess = '/billing/success';
   static const String templateGallery = '/settings/templates';
   static const String invoiceAudit = '/invoices/audit';
   static const String waitlist = '/waitlist';
@@ -184,6 +196,29 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const InvoiceSettingsScreen());
       case timezoneSettings:
         return MaterialPageRoute(builder: (_) => const TimezoneSettingsScreen());
+      case localeSettings:
+        return MaterialPageRoute(builder: (_) => const LocaleSettingsScreen());
+      case digestSettings:
+        return MaterialPageRoute(builder: (_) => const DigestSettingsScreen());
+      case financeCoach:
+        return MaterialPageRoute(builder: (_) => const FinanceCoachScreen());
+      case tokenShop:
+        return MaterialPageRoute(builder: (_) => const TokenShopScreen());
+      case tokenStore:
+        return MaterialPageRoute(builder: (_) => const TokenStoreScreen());
+      case paymentSuccess:
+        // Extract session_id from deep link
+        final sessionId = settings.arguments as String?;
+        if (sessionId == null || sessionId.isEmpty) {
+          return MaterialPageRoute(builder: (_) => const TokenShopScreen());
+        }
+        // Note: In a real app, inject DeepLinkService from your service locator
+        return MaterialPageRoute(
+          builder: (_) => PaymentSuccessPage(
+            sessionId: sessionId,
+            deepLinkService: DeepLinkService(), // Replace with DI
+          ),
+        );
       case invoiceAudit:
         return MaterialPageRoute(builder: (_) => const InvoiceAuditScreen());
       case waitlist:

@@ -137,7 +137,49 @@ class SettingsScreen extends StatelessWidget {
 
           const Divider(height: 32, indent: 16, endIndent: 16),
 
-          /// App Version Section
+          /// Timezone & Locale Section
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Regional Settings',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.access_time),
+                        title: const Text('Timezone'),
+                        subtitle: const Text('Configure your local time settings'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () => Navigator.pushNamed(context, '/settings/timezone'),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.language),
+                        title: const Text('Language & Locale'),
+                        subtitle: const Text('Number, date & currency formatting'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () => Navigator.pushNamed(context, '/settings/locale'),
+                      ),                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.mail),
+                        title: const Text('Email Digest'),
+                        subtitle: const Text('Configure activity digest emails'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () => Navigator.pushNamed(context, '/settings/digest'),
+                      ),                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(height: 32, indent: 16, endIndent: 16),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(

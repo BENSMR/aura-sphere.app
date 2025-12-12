@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:aurasphere_pro/models/payment_record.dart';
 
 class PaymentService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
   /// Get all payments for a specific invoice
   Future<List<PaymentRecord>> getPaymentsForInvoice(
@@ -197,6 +199,27 @@ class PaymentService {
     } catch (e) {
       print('Error calculating payment stats: $e');
       rethrow;
+    }
+  }
+
+  /// Create Stripe checkout session for AuraToken pack purchase.
+  /// Returns {url, sessionId} for success, null on error.
+  Future<Map<String, dynamic>?> createTokenCheckoutSession({
+    required String packId,
+    required String successUrl,
+    required String cancelUrl,
+  }) async {
+    try {
+      final callable = _functions.httpsCallable('createTokenCheckoutSession');
+      final resp = await callable.call({
+        'packId': packId,
+        'successUrl': successUrl,
+        'cancelUrl': cancelUrl,
+      });
+      return resp.data != null ? Map<String, dynamic>.from(resp.data) : null;
+    } catch (e) {
+      print('PaymentService.createTokenCheckoutSession error: $e');
+      return null;
     }
   }
 }

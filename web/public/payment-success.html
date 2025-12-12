@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Payment Success — AuraSphere</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Roboto, "Helvetica Neue", Arial;
+      background: #0d0d12;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      width: 100%;
+      max-width: 720px;
+      padding: 24px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      text-align: center;
+    }
+    .brand { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #7A00FF; }
+    .title { font-size: 18px; margin-bottom: 8px; }
+    .subtitle { font-size: 14px; color: #cbd5e1; margin-bottom: 18px; }
+    .button {
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: #00FFC8;
+      color: #000;
+      display: inline-block;
+      text-decoration: none;
+      font-weight: 700;
+      margin-top: 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">AuraSphere</div>
+    <div class="title">Thanks — Payment Received</div>
+    <div class="subtitle">Redirecting you back to the app to finish crediting tokens...</div>
+    <div id="status">If you are not redirected, press the button below.</div>
+    <div style="margin-top:18px;">
+      <a id="open-app" class="button" href="#">Open AuraSphere</a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function getQueryParam(key) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(key);
+      }
+
+      const sessionId =
+        getQueryParam('session_id') ||
+        getQueryParam('sessionId') ||
+        getQueryParam('session');
+
+      // Deep link back to app with session ID
+      const appScheme = `aura://payment-success?session_id=${encodeURIComponent(sessionId || '')}`;
+      const universalLink = `https://aurasphere-pro.web.app/billing/success?session_id=${encodeURIComponent(sessionId || '')}`;
+
+      const openBtn = document.getElementById('open-app');
+      if (openBtn) openBtn.href = appScheme;
+
+      function tryOpenApp() {
+        if (sessionId) {
+          window.location.href = appScheme;
+        }
+        setTimeout(() => {
+          window.location.href = universalLink;
+        }, 1000);
+      }
+
+      if (!sessionId) {
+        document.getElementById('status').innerText = 'No session ID found. You can safely return to the app.';
+      } else {
+        document.getElementById('status').innerText = 'Session found. Attempting to open the app...';
+        setTimeout(tryOpenApp, 600);
+      }
+    })();
+  </script>
+</body>
+</html>

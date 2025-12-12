@@ -8,6 +8,9 @@ class AppUser {
   final String avatarUrl;
   final int auraTokens;
   final String? invoiceTemplate;
+  final String timezone;
+  final String locale;
+  final String? country;
 
   AppUser({
     required this.uid,
@@ -17,6 +20,9 @@ class AppUser {
     required this.avatarUrl,
     required this.auraTokens,
     this.invoiceTemplate,
+    this.timezone = 'UTC',
+    this.locale = 'en-US',
+    this.country = 'US',
   });
 
   factory AppUser.fromFirestore(DocumentSnapshot doc) {
@@ -29,6 +35,9 @@ class AppUser {
       avatarUrl: data['avatarUrl'] ?? '',
       auraTokens: data['auraTokens'] != null ? (data['auraTokens'] as num).toInt() : 0,
       invoiceTemplate: data['invoiceTemplate'] as String?,
+      timezone: data['timezone'] ?? 'UTC',
+      locale: data['locale'] ?? 'en-US',
+      country: data['country'] ?? 'US',
     );
   }
 
@@ -40,6 +49,9 @@ class AppUser {
     String? avatarUrl,
     int? auraTokens,
     String? invoiceTemplate,
+    String? timezone,
+    String? locale,
+    String? country,
   }) {
     return AppUser(
       uid: uid ?? this.uid,
@@ -49,6 +61,9 @@ class AppUser {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       auraTokens: auraTokens ?? this.auraTokens,
       invoiceTemplate: invoiceTemplate ?? this.invoiceTemplate,
+      timezone: timezone ?? this.timezone,
+      locale: locale ?? this.locale,
+      country: country ?? this.country,
     );
   }
 
@@ -60,6 +75,9 @@ class AppUser {
       'avatarUrl': avatarUrl,
       'auraTokens': auraTokens,
       'invoiceTemplate': invoiceTemplate,
+      'timezone': timezone,
+      'locale': locale,
+      'country': country,
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }

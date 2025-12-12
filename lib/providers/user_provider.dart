@@ -5,11 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../data/models/user_model.dart';
 import '../services/firebase/auth_service.dart';
+import '../services/device_init_service.dart';
 import 'business_provider.dart';
 import 'invoice_provider.dart';
 
 class UserProvider with ChangeNotifier {
   final AuthService _authService;
+  final DeviceInitService _deviceInitService = DeviceInitService();
   AppUser? _appUser;
   bool _loading = true;
   
@@ -50,6 +52,9 @@ class UserProvider with ChangeNotifier {
         _setLoading(false);
         return;
       }
+
+      // Initialize device timezone/locale/country on login
+      _deviceInitService.initializeUserDeviceInfo(uid: firebaseUser.uid).ignore();
 
       // Start business provider on login
       _businessProvider?.start(firebaseUser.uid);

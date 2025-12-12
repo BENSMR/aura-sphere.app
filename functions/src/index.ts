@@ -13,7 +13,17 @@ export const helloWorld = functions.https.onRequest((req, res) => {
 });
 
 // Export your functions here
+export { onUserCreate } from './auth/onUserCreate';
 export { setUserTimezoneCallable } from './timezone/setUserTimezoneCallable';
+export { sendBusinessNotification } from './notifications/businessNotification';
+export { getDigestPreferences, setDigestPreferences, shouldSendDigestNow, getNextDigestTime } from './notifications/digestPreferences';
+export { buildDigestForUser, formatDigestForEmail, getDigestCounts } from './notifications/buildDigest';
+export { sendDigestEmail, sendDigestEmailBatch, markDigestEmailSent, recordEmailEvent, recordResendWebhookEvent } from './notifications/sendDigestEmail';
+export { resendWebhook } from './notifications/resendWebhook';
+export { sendHourlyDigests } from './notifications/sendDigestScheduled';
+export { convertFirestoreTimestampToUserLocal, formatTimestampForUser, getRelativeTime } from './utils/timestampConverters';
+export { getForecastCallable } from './forecasting/getForecastCallable';
+export { dailyForecastGenerator } from './forecasting/scheduler';
 export { getUserLocaleDoc, setUserLocaleDoc, formatDateForUser, defaultCurrencyForCountry } from './locale/localeHelpers';
 export { rewardUser } from './auraToken/rewards';
 export { verifyUserTokenData } from './auraToken/verifyTokenData';
@@ -36,6 +46,8 @@ export {
 } from './finance/finance_dashboard';
 export { exportFinanceSummary, exportFinanceSummaryJson } from './finance/financeExport';
 export { generateFinanceCoachAdvice } from './finance/financeCoach';
+export { getFinanceCoachCallable, dailyFinanceCoach } from './ai/financeCoach';
+export { getFinanceCoachCost, getOpenAiCostFromConfig } from './ai/getFinanceCoachCost';
 export { onFinanceSummaryGoalsAlerts, setFinanceGoals } from './finance/finance_goals_alerts';
 export { convertCurrency } from './finance/convertCurrency';
 export { syncFxRates } from './finance/fxRates';
@@ -65,6 +77,8 @@ export { adjustStock } from './inventory/adjustStock';
 export { deductStockOnInvoicePaid } from './inventory/deductStockOnInvoicePaid';
 export { intakeStockFromOCR } from './inventory/intakeStockFromOCR';
 export { createCheckoutSession } from './payments/createCheckoutSession';
+export { createTokenCheckoutSession } from './payments/createTokenCheckoutSession';
+export { stripeTokenWebhook } from './payments/stripeTokenWebhook';
 export { stripeWebhook } from './payments/stripeWebhook';
 export { migrateBusinessProfiles, verifyBusinessProfileMigration, rollbackBusinessProfileMigration } from './migrations/migrate_business_profiles';
 export { createCheckoutSession as createCheckoutSessionBilling } from './billing/createCheckoutSession';

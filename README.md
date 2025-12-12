@@ -151,6 +151,114 @@ flutter run
 - **Payments**: Stripe
 - **Monitoring**: Firebase Analytics
 
+## 💳 Payment Setup (Stripe)
+
+### Token Checkout Configuration
+
+1. **Set Stripe API keys**
+```bash
+firebase functions:config:set \
+  stripe.secret="sk_test_..." \
+  stripe.publishable="pk_test_..." \
+  stripe.webhook_secret="whsec_..."
+```
+
+2. **Deploy token payment functions**
+```bash
+firebase deploy --only \
+  functions:createTokenCheckoutSession,\
+  functions:stripeTokenWebhook
+```
+
+3. **Configure Stripe webhook**
+   - Go to Stripe Dashboard → Webhooks
+   - Add endpoint: `https://us-central1-YOUR_PROJECT.cloudfunctions.net/stripeTokenWebhook`
+   - Select event: `checkout.session.completed`
+   - Copy signing secret and set in config above
+
+4. **Verify deployment**
+   - Check Firebase Console → Functions for both functions deployed
+   - Test in Flutter via `PaymentService.createTokenCheckoutSession()`
+
+### Post-Checkout Deep Link Setup
+
+After user completes payment, they're redirected back to your app:
+
+1. **Host payment pages**
+   ```bash
+   # These are auto-deployed via Firebase Hosting
+   web/public/payment-success.html
+   web/public/payment-cancel.html
+   ```
+
+2. **Stripe appends session ID**
+   ```
+   https://aurasphere-pro.web.app/billing/success?session_id=cs_test_123...
+   ```
+
+3. **HTML page opens app with deep link**
+   ```
+   aura://payment-success?session_id=cs_test_123...
+   ```
+
+4. **Initialize deep link service in Flutter**
+   ```dart
+   // In main.dart
+   final deepLinkService = DeepLinkService();
+   deepLinkService.init();
+   
+   // Wrap app with payment handler
+   PaymentResultHandler(
+     deepLinkService: deepLinkService,
+     walletService: WalletService(),
+     child: const MyApp(),
+   )
+   ```
+
+5. **App receives session ID and polls webhook**
+   - `DeepLinkService` captures `session_id` from deep link
+   - Polls `payments_processed/{sessionId}` for up to 25 seconds
+   - On webhook confirmation, wallet balance updates automatically
+
+### Custom Scheme Configuration
+
+**Android** (`android/app/src/main/AndroidManifest.xml`):
+```xml
+<activity android:name=".MainActivity">
+  <intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="aura" android:host="payment-success" />
+  </intent-filter>
+</activity>
+```
+
+**iOS** (`ios/Runner/Info.plist`):
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>aura</string>
+    </array>
+  </dict>
+</array>
+```
+
+### Token Economy
+
+- **Starter Pack**: 200 tokens for $5 (40 AI calls)
+- **Growth Pack**: 600 tokens for $12 (best value)
+- **Pro Pack**: 1600 tokens for $25 (heavy users)
+
+**Usage:**
+- Free users: 5 tokens per AI Finance Coach call
+- Pro+ subscribers: Unlimited AI (no tokens)
+- Tokens never expire
+- All transactions logged in `users/{uid}/token_audit`
+
 ## 📁 Project Structure
 
 ```

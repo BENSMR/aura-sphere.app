@@ -46,6 +46,23 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // AuraToken wallet - users can read their own balance, server writes only
+    match /users/{userId}/wallet/aura {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Server-only via Cloud Functions
+    }
+
+    // Token audit log - users can read their own transactions, immutable
+    match /users/{userId}/token_audit/{auditId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, update, delete: if false;
+    }
+
+    // Processed payment sessions - webhook only, no client access
+    match /payments_processed/{sessionId} {
+      allow read, write: if false; // Written only by webhook function
+    }
+
     // fallback - restrict everything else as usual
     match /{document=**} {
       allow read, write: if false;
