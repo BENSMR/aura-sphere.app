@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../../services/ocr/expense_scanner_service.dart';
+import '../../services/expense_ocr_service.dart';
 import '../../data/models/expense_model.dart';
 import '../../utils/expense_parser.dart';
 import 'expense_review_screen.dart';
@@ -123,18 +125,49 @@ class _ExpenseScannerScreenState extends State<ExpenseScannerScreen> {
     }
   }
 
-  void _navigateToReviewScreen() {
+  void _navigateToReviewScreen() async {
     if (_uploadedImageUrl == null || _parsedData == null) {
       setState(() => _error = 'Missing image or parsed data');
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Expense processing')),
-    );
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User not authenticated')),
+        );
+        return;
+      }
 
-    // Clear state after navigation
-    _clearResult();
+      // Create expense from OCR data
+      final expenseId = await ExpenseOCRHelper.createExpenseFromOCR(
+        userId: userId,
+        merchant: _parsedData!['merchant'] ?? 'Unknown Merchant',
+        amount: double.tryParse(_parsedData!['amount']?.toString() ?? '0') ?? 0,
+        currency: _parsedData!['currency'] ?? 'EUR',
+        date: _parsedData!['date'] ?? DateTime.now().toString(),
+        rawOcr: _parsedData!.toString(),
+        parsed: null,
+        imageStoragePath: _uploadedImageUrl,
+      );
+
+      if (!mounted) return;
+      
+      // Navigate to review screen with expense ID
+      Navigator.pushNamed(
+        context,
+        '/expenses/review',
+        arguments: expenseId,
+      );
+
+      // Clear state after navigation
+      _clearResult();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error creating expense: $e')),
+      );
+    }
   }
 
   void _showSuccessMessage(String title, ExpenseModel expense) {

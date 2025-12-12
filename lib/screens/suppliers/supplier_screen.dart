@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:aurasphere_pro/models/supplier_model.dart';
 import 'package:aurasphere_pro/services/supplier_service.dart';
 
@@ -11,9 +12,12 @@ class SupplierScreen extends StatefulWidget {
 
 class _SupplierScreenState extends State<SupplierScreen> {
   final _supplierService = SupplierService();
+  final _firebaseAuth = FirebaseAuth.instance;
   final _searchController = TextEditingController();
   int _supplierCount = 0;
   bool _loadingCount = true;
+
+  String get _uid => _firebaseAuth.currentUser?.uid ?? '';
 
   @override
   void initState() {
@@ -28,10 +32,20 @@ class _SupplierScreenState extends State<SupplierScreen> {
   }
 
   void _loadSupplierCount() async {
-    // TODO: Implement supplier count loading
-    setState(() {
-      _loadingCount = false;
-    });
+    if (_uid.isEmpty) return;
+    try {
+      final suppliers = await _supplierService.searchSuppliers(_uid, '', limit: 1000);
+      if (mounted) {
+        setState(() {
+          _supplierCount = suppliers.length;
+          _loadingCount = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loadingCount = false);
+      }
+    }
   }
 
   @override
@@ -142,10 +156,117 @@ class _SupplierScreenState extends State<SupplierScreen> {
   }
 
   Widget _buildSupplierList() {
-    // TODO: Implement supplier stream with proper uid parameter
-    return const Center(
-      child: Text('Supplier list coming soon...'),
-    );
+    if (_uid.isEmpty) {
+      return const Center(
+        child: Text('Please log in to view suppliers'),
+      );
+    }
+
+    final stream = _searchController.text.isEmpty
+        ? _supplierService.streamSuppliers(_uid)
+        : Future.value(_supplierService.searchSuppliers(_uid, _searchController.text));
+
+    if (_searchController.text.isEmpty) {
+      // Use stream for all suppliers
+      return StreamBuilder<List<Supplier>>(
+        stream: _supplierService.streamSuppliers(_uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          }
+
+          final suppliers = snapshot.data ?? [];
+
+          if (suppliers.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.business_outlined,
+                    size: 64,
+                    color: Colors.grey[300],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No suppliers yet',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(8),
+            itemCount: suppliers.length,
+            itemBuilder: (context, index) {
+              final supplier = suppliers[index];
+              return _buildSupplierCard(supplier);
+            },
+          );
+        },
+      );
+    } else {
+      // Use future for searched suppliers
+      return FutureBuilder<List<Supplier>>(
+        future: _supplierService.searchSuppliers(_uid, _searchController.text),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          }
+
+          final suppliers = snapshot.data ?? [];
+
+          if (suppliers.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.business_outlined,
+                    size: 64,
+                    color: Colors.grey[300],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No suppliers found',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(8),
+            itemCount: suppliers.length,
+            itemBuilder: (context, index) {
+              final supplier = suppliers[index];
+              return _buildSupplierCard(supplier);
+            },
+          );
+        },
+      );
+    }
   }
 
   Widget _buildSupplierCard(Supplier supplier) {
@@ -277,16 +398,19 @@ class _SupplierScreenState extends State<SupplierScreen> {
               }
 
               try {
-                // TODO: Pass uid to createSupplier
-                // await _supplierService.createSupplier(uid, {...});
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Supplier creation in progress')),
-                );
+                await _supplierService.createSupplier(_uid, {
+                  'name': nameCtrl.text,
+                  'email': emailCtrl.text.isEmpty ? null : emailCtrl.text,
+                  'phone': phoneCtrl.text.isEmpty ? null : phoneCtrl.text,
+                  'address': addressCtrl.text.isEmpty ? null : addressCtrl.text,
+                  'notes': notesCtrl.text.isEmpty ? null : notesCtrl.text,
+                });
                 if (!mounted) return;
                 Navigator.pop(context);
+                _loadSupplierCount();
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Feature coming soon')),
+                  const SnackBar(content: Text('Supplier created successfully!')),
                 );
               } catch (e) {
                 if (!mounted) return;
@@ -371,16 +495,19 @@ class _SupplierScreenState extends State<SupplierScreen> {
           ElevatedButton(
             onPressed: () async {
               try {
-                // TODO: Pass uid to updateSupplier
-                // await _supplierService.updateSupplier(uid, supplierId, {...});
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Update in progress')),
-                );
+                await _supplierService.updateSupplier(_uid, supplier.id, {
+                  'name': nameCtrl.text,
+                  'email': emailCtrl.text.isEmpty ? null : emailCtrl.text,
+                  'phone': phoneCtrl.text.isEmpty ? null : phoneCtrl.text,
+                  'address': addressCtrl.text.isEmpty ? null : addressCtrl.text,
+                  'notes': notesCtrl.text.isEmpty ? null : notesCtrl.text,
+                });
                 if (!mounted) return;
                 Navigator.pop(context);
+                _loadSupplierCount();
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Feature coming soon')),
+                  const SnackBar(content: Text('Supplier updated successfully!')),
                 );
               } catch (e) {
                 if (!mounted) return;
@@ -464,16 +591,13 @@ class _SupplierScreenState extends State<SupplierScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               try {
-                // TODO: Pass uid to deleteSupplier
-                // await _supplierService.deleteSupplier(uid, supplier.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Delete in progress')),
-                );
+                await _supplierService.deleteSupplier(_uid, supplier.id);
                 if (!mounted) return;
                 Navigator.pop(context);
+                _loadSupplierCount();
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Feature coming soon')),
+                  const SnackBar(content: Text('Supplier deleted!')),
                 );
               } catch (e) {
                 if (!mounted) return;
