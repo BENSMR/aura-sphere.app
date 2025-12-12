@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/tokens/aura_token_service.dart';
+import '../../components/animated_number.dart';
 
 class AuraWalletScreen extends StatefulWidget {
   const AuraWalletScreen({super.key});
@@ -87,9 +88,13 @@ class _AuraWalletScreenState extends State<AuraWalletScreen> {
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            '$_tokenBalance',
-                            style: const TextStyle(fontSize: 32, color: Colors.blue),
+                          AnimatedNumber(
+                            value: _tokenBalance,
+                            style: const TextStyle(
+                              fontSize: 44,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
                           ),
                         ],
                       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../services/payment_service.dart';
 import '../../services/wallet_service.dart';
+import '../../components/animated_number.dart';
 
 class TokenStoreScreen extends StatelessWidget {
   final PaymentService _paymentService = PaymentService();
@@ -28,12 +29,34 @@ class TokenStoreScreen extends StatelessWidget {
               builder: (context, snapshot) {
                 final balance = snapshot.data ?? 0;
                 return Card(
-                  child: ListTile(
-                    title: const Text('AuraTokens Balance'),
-                    subtitle: Text('$balance tokens'),
-                    trailing: ElevatedButton(
-                      onPressed: _walletService.refresh,
-                      child: const Text('Refresh'),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'AuraTokens Balance',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            AnimatedNumber(
+                              value: balance,
+                              style: const TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: _walletService.refresh,
+                              child: const Text('Refresh'),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 );
