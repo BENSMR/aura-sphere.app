@@ -163,14 +163,14 @@ class _AuraWalletScreenState extends State<AuraWalletScreen> {
                 ],
               ),
             ),
-          // Floating text overlay
+          // Floating text overlay - top right
           if (_showFloatingText)
-            Center(
+            Positioned(
+              top: 20,
+              right: 20,
               child: TokenFloatingText(
                 amount: _floatingAddAmount,
-                onFinish: () {
-                  setState(() => _showFloatingText = false);
-                },
+                onFinish: () => setState(() => _showFloatingText = false),
               ),
             ),
         ],
