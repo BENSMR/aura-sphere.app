@@ -72,7 +72,10 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
-    - assets/animations/
+    - assets/animations/payment_processing.json
+    - assets/animations/payment_success.json
+    - assets/animations/payment_timeout.json
+    - assets/animations/payment_error.json
     - assets/invoices/
     - assets/templates/classic_thumb.png
     - assets/templates/modern_thumb.png

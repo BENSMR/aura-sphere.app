@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
 import '../core/constants/config.dart';
-import 'theme.dart';
 import '../providers/user_provider.dart';
 import '../providers/business_provider.dart';
 import '../providers/client_provider.dart';
@@ -15,7 +14,6 @@ import '../providers/invoice_provider.dart';
 import '../providers/expense_provider.dart';
 import '../providers/branding_provider.dart';
 import '../providers/theme_provider.dart';
-import '../screens/splash/splash_screen.dart';
 import '../services/firebase/auth_service.dart';
 import '../services/deep_link_service.dart';
 import '../services/wallet_service.dart';
@@ -52,7 +50,8 @@ class AuraSphereApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ThemeProvider()),
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => BusinessProvider()),
         ChangeNotifierProvider(create: (_) => InvoiceProvider()),
         ChangeNotifierProvider(create: (_) => ClientProvider()),
