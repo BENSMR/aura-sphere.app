@@ -17,7 +17,12 @@ import '../providers/branding_provider.dart';
 import '../providers/theme_provider.dart';
 import '../screens/splash/splash_screen.dart';
 import '../services/firebase/auth_service.dart';
+import '../services/deep_link_service.dart';
+import '../services/wallet_service.dart';
+import '../screens/wallet/payment_result_handler.dart';
 import '../config/app_routes.dart';
+
+late DeepLinkService _deepLinkService;
 
 Future<void> bootstrap() async {
   // initialize firebase - config will be set locally per platform
@@ -30,6 +35,14 @@ Future<void> bootstrap() async {
   } catch (e) {
     debugPrint('Firebase initialization error: $e');
     // Continue even if Firebase fails - some features may not work
+  }
+
+  // Initialize deep link service for payment redirects
+  try {
+    _deepLinkService = DeepLinkService();
+    await _deepLinkService.init();
+  } catch (e) {
+    debugPrint('Deep link service initialization error: $e');
   }
 }
 
@@ -77,15 +90,18 @@ class AuraSphereApp extends StatelessWidget {
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
-          return MaterialApp(
-            title: Config.appName,
-            theme: themeProvider.getTheme(),
-            initialRoute: AppRoutes.splash,
-            onGenerateRoute: AppRoutes.onGenerateRoute,
-            debugShowCheckedModeBanner: false,
+          return PaymentResultHandler(
+            deepLinkService: _deepLinkService,
+            walletService: WalletService(),
+            child: MaterialApp(
+              title: Config.appName,
+              theme: themeProvider.getTheme(),
+              initialRoute: AppRoutes.splash,
+              onGenerateRoute: AppRoutes.onGenerateRoute,
+              debugShowCheckedModeBanner: false,
+            ),
           );
-        }rateRoute,
-        debugShowCheckedModeBanner: false,
+        },
       ),
     );
   }
