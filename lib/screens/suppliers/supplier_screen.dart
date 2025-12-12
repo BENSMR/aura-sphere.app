@@ -162,15 +162,11 @@ class _SupplierScreenState extends State<SupplierScreen> {
       );
     }
 
-    final stream = _searchController.text.isEmpty
-        ? _supplierService.streamSuppliers(_uid)
-        : Future.value(_supplierService.searchSuppliers(_uid, _searchController.text));
-
     if (_searchController.text.isEmpty) {
       // Use stream for all suppliers
-      return StreamBuilder<List<Supplier>>(
+      return StreamBuilder<dynamic>(
         stream: _supplierService.streamSuppliers(_uid),
-        builder: (context, snapshot) {
+        builder: (context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -181,7 +177,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
             );
           }
 
-          final suppliers = snapshot.data ?? [];
+          final suppliers = (snapshot.data ?? []) as List<Supplier>;
 
           if (suppliers.isEmpty) {
             return Center(
@@ -218,9 +214,9 @@ class _SupplierScreenState extends State<SupplierScreen> {
       );
     } else {
       // Use future for searched suppliers
-      return FutureBuilder<List<Supplier>>(
+      return FutureBuilder<dynamic>(
         future: _supplierService.searchSuppliers(_uid, _searchController.text),
-        builder: (context, snapshot) {
+        builder: (context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -231,7 +227,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
             );
           }
 
-          final suppliers = snapshot.data ?? [];
+          final suppliers = (snapshot.data ?? []) as List<Supplier>;
 
           if (suppliers.isEmpty) {
             return Center(
