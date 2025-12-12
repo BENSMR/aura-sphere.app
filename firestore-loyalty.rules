@@ -1,0 +1,82 @@
+// Firestore Rules for Loyalty System
+// Add these rules to your firestore.rules file
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User Loyalty Profile
+    match /users/{uid}/loyalty/{document=**} {
+      allow read: if request.auth.uid == uid;
+      allow write: if request.auth.uid == uid || isAdmin();
+      
+      // Validate loyalty profile structure
+      allow create: if request.auth.uid == uid && validateLoyaltyProfile(request.resource.data);
+      allow update: if request.auth.uid == uid && validateLoyaltyUpdate(request.resource.data, resource.data);
+      allow delete: if isAdmin();
+    }
+    
+    // Token Audit Logs
+    match /users/{uid}/token_audit/{txId} {
+      allow read: if request.auth.uid == uid || isAdmin();
+      allow write: if isAdmin() || (request.auth.uid == uid && isValidAuditEntry(request.resource.data));
+      allow create: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Payment Processing Records
+    match /payments_processed/{sessionId} {
+      allow read: if isAdmin() || request.auth.uid == resource.data.uid;
+      allow write: if isAdmin() || (request.auth.uid == request.resource.data.uid && isValidPaymentRecord(request.resource.data));
+      allow create: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Loyalty Configuration (Global)
+    match /loyalty_config/{document=**} {
+      allow read: if true; // Public read for all authenticated users
+      allow write: if isAdmin();
+      allow create: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Helper functions
+    function isAdmin() {
+      return request.auth.token.admin == true;
+    }
+    
+    function validateLoyaltyProfile(data) {
+      return data.keys().hasAll(['streak', 'totals', 'badges', 'milestones']) &&
+             data.streak is map && data.streak.keys().hasAll(['current', 'lastLogin']) &&
+             data.totals is map && data.totals.keys().hasAll(['lifetimeEarned', 'lifetimeSpent']) &&
+             data.badges is list &&
+             data.milestones is map && data.milestones.keys().hasAll(['bronze', 'silver', 'gold', 'platinum', 'diamond']) &&
+             data.streak.current is int && data.streak.current >= 0 &&
+             data.totals.lifetimeEarned is int && data.totals.lifetimeEarned >= 0 &&
+             data.totals.lifetimeSpent is int && data.totals.lifetimeSpent >= 0;
+    }
+    
+    function validateLoyaltyUpdate(newData, oldData) {
+      // Prevent decreasing totals
+      return newData.totals.lifetimeEarned >= oldData.totals.lifetimeEarned &&
+             newData.totals.lifetimeSpent >= oldData.totals.lifetimeSpent &&
+             validateLoyaltyProfile(newData);
+    }
+    
+    function isValidAuditEntry(data) {
+      return data.keys().hasAll(['action', 'amount', 'createdAt']) &&
+             data.action is string &&
+             data.amount is int &&
+             data.createdAt is timestamp;
+    }
+    
+    function isValidPaymentRecord(data) {
+      return data.keys().hasAll(['uid', 'packId', 'tokens', 'processedAt']) &&
+             data.uid is string &&
+             data.packId is string &&
+             data.tokens is int &&
+             data.tokens > 0 &&
+             data.processedAt is timestamp;
+    }
+  }
+}
