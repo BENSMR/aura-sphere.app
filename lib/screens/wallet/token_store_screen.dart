@@ -3,10 +3,21 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../services/payment_service.dart';
 import '../../services/wallet_service.dart';
 import '../../components/animated_number.dart';
+import '../../components/token_floating_text.dart';
 
-class TokenStoreScreen extends StatelessWidget {
+class TokenStoreScreen extends StatefulWidget {
+  const TokenStoreScreen({super.key});
+
+  @override
+  State<TokenStoreScreen> createState() => _TokenStoreScreenState();
+}
+
+class _TokenStoreScreenState extends State<TokenStoreScreen> {
   final PaymentService _paymentService = PaymentService();
   final WalletService _walletService = WalletService();
+  
+  int _floatingAddAmount = 0;
+  bool _showFloatingText = false;
 
   static const List<Map<String, dynamic>> _packs = [
     {'id': 'pack_small', 'title': 'Starter Pack', 'tokens': 200, 'price': '\$5'},
@@ -14,15 +25,28 @@ class TokenStoreScreen extends StatelessWidget {
     {'id': 'pack_large', 'title': 'Pro Pack', 'tokens': 1600, 'price': '\$25'},
   ];
 
-  const TokenStoreScreen({super.key});
+  void _onTokensAdded(int amount) {
+    setState(() {
+      _floatingAddAmount = amount;
+      _showFloatingText = true;
+    });
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        setState(() => _showFloatingText = false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Buy AuraTokens')),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
           children: [
             StreamBuilder<int>(
               stream: _walletService.streamBalance(),
@@ -83,6 +107,18 @@ class TokenStoreScreen extends StatelessWidget {
             ),
           ],
         ),
+          ),
+          // Floating text overlay
+          if (_showFloatingText)
+            Center(
+              child: TokenFloatingText(
+                amount: _floatingAddAmount,
+                onFinish: () {
+                  setState(() => _showFloatingText = false);
+                },
+              ),
+            ),
+        ],
       ),
     );
   }

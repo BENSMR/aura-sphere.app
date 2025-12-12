@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/tokens/aura_token_service.dart';
 import '../../components/animated_number.dart';
+import '../../components/token_floating_text.dart';
 
 class AuraWalletScreen extends StatefulWidget {
   const AuraWalletScreen({super.key});
@@ -13,6 +14,9 @@ class _AuraWalletScreenState extends State<AuraWalletScreen> {
   int _tokenBalance = 0;
   bool _isLoading = false;
   List<Map<String, dynamic>> _transactions = [];
+  
+  int _floatingAddAmount = 0;
+  bool _showFloatingText = false;
 
   @override
   void initState() {
@@ -54,6 +58,10 @@ class _AuraWalletScreenState extends State<AuraWalletScreen> {
       // Reload wallet data
       await _loadWalletData();
       
+      // Show floating text animation
+      final newBalance = await AuraTokenService.getTokenBalance(userId);
+      _onTokensAdded(newBalance - _tokenBalance);
+      
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Welcome bonus awarded!')),
       );
@@ -66,15 +74,30 @@ class _AuraWalletScreenState extends State<AuraWalletScreen> {
     setState(() => _isLoading = false);
   }
 
+  void _onTokensAdded(int amount) {
+    setState(() {
+      _floatingAddAmount = amount;
+      _showFloatingText = true;
+    });
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        setState(() => _showFloatingText = false);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Aura Wallet')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
+      body: Stack(
+        children: [
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Balance Card
@@ -140,6 +163,18 @@ class _AuraWalletScreenState extends State<AuraWalletScreen> {
                 ],
               ),
             ),
+          // Floating text overlay
+          if (_showFloatingText)
+            Center(
+              child: TokenFloatingText(
+                amount: _floatingAddAmount,
+                onFinish: () {
+                  setState(() => _showFloatingText = false);
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
