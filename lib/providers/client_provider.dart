@@ -208,6 +208,20 @@ class ClientProvider with ChangeNotifier {
     return _service.getClientById(id);
   }
 
+  /// Get client by ID (alias)
+  Future<ClientModel?> getClientById(String id) async {
+    return _service.getClientById(id);
+  }
+
+  /// Get current user ID
+  String get currentUserId {
+    // Return empty string or get from auth service
+    return '';
+  }
+
+  /// Get error message
+  String get errorMessage => '';
+
   /// Update client status
   Future<void> updateClientStatus(String clientId, String status) async {
     try {

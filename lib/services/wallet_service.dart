@@ -6,7 +6,7 @@ class WalletService {
 
   Stream<int> streamBalance() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return const Stream.value(0);
+    if (uid == null) return Stream.value(0);
 
     return _db
         .collection('users')

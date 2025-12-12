@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 // Loyalty System Constants
 // Add to lib/config/constants.dart or create new file
 

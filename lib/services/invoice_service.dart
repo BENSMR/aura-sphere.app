@@ -583,15 +583,6 @@ class InvoiceService {
     return results;
   }
 }
-        'paymentAmount': FieldValue.delete(),
-        'paymentMethod': FieldValue.delete(),
-      });
-    } catch (e) {
-      print('markInvoiceUnpaid error: $e');
-      rethrow;
-    }
-  }
-}
 
 /// Invoice line item helper class
 class InvoiceItem {

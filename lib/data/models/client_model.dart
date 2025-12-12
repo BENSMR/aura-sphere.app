@@ -433,4 +433,7 @@ class ClientModel {
   ClientModel toggleVipStatus() {
     return copyWith(vipStatus: !vipStatus);
   }
+
+  /// Total value getter (alias for lifetime value)
+  double get totalValue => lifetimeValue;
 }

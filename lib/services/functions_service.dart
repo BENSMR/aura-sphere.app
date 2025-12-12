@@ -7,13 +7,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 class FunctionsService {
   static const String _region = 'us-central1';
   
-  final CloudFunctions _functions;
+  late final FirebaseFunctions _functions;
   final FirebaseAuth _auth;
 
   FunctionsService({
-    CloudFunctions? functions,
     FirebaseAuth? auth,
-  })  : _functions = functions ?? CloudFunctions.instanceFor(region: _region),
+  })  : _functions = FirebaseFunctions.instanceFor(region: _region),
         _auth = auth ?? FirebaseAuth.instance;
 
   String get _uid {

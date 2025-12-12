@@ -7,7 +7,7 @@ class CRMAddClientScreen extends StatefulWidget {
   const CRMAddClientScreen({super.key});
 
   @override
-  State<CRMAddClientScreenState> createState() => _CRMAddClientScreenState();
+  State<CRMAddClientScreen> createState() => _CRMAddClientScreenState();
 }
 
 class _CRMAddClientScreenState extends State<CRMAddClientScreen> {
