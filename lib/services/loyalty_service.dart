@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/loyalty_model.dart';
 import '../models/loyalty_transactions_model.dart';
@@ -7,9 +8,27 @@ import '../models/loyalty_config_model.dart';
 class LoyaltyService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
   // Collection references
   String get _currentUid => _auth.currentUser?.uid ?? '';
+
+  // Cloud Function: Claim daily login bonus
+  Future<Map<String, dynamic>?> callClaimDailyBonus() async {
+    try {
+      final callable = _functions.httpsCallable('onUserLogin');
+      final result = await callable.call();
+      return result.data as Map<String, dynamic>?;
+    } catch (e) {
+      print('Error claiming daily bonus: $e');
+      return null;
+    }
+  }
+
+  // Stream loyalty status (for UI updates)
+  Stream<DocumentSnapshot> streamLoyaltyStatus(String uid) {
+    return _firestore.doc('users/$uid/meta/loyalty').snapshots();
+  }
 
   // Get user loyalty data
   Future<UserLoyalty?> getUserLoyalty(String uid) async {

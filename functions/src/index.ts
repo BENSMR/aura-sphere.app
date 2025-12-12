@@ -161,3 +161,6 @@ export {
   freezeStreak,
   processWeeklyBonus
 } from './loyalty/loyaltyEngine';
+export { onUserLogin } from './tokens/onUserLogin';
+export { onTokenCredit } from './tokens/milestoneChecker';
+export { dailyLoyaltyHousekeeping } from './tokens/dailyStreakScheduler';
