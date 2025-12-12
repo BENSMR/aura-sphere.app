@@ -9,7 +9,16 @@ import { logger } from "../utils/logger";
 if (!admin.apps.length) {
   admin.initializeApp();
 }
-const bucket = admin.storage().bucket();
+
+// Lazy-load bucket to avoid initialization errors
+function getBucket() {
+  try {
+    return admin.storage().bucket();
+  } catch (err) {
+    logger.error('Failed to get storage bucket:', err);
+    throw err;
+  }
+}
 
 type InvoiceItem = {
   id: string;
@@ -274,7 +283,7 @@ export const exportInvoiceFormats = functions
 
       const uploadedUrls: Record<string, string> = {};
       const uploadPromises = files.map(async (f) => {
-        const file = bucket.file(f.name);
+        const file = getBucket().file(f.name);
         await file.save(f.buffer, {
           metadata: { contentType: f.mimeType },
         });

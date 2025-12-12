@@ -1,0 +1,35 @@
+{
+  "sendgrid": {
+    "key": "SG.dev_test_key_xxxxxxxxxxxx"
+  },
+  "email": {
+    "from": "dev@aurasphere.local",
+    "from_name": "AuraSphere (Development)"
+  },
+  "firebase": {
+    "project_id": "aurasphere-pro",
+    "database_url": "https://aurasphere-pro.firebaseio.com",
+    "storage_bucket": "aurasphere-pro.appspot.com"
+  },
+  "openai": {
+    "key": "sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  "google": {
+    "project_id": "aurasphere-pro"
+  },
+  "auratoken": {
+    "welcome_bonus": "1000",
+    "daily_login": "10"
+  },
+  "smtp": {
+    "host": "smtp.gmail.com",
+    "port": "587",
+    "user": "",
+    "pass": ""
+  },
+  "twilio": {
+    "account_sid": "",
+    "auth_token": "",
+    "from": ""
+  }
+}

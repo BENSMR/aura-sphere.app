@@ -3,7 +3,9 @@ import * as functions from 'firebase-functions';
 
 // initialize admin once (safe even if called multiple times)
 if (!admin.apps.length) {
-  admin.initializeApp();
+  admin.initializeApp({
+    storageBucket: 'aurasphere-pro.appspot.com',
+  });
 }
 
 export const helloWorld = functions.https.onRequest((req, res) => {
@@ -110,6 +112,7 @@ export { sendEmailAlertCallable, emailAnomalyAlert, emailInvoiceReminder, emailA
 export { sendPushNotification, sendPushNotificationCallable, pushAnomalyAlert, pushRiskAlert, registerDevice, removeFCMToken } from './notifications/pushNotification';
 export { logAuditEvent, getUserAudits, getFailedAudits, updateAuditStatus, getAuditStats, deleteOldAudits } from './notifications/auditLogger';
 export { saveUserNotification, auditNotification, getUserDeviceTokens, sendPushToTokens } from './notifications/helpers';
+export { shouldSendNotification, buildDedupeDocId, dedupeWindowMs, recordSkippedAudit, recordSentAudit, recordFailedAudit } from './notifications/dedupeThrottle';
 export { onAnomalyCreate, onInvoiceWrite } from './notifications/sendPushOnEvent';
 export { sendEmailAlert } from './notifications/sendEmailAlert';
 export { sendSmsAlert } from './notifications/sendSmsAlert';

@@ -5,7 +5,12 @@ import { sendAlert } from '../utils/alerts';
 
 if (!admin.apps.length) admin.initializeApp();
 const db = admin.firestore();
-const storageBucket = admin.storage().bucket(process.env.ARCHIVE_BUCKET);
+
+// Lazy-load bucket to avoid initialization errors
+function getStorageBucket() {
+  return admin.storage().bucket(process.env.ARCHIVE_BUCKET);
+}
+
 const SIGNED_URL_EXPIRATION = Number(process.env.SIGNED_URL_EXPIRATION_SECONDS || 3600);
 
 async function verifyAdminFromRequest(req: functions.https.Request) {
@@ -82,7 +87,7 @@ export const exportAudit = functions.https.onRequest(async (req, res) => {
 
     const now = Date.now();
     const filename = `audit-exports/${entityType}/${entityId || 'all'}/${now}.${format === 'csv' ? 'csv' : 'json'}`;
-    const file = storageBucket.file(filename);
+    const file = getStorageBucket().file(filename);
 
     if (format === 'csv') {
       const csv = stringify(rows, { header: true });

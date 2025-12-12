@@ -135,7 +135,7 @@ export const generateInvoiceReceipt = functions
             const [bucketName, ...rest] = bucketPath.split("/");
             const filePath = rest.join("/");
             const bucket = admin.storage().bucket(bucketName);
-            const file = bucket.file(filePath);
+            const file = getBucket().file(filePath);
             const [buf] = await file.download();
             doc.image(buf, 40, 45, { width: styles.logoWidth });
           } else {
@@ -237,9 +237,9 @@ export const generateInvoiceReceipt = functions
       const pdfBuffer = stream.getContents() as Buffer;
 
       // Upload to storage
-      const bucket = admin.storage().bucket(); // default bucket from project
+      function getBucket() { return admin.storage().bucket() }; // default bucket from project
       const filePath = `receipts/${uid}/${invoiceNumber || invoiceId}.pdf`;
-      const file = bucket.file(filePath);
+      const file = getBucket().file(filePath);
       await file.save(pdfBuffer, {
         metadata: { contentType: "application/pdf" },
         public: false,

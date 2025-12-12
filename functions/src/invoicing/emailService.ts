@@ -1,10 +1,6 @@
 import * as functions from "firebase-functions";
 import * as nodemailer from "nodemailer";
 import * as admin from "firebase-admin";
-import * as dotenv from "dotenv";
-
-// Load environment variables
-dotenv.config();
 
 const db = admin.firestore();
 

@@ -31,6 +31,11 @@ type POData = {
   notes?: string;
 };
 
+// Lazy-load bucket to avoid initialization errors
+function getBucket(bucketName?: string) {
+  return admin.storage().bucket(bucketName);
+}
+
 /**
  * Helper: Format timestamp to date string
  */
@@ -406,7 +411,7 @@ export async function generatePOPDFBuffer(
     if (bucketName) {
       const bucket = admin.storage().bucket(bucketName);
       const filePath = `users/${uid}/purchase_orders/${poId}/po-${poId}.pdf`;
-      const file = bucket.file(filePath);
+      const file = getBucket().file(filePath);
 
       await file.save(pdfBytes, {
         contentType: "application/pdf",

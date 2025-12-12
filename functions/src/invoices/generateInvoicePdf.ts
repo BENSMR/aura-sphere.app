@@ -486,9 +486,9 @@ export const generateInvoicePdf = functions
       await browser.close();
 
       // Upload to Firebase Storage
-      const bucket = admin.storage().bucket();
+      function getBucket() { return admin.storage().bucket() };
       const filePath = `invoices/${userId}/${invoiceNumber}_${Date.now()}.pdf`;
-      const file = bucket.file(filePath);
+      const file = getBucket().file(filePath);
 
       await file.save(pdfBuffer, {
         metadata: {
