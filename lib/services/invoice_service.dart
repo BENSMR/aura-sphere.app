@@ -546,7 +546,7 @@ class InvoiceService {
   /// Update invoice status
   Future<void> updateInvoiceStatus(String invoiceId, String newStatus) async {
     try {
-      final updateData = {'status': newStatus};
+      final Map<String, dynamic> updateData = {'status': newStatus};
 
       // Set timestamp based on status change
       if (newStatus == 'sent') {

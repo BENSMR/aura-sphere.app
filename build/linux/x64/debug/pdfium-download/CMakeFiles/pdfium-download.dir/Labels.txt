@@ -1,0 +1,14 @@
+# Target labels
+ pdfium-download
+# Source files and their labels
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/CMakeFiles/pdfium-download
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/CMakeFiles/pdfium-download.rule
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/CMakeFiles/pdfium-download-complete.rule
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-build.rule
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-configure.rule
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-download.rule
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-install.rule
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-mkdir.rule
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-patch.rule
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-test.rule
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-update.rule

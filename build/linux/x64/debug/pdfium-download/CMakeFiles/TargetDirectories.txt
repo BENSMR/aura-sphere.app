@@ -1,0 +1,3 @@
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/CMakeFiles/pdfium-download.dir
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/CMakeFiles/edit_cache.dir
+/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/CMakeFiles/rebuild_cache.dir

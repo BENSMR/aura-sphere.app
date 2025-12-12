@@ -62,7 +62,7 @@ class _PaymentSuccessPageState extends State<PaymentSuccessPage> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Processing Payment'),
-          automaticallyImplyLeadingButton: false,
+          automaticallyImplyBack: false,
         ),
         body: FutureBuilder<void>(
           future: _paymentFuture,

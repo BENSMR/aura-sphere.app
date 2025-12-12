@@ -80,7 +80,7 @@ class _TokenShopScreenState extends State<TokenShopScreen> {
     if (session?['url'] != null) {
       final checkoutUrl = session!['url'] as String;
       if (await canLaunchUrl(Uri.parse(checkoutUrl))) {
-        await launchUrl(checkoutUrl, mode: LaunchMode.externalApplication);
+        await launchUrl(Uri.parse(checkoutUrl), mode: LaunchMode.externalApplication);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Could not open checkout: ${checkoutUrl.substring(0, 50)}...')),

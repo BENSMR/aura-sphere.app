@@ -1,0 +1,21 @@
+# ninja log v5
+0	18	1765570602358354595	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-mkdir	4fcfa8a3d4c0f73e
+0	18	1765570602358354595	/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-mkdir	4fcfa8a3d4c0f73e
+18	487	1765570602827354564	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-download	d6515be703fbdb17
+18	487	1765570602827354564	/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-download	d6515be703fbdb17
+487	507	1765570602847354562	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-update	336647f23e5f5370
+487	507	1765570602847354562	/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-update	336647f23e5f5370
+507	528	1765570602868354561	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-patch	b09c8edeb1e9fcb5
+507	528	1765570602868354561	/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-patch	b09c8edeb1e9fcb5
+528	547	1765570602887354560	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-configure	8cf7e0fbf641add8
+528	547	1765570602887354560	/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-configure	8cf7e0fbf641add8
+547	566	1765570602906354558	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-build	8837f6f85c198506
+547	566	1765570602906354558	/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-build	8837f6f85c198506
+566	586	1765570602926354557	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-install	fb9acae781d2981e
+566	586	1765570602926354557	/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-install	fb9acae781d2981e
+586	606	1765570602946354556	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-test	1e4ae37635cc2169
+586	606	1765570602946354556	/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-test	1e4ae37635cc2169
+606	636	1765570602976354554	CMakeFiles/pdfium-download-complete	e6493bf7eb4a0012
+606	636	1765570602976354554	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-done	e6493bf7eb4a0012
+606	636	1765570602976354554	/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/CMakeFiles/pdfium-download-complete	e6493bf7eb4a0012
+606	636	1765570602976354554	/workspaces/aura-sphere-pro/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-done	e6493bf7eb4a0012
