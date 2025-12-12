@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { saveUserNotification, getUserDeviceTokens, sendPushToTokens } from './helpers';
 import { shouldSendNotification, DedupeKey, recordSkippedAudit, recordSentAudit, recordFailedAudit } from './dedupeThrottle';
+import { isWithinQuietHours } from '../timezone/userTimezone';
 
 const db = admin.firestore();
 
@@ -36,6 +37,13 @@ export const onAnomalyCreate = functions.firestore
       const dedupeResult = await shouldSendNotification(dedupeKey, severity);
       if (!dedupeResult.send) {
         await recordSkippedAudit(ownerUid, snap.id, 'anomaly', dedupeResult.reason);
+        return null;
+      }
+
+      // Check quiet hours
+      const quietResult = await isWithinQuietHours(ownerUid);
+      if (quietResult.inside) {
+        await recordSkippedAudit(ownerUid, snap.id, 'anomaly', `quiet_hours (${quietResult.currentHour}:00 in ${quietResult.zone})`);
         return null;
       }
 
@@ -114,6 +122,13 @@ export const onInvoiceWrite = functions.firestore
       const dedupeResult = await shouldSendNotification(dedupeKey, 'high');
       if (!dedupeResult.send) {
         await recordSkippedAudit(uid, invoiceId, 'invoice_overdue', dedupeResult.reason);
+        return null;
+      }
+
+      // Check quiet hours
+      const quietResult = await isWithinQuietHours(uid);
+      if (quietResult.inside) {
+        await recordSkippedAudit(uid, invoiceId, 'invoice_overdue', `quiet_hours (${quietResult.currentHour}:00 in ${quietResult.zone})`);
         return null;
       }
 

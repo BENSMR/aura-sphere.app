@@ -13,6 +13,8 @@ export const helloWorld = functions.https.onRequest((req, res) => {
 });
 
 // Export your functions here
+export { setUserTimezoneCallable } from './timezone/setUserTimezoneCallable';
+export { getUserLocaleDoc, setUserLocaleDoc, formatDateForUser, defaultCurrencyForCountry } from './locale/localeHelpers';
 export { rewardUser } from './auraToken/rewards';
 export { verifyUserTokenData } from './auraToken/verifyTokenData';
 export { rewardOnInvoicePaid } from './auraToken/rewardOnInvoicePaid';

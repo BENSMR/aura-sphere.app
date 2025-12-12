@@ -1,5 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
+  function isAdmin() {
+    return request.auth != null && request.auth.token.admin == true;
+  }
+
   match /databases/{database}/documents {
     // user devices
     match /users/{uid}/devices/{deviceId} {
@@ -18,9 +22,21 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.uid == uid;
     }
 
-    // notification audit (server writes only)
-    match /notifications_audit/{doc} {
-      allow read: if request.auth != null && request.auth.token.admin == true;
+    // user notification preferences - read/write by owner
+    match /users/{uid}/settings/notification_preferences {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // user timezone & locale - read/write by owner
+    match /users/{uid}/settings/timezone {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // notification audit (server writes only, users read their own, admins read all)
+    match /notifications_audit/{docId} {
+      allow read: if request.auth != null && (resource.data.targetUid == request.auth.uid || isAdmin());
       allow write: if false;
     }
 

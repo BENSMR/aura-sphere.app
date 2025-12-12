@@ -39,6 +39,8 @@ import '../screens/expenses/expense_detail_screen.dart';
 import '../screens/anomalies/anomaly_center_screen.dart';
 import '../screens/anomalies/alerts_center_screen.dart';
 import '../screens/anomalies/anomaly_dashboard_screen.dart';
+import '../screens/notifications/audit_history.dart';
+import '../screens/settings/timezone_settings.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -72,6 +74,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String invoiceBranding = '/settings/invoice-branding';
   static const String invoiceSettings = '/settings/invoice-settings';
+  static const String timezoneSettings = '/settings/timezone';
   static const String templateGallery = '/settings/templates';
   static const String invoiceAudit = '/invoices/audit';
   static const String waitlist = '/waitlist';
@@ -88,6 +91,7 @@ class AppRoutes {
   static const String anomalies = '/anomalies';
   static const String alerts = '/alerts';
   static const String anomalyDashboard = '/anomalies/dashboard';
+  static const String notificationAudit = '/notifications/audit';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -178,6 +182,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const TemplateGalleryScreen());
       case invoiceSettings:
         return MaterialPageRoute(builder: (_) => const InvoiceSettingsScreen());
+      case timezoneSettings:
+        return MaterialPageRoute(builder: (_) => const TimezoneSettingsScreen());
       case invoiceAudit:
         return MaterialPageRoute(builder: (_) => const InvoiceAuditScreen());
       case waitlist:
@@ -263,6 +269,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const AlertsCenterScreen());
       case anomalyDashboard:
         return MaterialPageRoute(builder: (_) => const AnomalyDashboardScreen());
+      case notificationAudit:
+        return MaterialPageRoute(builder: (_) => const NotificationAuditHistoryScreen());
       default:
         // Handle dynamic CRM detail route: /crm/:id
         if (settings.name != null && settings.name!.startsWith('/crm/') && settings.name != '/crm/ai-insights') {
