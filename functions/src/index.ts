@@ -152,3 +152,12 @@ export {
   claimDailyBonus, 
   getUserLoyaltyProfile 
 } from './loyalty/loyaltyFunctions';
+export {
+  getConfig,
+  creditTokens,
+  handleDailyLogin,
+  checkAndAwardMilestones,
+  getUserLoyaltyStatus,
+  freezeStreak,
+  processWeeklyBonus
+} from './loyalty/loyaltyEngine';
