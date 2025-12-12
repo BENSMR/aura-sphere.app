@@ -85,7 +85,14 @@ class _CRMDetailsScreenState extends State<CRMDetailsScreen> {
       ),
       body: Consumer<ClientProvider>(
         builder: (context, clientProvider, _) {
-          final client = clientProvider.getClientById(widget.clientId);
+          // Find client from already-loaded list
+          final client = clientProvider.clients
+              .cast<ClientModel?>(
+            )
+              .firstWhere(
+                (c) => c?.id == widget.clientId,
+                orElse: () => null,
+              );
 
           // Loading state
           if (client == null) {

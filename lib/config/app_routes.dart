@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/models/client_model.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';

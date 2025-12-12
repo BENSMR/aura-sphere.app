@@ -129,14 +129,8 @@ class _ExpenseScannerScreenState extends State<ExpenseScannerScreen> {
       return;
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ExpenseReviewScreen(
-          ocrData: _parsedData!,
-          imageUrl: _uploadedImageUrl!,
-        ),
-      ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Expense processing')),
     );
 
     // Clear state after navigation

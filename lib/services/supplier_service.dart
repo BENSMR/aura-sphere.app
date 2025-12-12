@@ -69,7 +69,10 @@ class SupplierService {
 
   /// Try to find supplier by exact name; returns null if not found
   Future<String?> findSupplierIdByName(String uid, String name) async {
-    final snap = await _suppliersRef(uid).where('name', '==', name).limit(1).get();
+    final snap = await _suppliersRef(uid)
+        .where('name', isEqualTo: name)
+        .limit(1)
+        .get();
     if (snap.docs.isEmpty) return null;
     return snap.docs.first.id;
   }

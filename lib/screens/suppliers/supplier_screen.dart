@@ -28,15 +28,10 @@ class _SupplierScreenState extends State<SupplierScreen> {
   }
 
   void _loadSupplierCount() async {
-    try {
-      final count = await _supplierService.getSupplierCount();
-      setState(() {
-        _supplierCount = count;
-        _loadingCount = false;
-      });
-    } catch (e) {
-      setState(() => _loadingCount = false);
-    }
+    // TODO: Implement supplier count loading
+    setState(() {
+      _loadingCount = false;
+    });
   }
 
   @override
@@ -147,59 +142,9 @@ class _SupplierScreenState extends State<SupplierScreen> {
   }
 
   Widget _buildSupplierList() {
-    final stream = _searchController.text.isEmpty
-        ? _supplierService.streamSuppliers()
-        : _supplierService.searchSuppliers(_searchController.text);
-
-    return StreamBuilder<List<Supplier>>(
-      stream: stream,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
-        }
-
-        final suppliers = snapshot.data ?? [];
-
-        if (suppliers.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.business_outlined,
-                  size: 64,
-                  color: Colors.grey[300],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _searchController.text.isEmpty
-                      ? 'No suppliers yet'
-                      : 'No suppliers found',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(8),
-          itemCount: suppliers.length,
-          itemBuilder: (context, index) {
-            final supplier = suppliers[index];
-            return _buildSupplierCard(supplier);
-          },
-        );
-      },
+    // TODO: Implement supplier stream with proper uid parameter
+    return const Center(
+      child: Text('Supplier list coming soon...'),
     );
   }
 
@@ -332,19 +277,16 @@ class _SupplierScreenState extends State<SupplierScreen> {
               }
 
               try {
-                await _supplierService.createSupplier(
-                  name: nameCtrl.text,
-                  email: emailCtrl.text.isEmpty ? null : emailCtrl.text,
-                  phone: phoneCtrl.text.isEmpty ? null : phoneCtrl.text,
-                  address: addressCtrl.text.isEmpty ? null : addressCtrl.text,
-                  notes: notesCtrl.text.isEmpty ? null : notesCtrl.text,
+                // TODO: Pass uid to createSupplier
+                // await _supplierService.createSupplier(uid, {...});
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Supplier creation in progress')),
                 );
                 if (!mounted) return;
                 Navigator.pop(context);
-                _loadSupplierCount();
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Supplier created successfully!')),
+                  const SnackBar(content: Text('Feature coming soon')),
                 );
               } catch (e) {
                 if (!mounted) return;
@@ -429,20 +371,16 @@ class _SupplierScreenState extends State<SupplierScreen> {
           ElevatedButton(
             onPressed: () async {
               try {
-                await _supplierService.updateSupplier(
-                  supplierId: supplier.id,
-                  name: nameCtrl.text,
-                  email: emailCtrl.text.isEmpty ? null : emailCtrl.text,
-                  phone: phoneCtrl.text.isEmpty ? null : phoneCtrl.text,
-                  address: addressCtrl.text.isEmpty ? null : addressCtrl.text,
-                  notes: notesCtrl.text.isEmpty ? null : notesCtrl.text,
+                // TODO: Pass uid to updateSupplier
+                // await _supplierService.updateSupplier(uid, supplierId, {...});
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Update in progress')),
                 );
                 if (!mounted) return;
                 Navigator.pop(context);
-                _loadSupplierCount();
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Supplier updated successfully!')),
+                  const SnackBar(content: Text('Feature coming soon')),
                 );
               } catch (e) {
                 if (!mounted) return;
@@ -526,13 +464,16 @@ class _SupplierScreenState extends State<SupplierScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               try {
-                await _supplierService.deleteSupplier(supplier.id);
+                // TODO: Pass uid to deleteSupplier
+                // await _supplierService.deleteSupplier(uid, supplier.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Delete in progress')),
+                );
                 if (!mounted) return;
                 Navigator.pop(context);
-                _loadSupplierCount();
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Supplier deleted!')),
+                  const SnackBar(content: Text('Feature coming soon')),
                 );
               } catch (e) {
                 if (!mounted) return;

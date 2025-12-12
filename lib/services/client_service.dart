@@ -764,7 +764,7 @@ class ClientService {
   /// Called automatically by Firestore trigger, but can be called manually
   Future<Map<String, dynamic>> updateClientAIScore(String clientId) async {
     try {
-      final functionsInstance = CloudFunctions.instanceFor(
+      final functionsInstance = FirebaseFunctions.instanceFor(
         region: 'us-central1',
       );
       
@@ -785,7 +785,7 @@ class ClientService {
   /// Useful for batch updates after migrations
   Future<Map<String, dynamic>> recalculateAllClientScores() async {
     try {
-      final functionsInstance = CloudFunctions.instanceFor(
+      final functionsInstance = FirebaseFunctions.instanceFor(
         region: 'us-central1',
       );
       

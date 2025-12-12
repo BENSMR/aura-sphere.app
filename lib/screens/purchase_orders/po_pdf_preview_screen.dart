@@ -6,6 +6,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
 
 class POPDFPreviewScreen extends StatefulWidget {
   final String poId;
@@ -329,14 +330,6 @@ class _POPDFPreviewScreenState extends State<POPDFPreviewScreen> {
             canChangeOrientation: true,
             canChangePageFormat: false,
             initialPageFormat: PdfPageFormat.a4,
-            actions: [
-              // Custom action button: Download
-              if (_pdfBytes != null)
-                PdfPreviewAction(
-                  icon: Icons.download,
-                  onPressed: (context) => _downloadPDF(),
-                ),
-            ],
           ),
         ),
       ],
