@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraSphere Ecosystem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1929 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00C9FF 0%, #00D8A3 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            box-shadow: 0 8px 32px rgba(0, 201, 255, 0.3);
+        }
+
+        h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00C9FF 0%, #00D8A3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 1.3em;
+            color: #b0b8d4;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 0.95em;
+            color: #7a8299;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+            animation: fadeInUp 1s ease;
+        }
+
+        .app-card {
+            background: linear-gradient(135deg, rgba(0, 201, 255, 0.1) 0%, rgba(0, 216, 163, 0.1) 100%);
+            border: 2px solid rgba(0, 201, 255, 0.2);
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 201, 255, 0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .app-card:hover {
+            border-color: #00C9FF;
+            background: linear-gradient(135deg, rgba(0, 201, 255, 0.15) 0%, rgba(0, 216, 163, 0.15) 100%);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 201, 255, 0.2);
+        }
+
+        .app-card:hover::before {
+            opacity: 1;
+        }
+
+        .app-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .app-card:hover .app-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .app-name {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #00C9FF 0%, #00D8A3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-description {
+            color: #b0b8d4;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .app-status {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(0, 201, 255, 0.2);
+            border: 1px solid #00C9FF;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-bottom: 20px;
+            color: #00C9FF;
+            font-weight: 600;
+        }
+
+        .launch-btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #00C9FF 0%, #00D8A3 100%);
+            color: #0a0e27;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .launch-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(0, 201, 255, 0.4);
+        }
+
+        .launch-btn:active {
+            transform: scale(0.98);
+        }
+
+        .footer {
+            text-align: center;
+            color: #7a8299;
+            padding-top: 40px;
+            border-top: 1px solid rgba(0, 201, 255, 0.1);
+        }
+
+        .footer-text {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            color: #00C9FF;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: #00D8A3;
+            transform: translateY(-3px);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5em;
+            }
+
+            .tagline {
+                font-size: 1.1em;
+            }
+
+            .apps-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .app-card {
+                padding: 30px 20px;
+            }
+
+            .app-icon {
+                font-size: 3em;
+            }
+
+            .app-name {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <div class="logo">◉</div>
+            </div>
+            <h1>AuraSphere</h1>
+            <p class="tagline">Ecosystem</p>
+            <p class="subtitle">A complete suite of business tools designed to work seamlessly together</p>
+        </header>
+
+        <div class="apps-grid">
+            <!-- AURA SPHERE -->
+            <div class="app-card">
+                <span class="app-icon">💼</span>
+                <div class="app-status">LIVE</div>
+                <h2 class="app-name">AuraSphere</h2>
+                <p class="app-description">Professional invoicing, expense tracking, and business management platform for freelancers and small businesses.</p>
+                <button class="launch-btn" onclick="launchApp('invoicing')">Launch App</button>
+            </div>
+
+            <!-- AURA POST -->
+            <div class="app-card">
+                <span class="app-icon">📱</span>
+                <div class="app-status">COMING SOON</div>
+                <h2 class="app-name">AuraPost</h2>
+                <p class="app-description">Social content management and team collaboration platform. Create, schedule, and publish content across channels.</p>
+                <button class="launch-btn" onclick="launchApp('post')" disabled style="opacity: 0.6; cursor: not-allowed;">Coming Soon</button>
+            </div>
+
+            <!-- AURA LINK -->
+            <div class="app-card">
+                <span class="app-icon">🔗</span>
+                <div class="app-status">COMING SOON</div>
+                <h2 class="app-name">AuraLink</h2>
+                <p class="app-description">Advanced link management, URL shortening, and analytics tool with team collaboration features.</p>
+                <button class="launch-btn" onclick="launchApp('link')" disabled style="opacity: 0.6; cursor: not-allowed;">Coming Soon</button>
+            </div>
+
+            <!-- AURA SHIELD -->
+            <div class="app-card">
+                <span class="app-icon">🛡️</span>
+                <div class="app-status">COMING SOON</div>
+                <h2 class="app-name">AuraShield</h2>
+                <p class="app-description">Enterprise security and compliance platform with audit trails, permissions management, and data protection.</p>
+                <button class="launch-btn" onclick="launchApp('shield')" disabled style="opacity: 0.6; cursor: not-allowed;">Coming Soon</button>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p class="footer-text">© 2025 AuraSphere. All rights reserved.</p>
+            <p class="footer-text">Unified ecosystem for modern business operations</p>
+            <div class="social-links">
+                <a href="#" title="GitHub">GitHub</a>
+                <a href="#" title="Twitter">Twitter</a>
+                <a href="#" title="Documentation">Docs</a>
+                <a href="#" title="Contact">Contact</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function launchApp(appName) {
+            // Map app names to URLs (GitHub Pages subpaths)
+            const appUrls = {
+                'invoicing': '/invoicing/',  // Current AuraSphere app
+                'post': '/post/',
+                'link': '/link/',
+                'shield': '/shield/'
+            };
+
+            const url = appUrls[appName] || '/';
+            window.location.href = url;
+        }
+
+        // Prevent disabled buttons from being clickable
+        document.querySelectorAll('.launch-btn[disabled]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+    </script>
+</body>
+</html>
