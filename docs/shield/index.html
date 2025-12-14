@@ -31,13 +31,22 @@
       line-height: 1.6;
     }
     .badge {
-      display: inline-block;
-      background: linear-gradient(90deg, #ff5588, #ff7799);
-      color: #fff;
-      padding: 0.5rem 1.5rem;
-      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 0.85rem;
       font-weight: 700;
+      color: #fff;
       margin-bottom: 2rem;
+      background: linear-gradient(135deg, #ff5588, #ff7799);
+      box-shadow: 0 0 8px rgba(255, 85, 136, 0.4);
+    }
+    .badge-text {
+      display: block;
+      font-size: 0.7rem;
     }
     a {
       display: inline-block;
@@ -58,7 +67,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="badge">SECURITY</div>
+    <div class="badge"><span class="badge-text">SECURITY</span></div>
     <h1>AuraShield</h1>
     <p>Proactive AI security agent for your devices — works offline.</p>
     <p style="font-size: 1rem; color: #888;">🚀 Coming Soon</p>
