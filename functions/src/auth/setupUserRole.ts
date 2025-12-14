@@ -14,9 +14,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-// Initialize Firebase Admin SDK
-admin.initializeApp();
-
 const auth = admin.auth();
 const firestore = admin.firestore();
 

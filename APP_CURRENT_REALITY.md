@@ -52,7 +52,7 @@ Project ID:          aurasphere-pro
 Region:              us-central1
 Auth Domain:         aurasphere-pro.firebaseapp.com
 Storage Bucket:      aurasphere-pro.appspot.com
-API Key:             AIzaSyDQEo1mHPnC6fYuQXxmn1u-qiclYla8cPU
+API Key:             [REDACTED - CHECK ENVIRONMENT VARIABLES]
 Messaging Sender ID:  876321378652
 App ID:              1:876321378652:web:4da828bbf22c3dbac93199
 ```

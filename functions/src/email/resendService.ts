@@ -1,7 +1,21 @@
 import { Resend } from 'resend';
 import * as logger from 'firebase-functions/logger';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | null = null;
+
+/**
+ * Get Resend instance, initializing if needed
+ */
+function getResendClient(): Resend {
+  if (!resend) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not set');
+    }
+    resend = new Resend(apiKey);
+  }
+  return resend;
+}
 
 interface EmailOptions {
   to: string | string[];
@@ -15,7 +29,8 @@ interface EmailOptions {
  */
 export async function sendEmail(options: EmailOptions): Promise<{ id: string }> {
   try {
-    const result = await resend.emails.send({
+    const client = getResendClient();
+    const result = await client.emails.send({
       from: 'Aurasphere <hello@aura-sphere.app>',
       to: options.to,
       subject: options.subject,

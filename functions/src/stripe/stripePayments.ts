@@ -464,7 +464,7 @@ export const stripe_getBillingPortalUrl = functions.https.onCall(
 
       const session = await stripe.billingPortal.sessions.create({
         customer: customerId,
-        return_url: 'https://aurasphere.pro/account/billing' // Update to your domain
+        return_url: 'https://aura-sphere.app/account/billing' // Update to your domain
       });
 
       return { url: session.url };

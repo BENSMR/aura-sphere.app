@@ -5,7 +5,7 @@ import { initializeApp } from "firebase/app";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDQEo1mHPnC6fYuQXxmn1u-qiclYla8cPU",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: "aurasphere-pro.firebaseapp.com",
   projectId: "aurasphere-pro",
   storageBucket: "aurasphere-pro.firebasestorage.app",

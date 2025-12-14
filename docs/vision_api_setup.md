@@ -75,7 +75,7 @@ This requires creating a separate API key:
 firebase functions:config:set vision.key="YOUR_API_KEY_HERE"
 
 # Example:
-firebase functions:config:set vision.key="AIzaSyDQEo1mHPnC6fYuQXxmn1u-qiclYla8cPU"
+firebase functions:config:set vision.key="YOUR_GOOGLE_API_KEY"
 ```
 
 **Or for production - using service account:**
@@ -94,7 +94,7 @@ You should see:
 ```json
 {
   "vision": {
-    "key": "AIzaSyDQEo1mHPnC6fYuQXxmn1u-qiclYla8cPU"
+    "key": "YOUR_GOOGLE_API_KEY"
   }
 }
 ```
