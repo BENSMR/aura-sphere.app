@@ -11,11 +11,11 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import Stripe from 'stripe';
-import { logger } from './utils/logger';
+import { logger } from 'firebase-functions';
 
 const db = admin.firestore();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-04-10'
+  apiVersion: '2022-11-15'
 });
 
 // Ensure Firebase is initialized
@@ -81,9 +81,9 @@ export const stripe_createPaymentIntent = functions.https.onCall(
         clientSecret: paymentIntent.client_secret,
         paymentIntentId: paymentIntent.id
       };
-    } catch (error) {
-      logger.error('Failed to create payment intent', { userId, error: error.message });
-      throw new functions.https.HttpsError('internal', error.message);
+    } catch (error: any) {
+      logger.error('Failed to create payment intent', { userId, error: error?.message || "Error" });
+      throw new functions.https.HttpsError('internal', error?.message || "Error" || 'Payment failed');
     }
   }
 );
@@ -139,7 +139,7 @@ export const stripe_confirmPayment = functions.https.onCall(
         tierId,
         status: 'succeeded',
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        chargeId: paymentIntent.charges.data[0]?.id || null
+        chargeId: (paymentIntent as any)?.charges?.data?.[0]?.id || null
       });
 
       logger.info('Payment confirmed', {
@@ -154,9 +154,9 @@ export const stripe_confirmPayment = functions.https.onCall(
         tierId,
         subscriptionStatus: 'active'
       };
-    } catch (error) {
-      logger.error('Failed to confirm payment', { userId, error: error.message });
-      throw new functions.https.HttpsError('internal', error.message);
+    } catch (error: any) {
+      logger.error('Failed to confirm payment', { userId, error: error?.message || "Error" });
+      throw new functions.https.HttpsError('internal', error?.message || "Error");
     }
   }
 );
@@ -238,9 +238,9 @@ export const stripe_createSubscription = functions.https.onCall(
         status: subscription.status,
         message: 'Subscription created successfully'
       };
-    } catch (error) {
-      logger.error('Failed to create subscription', { userId, error: error.message });
-      throw new functions.https.HttpsError('internal', error.message);
+    } catch (error: any) {
+      logger.error('Failed to create subscription', { userId, error: error?.message || "Error" });
+      throw new functions.https.HttpsError('internal', error?.message || "Error");
     }
   }
 );
@@ -308,9 +308,9 @@ export const stripe_updateSubscription = functions.https.onCall(
         tierId: newTierId,
         message: 'Subscription updated successfully'
       };
-    } catch (error) {
-      logger.error('Failed to update subscription', { userId, error: error.message });
-      throw new functions.https.HttpsError('internal', error.message);
+    } catch (error: any) {
+      logger.error('Failed to update subscription', { userId, error: error?.message || "Error" });
+      throw new functions.https.HttpsError('internal', error?.message || "Error");
     }
   }
 );
@@ -354,9 +354,9 @@ export const stripe_cancelSubscription = functions.https.onCall(
         success: true,
         message: 'Subscription canceled'
       };
-    } catch (error) {
-      logger.error('Failed to cancel subscription', { userId, error: error.message });
-      throw new functions.https.HttpsError('internal', error.message);
+    } catch (error: any) {
+      logger.error('Failed to cancel subscription', { userId, error: error?.message || "Error" });
+      throw new functions.https.HttpsError('internal', error?.message || "Error");
     }
   }
 );
@@ -402,9 +402,9 @@ export const stripe_savePaymentMethod = functions.https.onCall(
       }
 
       return { success: true, message: 'Payment method saved' };
-    } catch (error) {
-      logger.error('Failed to save payment method', { userId, error: error.message });
-      throw new functions.https.HttpsError('internal', error.message);
+    } catch (error: any) {
+      logger.error('Failed to save payment method', { userId, error: error?.message || "Error" });
+      throw new functions.https.HttpsError('internal', error?.message || "Error");
     }
   }
 );
@@ -436,9 +436,9 @@ export const stripe_deletePaymentMethod = functions.https.onCall(
       snapshot.docs.forEach(doc => doc.ref.delete());
 
       return { success: true, message: 'Payment method deleted' };
-    } catch (error) {
-      logger.error('Failed to delete payment method', { userId, error: error.message });
-      throw new functions.https.HttpsError('internal', error.message);
+    } catch (error: any) {
+      logger.error('Failed to delete payment method', { userId, error: error?.message || "Error" });
+      throw new functions.https.HttpsError('internal', error?.message || "Error");
     }
   }
 );
@@ -468,9 +468,9 @@ export const stripe_getBillingPortalUrl = functions.https.onCall(
       });
 
       return { url: session.url };
-    } catch (error) {
-      logger.error('Failed to get billing portal URL', { userId, error: error.message });
-      throw new functions.https.HttpsError('internal', error.message);
+    } catch (error: any) {
+      logger.error('Failed to get billing portal URL', { userId, error: error?.message || "Error" });
+      throw new functions.https.HttpsError('internal', error?.message || "Error");
     }
   }
 );
@@ -495,12 +495,12 @@ export const stripe_getInvoice = functions.https.onCall(
         number: invoice.number,
         amount: invoice.amount_paid,
         date: new Date(invoice.created * 1000),
-        pdfUrl: invoice.pdf,
+        pdfUrl: (invoice as any).pdf || invoice.hosted_invoice_url || null,
         status: invoice.status
       };
-    } catch (error) {
-      logger.error('Failed to get invoice', { error: error.message });
-      throw new functions.https.HttpsError('internal', error.message);
+    } catch (error: any) {
+      logger.error('Failed to get invoice', { error: error?.message || "Error" });
+      throw new functions.https.HttpsError('internal', error?.message || "Error");
     }
   }
 );
@@ -544,9 +544,9 @@ export const stripe_refund = functions.https.onCall(
         refundId: refund.id,
         amount: refund.amount
       };
-    } catch (error) {
-      logger.error('Failed to process refund', { error: error.message });
-      throw new functions.https.HttpsError('internal', error.message);
+    } catch (error: any) {
+      logger.error('Failed to process refund', { error: error?.message || "Error" });
+      throw new functions.https.HttpsError('internal', error?.message || "Error");
     }
   }
 );
@@ -559,7 +559,7 @@ export const stripe_refund = functions.https.onCall(
  * Webhook handler for Stripe events
  * HTTP function: stripe_webhook
  */
-export const stripe_webhook = functions.https.onRequest(async (req, res) => {
+export const stripe_webhook = functions.https.onRequest(async (req, res): Promise<void> => {
   const sig = req.headers['stripe-signature'] || '';
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
@@ -567,9 +567,10 @@ export const stripe_webhook = functions.https.onRequest(async (req, res) => {
 
   try {
     event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
-  } catch (error) {
-    logger.error('Webhook signature verification failed', { error: error.message });
-    return res.status(400).send('Webhook Error');
+  } catch (error: any) {
+    logger.error('Webhook signature verification failed', { error: error?.message || "Error" });
+    res.status(400).send('Webhook Error');
+    return;
   }
 
   try {
@@ -599,8 +600,8 @@ export const stripe_webhook = functions.https.onRequest(async (req, res) => {
     }
 
     res.json({ received: true });
-  } catch (error) {
-    logger.error('Webhook processing failed', { error: error.message });
+  } catch (error: any) {
+    logger.error('Webhook processing failed', { error: error?.message || "Error" });
     res.status(500).send('Webhook processing failed');
   }
 });
