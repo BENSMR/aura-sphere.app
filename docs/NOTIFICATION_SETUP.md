@@ -161,7 +161,7 @@ const html = renderAlertEmail({
   subtitle: 'Payment Due',
   body: 'Invoice #INV-001 is 5 days overdue. Please pay now.',
   severity: 'high',
-  action_url: 'https://app.aura-sphere.pro/invoices/INV-001'
+  action_url: 'https://app.aura-sphere.app/invoices/INV-001'
 });
 
 // Call the function from Cloud Function

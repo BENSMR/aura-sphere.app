@@ -34,7 +34,7 @@ export const defaultEmailTemplate = `<!doctype html>
         <p><a class="btn" href="{{action_url}}">Open in AuraSphere</a></p>
       </div>
       <div class="footer">
-        Sent by AuraSphere • <a href="https://aura-sphere.pro">aura-sphere.pro</a>
+        Sent by AuraSphere • <a href="https://aura-sphere.app">aura-sphere.app</a>
       </div>
     </div>
   </body>
