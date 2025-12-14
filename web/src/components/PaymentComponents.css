@@ -1,0 +1,563 @@
+/**
+ * STRIPE PAYMENT UI STYLES
+ */
+
+/* ─────────────────────────────────────────────────────────────────────────
+   PAYMENT FORM
+   ───────────────────────────────────────────────────────────────────────── */
+
+.payment-form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.payment-form .form-group {
+  margin-bottom: 20px;
+}
+
+.payment-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.payment-form input,
+.payment-form select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.payment-form input:focus,
+.payment-form select:focus {
+  outline: none;
+  border-color: #0070ba;
+  box-shadow: 0 0 0 3px rgba(0, 112, 186, 0.1);
+}
+
+.payment-form input:disabled,
+.payment-form select:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.card-element-wrapper {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+}
+
+.StripeElement {
+  box-sizing: border-box;
+  height: 40px;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+  box-shadow: 0 1px 3px 0 #e6ebf1;
+  -webkit-font-smoothing: antialiased;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+.StripeElement--focus {
+  box-shadow: 0 1px 3px 0 #cfd7df;
+}
+
+.StripeElement--invalid {
+  border-color: #fa755a;
+}
+
+.error-message {
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: #fdeaea;
+  border: 1px solid #facdcd;
+  border-radius: 4px;
+  color: #c53030;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.success-message {
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: #e6fffa;
+  border: 1px solid #81e6d9;
+  border-radius: 4px;
+  color: #0a7857;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.payment-button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #0070ba, #005fa3);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.payment-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #005fa3, #00488f);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 112, 186, 0.3);
+}
+
+.payment-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.payment-info {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   SUBSCRIPTION UPGRADE
+   ───────────────────────────────────────────────────────────────────────── */
+
+.subscription-upgrade {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.subscription-upgrade h2 {
+  margin-bottom: 32px;
+  text-align: center;
+  font-size: 28px;
+  color: #333;
+}
+
+.tier-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.tier-card {
+  padding: 24px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.tier-card:hover {
+  border-color: #0070ba;
+  box-shadow: 0 4px 12px rgba(0, 112, 186, 0.1);
+}
+
+.tier-card.selected {
+  border-color: #0070ba;
+  background: #f0f7ff;
+  box-shadow: 0 4px 12px rgba(0, 112, 186, 0.2);
+}
+
+.tier-card.current {
+  background: #f5f5f5;
+}
+
+.tier-card h3 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  color: #333;
+}
+
+.tier-card .price {
+  margin: 0 0 16px;
+  font-size: 32px;
+  font-weight: 700;
+  color: #0070ba;
+}
+
+.tier-card .badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #e6f2ff;
+  color: #0070ba;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.tier-card .features {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+}
+
+.tier-card .features li {
+  padding: 8px 0;
+  color: #666;
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tier-card .features li:last-child {
+  border-bottom: none;
+}
+
+.tier-card .upgrade-price {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.upgrade-button {
+  display: block;
+  margin: 0 auto;
+  padding: 12px 40px;
+  background: linear-gradient(135deg, #0070ba, #005fa3);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upgrade-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #005fa3, #00488f);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 112, 186, 0.3);
+}
+
+.upgrade-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   BILLING HISTORY
+   ───────────────────────────────────────────────────────────────────────── */
+
+.billing-history {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.billing-history h2 {
+  margin-bottom: 24px;
+  font-size: 24px;
+  color: #333;
+}
+
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.payments-table thead {
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.payments-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payments-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #666;
+  font-size: 14px;
+}
+
+.payments-table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.payments-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.succeeded {
+  background-color: #e6fffa;
+  color: #0a7857;
+}
+
+.status.pending {
+  background-color: #fffaf0;
+  color: #974707;
+}
+
+.action-button {
+  padding: 6px 12px;
+  background: #0070ba;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.action-button:hover {
+  background: #005fa3;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 16px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   PAYMENT METHODS
+   ───────────────────────────────────────────────────────────────────────── */
+
+.payment-methods {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.payment-methods h2 {
+  margin-bottom: 24px;
+  font-size: 24px;
+  color: #333;
+}
+
+.methods-list {
+  margin-bottom: 24px;
+}
+
+.method-card {
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.method-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-brand {
+  margin: 0;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.method-card .badge {
+  padding: 4px 12px;
+  background: #e6f2ff;
+  color: #0070ba;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.delete-button {
+  padding: 6px 12px;
+  background: #ffebee;
+  color: #c53030;
+  border: 1px solid #facdcd;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-button:hover {
+  background: #fdeaea;
+  border-color: #f5989d;
+}
+
+.add-method-button {
+  padding: 12px 24px;
+  background: #0070ba;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-method-button:hover {
+  background: #005fa3;
+}
+
+.add-payment-form {
+  margin-top: 24px;
+  padding: 24px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   RESPONSIVE
+   ───────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .tier-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .payments-table {
+    font-size: 12px;
+  }
+
+  .payments-table th,
+  .payments-table td {
+    padding: 12px;
+  }
+
+  .payment-form,
+  .payment-methods {
+    padding: 16px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   ANIMATIONS
+   ───────────────────────────────────────────────────────────────────────── */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-message,
+.success-message {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   DARK MODE SUPPORT
+   ───────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  .payment-form,
+  .payments-table,
+  .method-card {
+    background: #1a1a1a;
+    border-color: #333;
+  }
+
+  .payment-form label,
+  .tier-card h3,
+  .billing-history h2,
+  .payment-methods h2,
+  .card-brand,
+  .payments-table th {
+    color: #fff;
+  }
+
+  .payment-form input,
+  .payment-form select,
+  .card-element-wrapper {
+    background: #2a2a2a;
+    border-color: #444;
+    color: #fff;
+  }
+
+  .tier-card {
+    background: #1a1a1a;
+    border-color: #333;
+  }
+
+  .tier-card.selected {
+    background: #0a2a4a;
+    border-color: #0070ba;
+  }
+
+  .payments-table {
+    background: #1a1a1a;
+  }
+
+  .payments-table thead {
+    background-color: #2a2a2a;
+  }
+
+  .payments-table tbody tr:hover {
+    background-color: #2a2a2a;
+  }
+
+  .payment-info,
+  .empty-state,
+  .loading,
+  .tier-card .upgrade-price {
+    color: #aaa;
+  }
+
+  .payments-table td {
+    color: #bbb;
+  }
+}

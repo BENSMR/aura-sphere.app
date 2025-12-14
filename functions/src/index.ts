@@ -14,6 +14,13 @@ export const helloWorld = functions.https.onRequest((req, res) => {
 
 // Export your functions here
 export { onUserCreate } from './auth/onUserCreate';
+export { 
+  onUserCreate as onUserCreateRole,
+  assignUserRole,
+  changeUserRole,
+  getUserRole as getUserRoleCallable,
+  listAllUsers,
+} from './auth/setupUserRole';
 export { setUserTimezoneCallable } from './timezone/setUserTimezoneCallable';
 export { sendBusinessNotification } from './notifications/businessNotification';
 export { getDigestPreferences, setDigestPreferences, shouldSendDigestNow, getNextDigestTime } from './notifications/digestPreferences';
@@ -116,6 +123,7 @@ export { generatePOPDF } from './purchaseOrders/generatePOPDF';
 export { emailPurchaseOrder } from './purchaseOrders/emailPurchaseOrder';
 export { onInvoiceWriteAudit, onInvoiceStatusChange } from './audit/onInvoiceChange';
 export { grantAdminRole, revokeAdminRole, listAdmins, getAdminStatus, getMyAdminStatus, setFirstAdmin } from './admin/manageAdmins';
+export { setLoyaltyConfig, setRewardConfig, setEventReward, setLoyaltyCampaign, getAdminLogs } from './admin/setLoyaltyConfig';
 export { archiveOldAuditEntries, archiveAuditManually } from './audit/archiveAudit';
 export { exportAudit } from './audit/exportAudit';
 export { detectExpenseAnomalies, detectInvoiceAnomalies, detectAuditAnomalies, resolveAnomaly, queryAnomalies } from './audit/anomalyDetection';

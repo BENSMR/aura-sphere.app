@@ -10,7 +10,7 @@ export const dailyLoyaltyHousekeeping = functions.pubsub.schedule('0 1 * * *').o
   for (const u of usersSnap.docs) {
     const uid = u.id;
     // Example: If user streak >= weekly threshold and not yet awarded this week, give weekly bonus
-    const loyaltyRef = admin.firestore().doc(`users/${uid}/meta/loyalty`);
+    const loyaltyRef = admin.firestore().doc(`users/${uid}/loyalty/profile`);
     const lSnap = await loyaltyRef.get();
     const streak = lSnap.exists ? lSnap.data()?.streak?.current || 0 : 0;
     // simplified: reward weekly every time streak % threshold == 0

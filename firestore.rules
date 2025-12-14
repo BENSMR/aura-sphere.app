@@ -4,6 +4,22 @@ service cloud.firestore {
     return request.auth != null && request.auth.token.admin == true;
   }
 
+  // Get user role from token (set by onUserCreate Cloud Function)
+  // Default: 'owner' for backward compatibility
+  function getUserRole() {
+    return request.auth.token.role != null ? request.auth.token.role : 'owner';
+  }
+
+  // Check if user is owner role
+  function isOwner() {
+    return getUserRole() == 'owner';
+  }
+
+  // Check if user is employee role
+  function isEmployee() {
+    return getUserRole() == 'employee';
+  }
+
   match /databases/{database}/documents {
     // user devices
     match /users/{uid}/devices/{deviceId} {
@@ -63,10 +79,168 @@ service cloud.firestore {
       allow read, write: if false; // Written only by webhook function
     }
 
-    // User loyalty metadata - readable by owner, server writes only
-    match /users/{uid}/meta/loyalty {
+    // User loyalty profile - readable by owner, server writes only
+    match /users/{uid}/loyalty/{document=**} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if false; // Only server (Cloud Functions) may modify
+    }
+
+    // Global loyalty configuration - publicly readable, server writes only
+    match /loyalty_config/{document=**} {
+      allow read: if true; // Public config for all users
+      allow write: if false; // Only server (Cloud Functions) may modify
+    }
+
+    // Event rewards - publicly readable, admin writes only
+    match /event_rewards/{document=**} {
+      allow read: if true; // Public for all users
+      allow write: if isAdmin(); // Admin only
+    }
+
+    // Loyalty campaigns - publicly readable, admin writes only
+    match /loyalty_campaigns/{document=**} {
+      allow read: if true; // Public for all users
+      allow write: if isAdmin(); // Admin only
+    }
+
+    // Reward configuration - publicly readable, admin writes only
+    match /reward_config/{document=**} {
+      allow read: if true; // Public for all users
+      allow write: if isAdmin(); // Admin only
+    }
+
+    // Admin panel collections
+    match /admin/{doc=**} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Admin event logs
+    match /admin_logs/{doc=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only writes
+    }
+
+    // ==================== ROLE-BASED ACCESS CONTROL ====================
+    // Based on Feature Access Matrix implementation
+    // Owners have full access, Employees have limited access
+
+    // Clients - Owners full access, Employees read-only (assigned)
+    match /users/{uid}/clients/{clientId} {
+      allow read: if request.auth.uid == uid && isOwner();
+      allow read: if request.auth.uid == uid && isEmployee() 
+                   && resource.data.assignedTo == request.auth.uid;
+      allow write: if request.auth.uid == uid && isOwner();
+    }
+
+    match /clients/{clientId} {
+      allow read: if isOwner() || (isEmployee() && resource.data.assignedTo == request.auth.uid);
+      allow write: if isOwner();
+    }
+
+    // Tasks - Owners full access, Employees can read/update assigned tasks only
+    match /users/{uid}/tasks/{taskId} {
+      allow read: if request.auth.uid == uid && isOwner();
+      allow read: if request.auth.uid == uid && isEmployee() 
+                   && resource.data.assignedTo == request.auth.uid;
+      allow write: if request.auth.uid == uid && isOwner();
+      allow update: if request.auth.uid == uid && isEmployee() 
+                    && resource.data.assignedTo == request.auth.uid
+                    && request.resource.data.keys().hasOnly(['status', 'completedAt', 'notes']);
+    }
+
+    match /tasks/{taskId} {
+      allow read: if isOwner() || (isEmployee() && resource.data.assignedTo == request.auth.uid);
+      allow write: if isOwner();
+      allow update: if isEmployee() && resource.data.assignedTo == request.auth.uid
+                    && request.resource.data.keys().hasOnly(['status', 'completedAt', 'notes']);
+    }
+
+    // Expenses - Owners full access, Employees can create their own
+    match /users/{uid}/expenses/{expenseId} {
+      allow read: if request.auth.uid == uid;
+      allow create: if request.auth.uid == uid && request.resource.data.createdBy == request.auth.uid;
+      allow update: if request.auth.uid == uid && (isOwner() || resource.data.createdBy == request.auth.uid);
+      allow delete: if request.auth.uid == uid && isOwner();
+    }
+
+    match /expenses/{expenseId} {
+      allow create: if request.auth != null && request.resource.data.createdBy == request.auth.uid;
+      allow read: if isOwner() || resource.data.createdBy == request.auth.uid;
+      allow update: if isOwner() || (isEmployee() && resource.data.createdBy == request.auth.uid);
+      allow delete: if isOwner();
+    }
+
+    // ==================== OWNER-ONLY FEATURES ====================
+    // These are blocked entirely for employees
+
+    // Invoices - Owner only
+    match /users/{uid}/invoices/{docId} {
+      allow read, write: if request.auth.uid == uid && isOwner();
+    }
+
+    match /invoices/{docId} {
+      allow read, write: if isOwner();
+    }
+
+    // Wallet & Billing - Owner only
+    match /users/{uid}/wallet/{doc=**} {
+      allow read, write: if request.auth.uid == uid && isOwner();
+    }
+
+    match /wallet/{doc=**} {
+      allow read, write: if isOwner();
+    }
+
+    // Suppliers - Owner only
+    match /users/{uid}/suppliers/{docId} {
+      allow read, write: if request.auth.uid == uid && isOwner();
+    }
+
+    match /suppliers/{doc=**} {
+      allow read, write: if isOwner();
+    }
+
+    // Purchase Orders - Owner only
+    match /users/{uid}/purchaseOrders/{docId} {
+      allow read, write: if request.auth.uid == uid && isOwner();
+    }
+
+    match /purchaseOrders/{doc=**} {
+      allow read, write: if isOwner();
+    }
+
+    // Loyalty - Owner only
+    match /users/{uid}/loyalty/{doc=**} {
+      allow read: if request.auth.uid == uid && isOwner();
+      allow write: if false; // Server-only
+    }
+
+    match /loyalty/{doc=**} {
+      allow read, write: if isOwner();
+    }
+
+    // Inventory - Owner only
+    match /users/{uid}/inventory/{docId} {
+      allow read, write: if request.auth.uid == uid && isOwner();
+    }
+
+    match /inventory/{doc=**} {
+      allow read, write: if isOwner();
+    }
+
+    // Settings - User can read/write own, Owner only at root
+    match /users/{uid}/settings/{doc=**} {
+      allow read, write: if request.auth.uid == uid;
+    }
+
+    match /settings/{doc=**} {
+      allow read, write: if isOwner();
+    }
+
+    // Payment records - webhook writes only, no client access
+    match /payments_processed/{sessionId} {
+      allow read, write: if false; // Written only by webhook function
     }
 
     // fallback - restrict everything else as usual

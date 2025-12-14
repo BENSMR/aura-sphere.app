@@ -11,6 +11,7 @@ class AppUser {
   final String timezone;
   final String locale;
   final String? country;
+  final String role; // 'owner' or 'employee'
 
   AppUser({
     required this.uid,
@@ -23,6 +24,7 @@ class AppUser {
     this.timezone = 'UTC',
     this.locale = 'en-US',
     this.country = 'US',
+    this.role = 'owner', // Default to owner for backward compatibility
   });
 
   factory AppUser.fromFirestore(DocumentSnapshot doc) {
@@ -38,6 +40,7 @@ class AppUser {
       timezone: data['timezone'] ?? 'UTC',
       locale: data['locale'] ?? 'en-US',
       country: data['country'] ?? 'US',
+      role: data['role'] ?? 'owner',
     );
   }
 
@@ -52,6 +55,7 @@ class AppUser {
     String? timezone,
     String? locale,
     String? country,
+    String? role,
   }) {
     return AppUser(
       uid: uid ?? this.uid,
@@ -64,6 +68,7 @@ class AppUser {
       timezone: timezone ?? this.timezone,
       locale: locale ?? this.locale,
       country: country ?? this.country,
+      role: role ?? this.role,
     );
   }
 
@@ -78,6 +83,7 @@ class AppUser {
       'timezone': timezone,
       'locale': locale,
       'country': country,
+      'role': role,
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }

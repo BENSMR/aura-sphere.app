@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../data/models/client_model.dart';
+import '../models/role_model.dart';
+import '../providers/user_provider.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/employee/employee_dashboard.dart';
 import '../screens/crm/crm_ai_insights_screen.dart';
 import '../screens/crm/crm_list_screen.dart';
 import '../screens/crm/crm_contact_detail.dart';
@@ -79,6 +83,7 @@ class AppRoutes {
   static const String paymentHistory = '/payment-history';
   static const String crypto = '/crypto';
   static const String profile = '/profile';
+  static const String employeeDashboard = '/employee/dashboard';
   static const String invoiceBranding = '/settings/invoice-branding';
   static const String invoiceSettings = '/settings/invoice-settings';
   static const String timezoneSettings = '/settings/timezone';
@@ -120,6 +125,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
       case dashboard:
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
+      case employeeDashboard:
+        return MaterialPageRoute(builder: (_) => const EmployeeDashboardScreen());
       case expenseScanner:
         return MaterialPageRoute(builder: (_) => const ExpenseScannerScreen());
       case crm:
