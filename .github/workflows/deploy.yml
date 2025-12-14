@@ -29,11 +29,15 @@ jobs:
       
       - name: Deploy to Firebase
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
+          # Decode service account
+          echo "$FIREBASE_SERVICE_ACCOUNT" | base64 -d > /tmp/firebase-key.json
+          
+          # Deploy with service account
           firebase deploy \
             --only functions,firestore:rules,storage:rules \
-            --token $FIREBASE_TOKEN \
+            --service-account /tmp/firebase-key.json \
             --project aurasphere-pro
       
       - name: Deployment Success
