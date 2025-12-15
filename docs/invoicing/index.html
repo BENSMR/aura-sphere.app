@@ -80,6 +80,18 @@
       color: #ffd700;
       font-weight: bold;
     }
+    /* Hide advanced features on mobile */
+    .feature-advanced {
+      display: none;
+    }
+    .feature-advanced-label {
+      display: none;
+      margin-top: 1.5rem;
+      font-weight: 700;
+      color: #ffed4e;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
     .buttons {
       display: flex;
       gap: 1rem;
@@ -182,6 +194,13 @@
       footer {
         padding: 1.5rem;
       }
+      /* Show advanced features on desktop/tablet */
+      .feature-advanced {
+        display: list-item;
+      }
+      .feature-advanced-label {
+        display: block;
+      }
     }
     @media (max-width: 480px) {
       .content {
@@ -223,6 +242,12 @@
           <li>Track wallet and transaction history</li>
           <li>Control your ecosystem and integrations</li>
           <li>Real-time analytics and insights</li>
+          <li class="feature-advanced-label">Advanced Features</li>
+          <li class="feature-advanced">Multi-user collaboration and team management</li>
+          <li class="feature-advanced">Custom reporting and data export</li>
+          <li class="feature-advanced">API access for third-party integrations</li>
+          <li class="feature-advanced">Advanced security and permission controls</li>
+          <li class="feature-advanced">Dedicated account manager and 24/7 support</li>
         </ul>
       </div>
       <h2>Get Started Now</h2>
