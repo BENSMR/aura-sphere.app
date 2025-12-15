@@ -1,0 +1,139 @@
+<!-- User Menu/Settings Component -->
+<!-- Add this to your app's user menu or settings section -->
+
+<div class="user-menu" style="background: rgba(0, 224, 255, 0.05); border-radius: 8px; padding: 1.5rem; margin-top: 2rem; border: 1px solid rgba(0, 224, 255, 0.2);">
+  <h3 style="color: #00e0ff; margin-bottom: 1rem; font-size: 1.1rem;">⚙️ Customize Your Experience</h3>
+  
+  <div style="display: grid; gap: 0.8rem;">
+    <!-- Customize Dashboard Link -->
+    <a href="/customize/" 
+       style="
+         display: flex;
+         align-items: center;
+         gap: 1rem;
+         padding: 1rem;
+         background: rgba(255, 215, 0, 0.05);
+         border: 1px solid rgba(255, 215, 0, 0.2);
+         border-radius: 6px;
+         color: #ffd700;
+         text-decoration: none;
+         transition: all 0.3s ease;
+       "
+       onmouseover="this.style.background='rgba(255, 215, 0, 0.15)'; this.style.borderColor='rgba(255, 215, 0, 0.4)';"
+       onmouseout="this.style.background='rgba(255, 215, 0, 0.05)'; this.style.borderColor='rgba(255, 215, 0, 0.2)';">
+      <span style="font-size: 1.5rem;">🎯</span>
+      <div style="flex: 1;">
+        <div style="font-weight: 600; margin-bottom: 0.2rem;">Customize Dashboard</div>
+        <div style="font-size: 0.85rem; color: #999;">Choose which features appear on mobile, tablet, or desktop</div>
+      </div>
+      <span style="color: #b0b0b0;">→</span>
+    </a>
+
+    <!-- Mobile Layout Preferences -->
+    <a href="/customize/?device=mobile" 
+       style="
+         display: flex;
+         align-items: center;
+         gap: 1rem;
+         padding: 1rem;
+         background: rgba(0, 224, 255, 0.05);
+         border: 1px solid rgba(0, 224, 255, 0.2);
+         border-radius: 6px;
+         color: #00e0ff;
+         text-decoration: none;
+         transition: all 0.3s ease;
+       "
+       onmouseover="this.style.background='rgba(0, 224, 255, 0.15)'; this.style.borderColor='rgba(0, 224, 255, 0.4)';"
+       onmouseout="this.style.background='rgba(0, 224, 255, 0.05)'; this.style.borderColor='rgba(0, 224, 255, 0.2)';">
+      <span style="font-size: 1.5rem;">📱</span>
+      <div style="flex: 1;">
+        <div style="font-weight: 600; margin-bottom: 0.2rem;">Mobile Layout (6-8 features)</div>
+        <div style="font-size: 0.85rem; color: #999;">Optimize for on-the-go access</div>
+      </div>
+      <span style="color: #b0b0b0;">→</span>
+    </a>
+
+    <!-- Tablet Layout Preferences -->
+    <a href="/customize/?device=tablet" 
+       style="
+         display: flex;
+         align-items: center;
+         gap: 1rem;
+         padding: 1rem;
+         background: rgba(0, 224, 255, 0.05);
+         border: 1px solid rgba(0, 224, 255, 0.2);
+         border-radius: 6px;
+         color: #00e0ff;
+         text-decoration: none;
+         transition: all 0.3s ease;
+       "
+       onmouseover="this.style.background='rgba(0, 224, 255, 0.15)'; this.style.borderColor='rgba(0, 224, 255, 0.4)';"
+       onmouseout="this.style.background='rgba(0, 224, 255, 0.05)'; this.style.borderColor='rgba(0, 224, 255, 0.2)';">
+      <span style="font-size: 1.5rem;">📱</span>
+      <div style="flex: 1;">
+        <div style="font-weight: 600; margin-bottom: 0.2rem;">Tablet Layout (8-12 features)</div>
+        <div style="font-size: 0.85rem; color: #999;">Balanced productivity tools</div>
+      </div>
+      <span style="color: #b0b0b0;">→</span>
+    </a>
+
+    <!-- Desktop Layout Preferences -->
+    <a href="/customize/?device=desktop" 
+       style="
+         display: flex;
+         align-items: center;
+         gap: 1rem;
+         padding: 1rem;
+         background: rgba(0, 224, 255, 0.05);
+         border: 1px solid rgba(0, 224, 255, 0.2);
+         border-radius: 6px;
+         color: #00e0ff;
+         text-decoration: none;
+         transition: all 0.3s ease;
+       "
+       onmouseover="this.style.background='rgba(0, 224, 255, 0.15)'; this.style.borderColor='rgba(0, 224, 255, 0.4)';"
+       onmouseout="this.style.background='rgba(0, 224, 255, 0.05)'; this.style.borderColor='rgba(0, 224, 255, 0.2)';">
+      <span style="font-size: 1.5rem;">💻</span>
+      <div style="flex: 1;">
+        <div style="font-weight: 600; margin-bottom: 0.2rem;">Desktop Layout (All features)</div>
+        <div style="font-size: 0.85rem; color: #999;">Full access to complete suite</div>
+      </div>
+      <span style="color: #b0b0b0;">→</span>
+    </a>
+  </div>
+
+  <!-- Info Box -->
+  <div style="background: rgba(0, 224, 255, 0.1); border-left: 3px solid #00e0ff; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
+    <p style="color: #00e0ff; font-weight: 600; margin-bottom: 0.5rem;">💡 Pro Tip</p>
+    <p style="font-size: 0.9rem; color: #999; line-height: 1.6;">
+      Customize your dashboard for each device. Changes sync instantly across all your devices!
+      <br/><br/>
+      <strong>Mobile:</strong> 6-8 essential features for quick tasks
+      <br/>
+      <strong>Tablet:</strong> 8-12 balanced features for flexibility
+      <br/>
+      <strong>Desktop:</strong> All features for complete control
+    </p>
+  </div>
+</div>
+
+<!-- Alternative: Simple Inline Link (for minimal UI) -->
+<a href="/customize/" 
+   style="
+     display: inline-flex;
+     align-items: center;
+     gap: 0.5rem;
+     color: var(--accent);
+     text-decoration: none;
+     padding: 0.75rem 1.5rem;
+     background: rgba(0, 224, 255, 0.1);
+     border: 1px solid rgba(0, 224, 255, 0.3);
+     border-radius: 6px;
+     font-weight: 600;
+     transition: all 0.3s ease;
+     margin-top: 1rem;
+   "
+   onmouseover="this.style.background='rgba(0, 224, 255, 0.2)'; this.style.borderColor='rgba(0, 224, 255, 0.6)';"
+   onmouseout="this.style.background='rgba(0, 224, 255, 0.1)'; this.style.borderColor='rgba(0, 224, 255, 0.3)';">
+  ⚙️ Customize Dashboard
+</a>

@@ -21,6 +21,11 @@ service cloud.firestore {
   }
 
   match /databases/{database}/documents {
+    // Top-level user documents - ownership-based access control
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
     // user devices
     match /users/{uid}/devices/{deviceId} {
       allow read: if request.auth != null && request.auth.uid == uid;
