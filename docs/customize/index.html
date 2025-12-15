@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customize Dashboard — AuraSphere Pro</title>
+  <style>
+    :root {
+      --black: #000;
+      --dark-bg: #0a0a12;
+      --white: #fff;
+      --light-gray: #b0b0b0;
+      --accent: #00e0ff;
+      --gold: #ffd700;
+      --red: #ff5588;
+      --green: #00ffaa;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, var(--black) 0%, var(--dark-bg) 100%);
+      color: var(--light-gray);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    a.back {
+      color: var(--accent);
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    a.back:hover {
+      color: var(--gold);
+      transform: translateX(-4px);
+    }
+    
+    header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    }
+    h1 {
+      color: var(--gold);
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+      font-weight: 800;
+    }
+    .subtitle {
+      color: var(--light-gray);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    
+    .device-tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid #222;
+      padding-bottom: 1rem;
+      overflow-x: auto;
+    }
+    .device-tab {
+      padding: 0.8rem 1.5rem;
+      background: transparent;
+      border: 2px solid transparent;
+      color: var(--light-gray);
+      cursor: pointer;
+      font-weight: 600;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .device-tab.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+    .device-tab:hover {
+      color: var(--white);
+    }
+    
+    .info-box {
+      background: rgba(255, 215, 0, 0.05);
+      border-left: 4px solid var(--gold);
+      padding: 1rem 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 2rem;
+    }
+    .info-box strong {
+      color: var(--gold);
+    }
+    
+    h2 {
+      color: var(--white);
+      margin: 2rem 0 1.5rem;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    
+    .modules-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    .module-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 1.2rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 215, 0, 0.1);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .module-item:hover {
+      background: rgba(255, 215, 0, 0.08);
+      border-color: rgba(255, 215, 0, 0.3);
+    }
+    .module-item input {
+      margin-right: 12px;
+      margin-top: 2px;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--gold);
+    }
+    .module-label {
+      flex-grow: 1;
+    }
+    .module-name {
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .module-desc {
+      font-size: 0.9rem;
+      color: #999;
+    }
+    .module-badge {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.6rem;
+      background: rgba(255, 215, 0, 0.2);
+      color: var(--gold);
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      background: rgba(255, 215, 0, 0.05);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 8px;
+      margin: 2rem 0;
+    }
+    .counter {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .counter-number {
+      color: var(--gold);
+      font-size: 2rem;
+      font-weight: 800;
+    }
+    .counter-label {
+      color: var(--light-gray);
+      font-size: 0.9rem;
+    }
+    
+    .error {
+      background: rgba(255, 85, 136, 0.1);
+      border: 1px solid var(--red);
+      color: #ff8a9b;
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+      display: none;
+      font-weight: 500;
+    }
+    .success {
+      background: rgba(0, 255, 170, 0.1);
+      border: 1px solid var(--green);
+      color: var(--green);
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+      display: none;
+      font-weight: 500;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 700;
+      border: none;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--gold);
+      color: var(--black);
+    }
+    button.primary:hover:not(:disabled) {
+      background: #ffed4e;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+    }
+    button.secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 2px solid var(--accent);
+    }
+    button.secondary:hover:not(:disabled) {
+      background: rgba(0, 224, 255, 0.1);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .feature-description {
+      background: rgba(0, 224, 255, 0.05);
+      border-left: 4px solid var(--accent);
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-top: 2rem;
+    }
+    .feature-description h3 {
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+      font-size: 1.1rem;
+    }
+    .feature-description ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .feature-description li {
+      color: var(--light-gray);
+      margin-bottom: 0.5rem;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+    .feature-description li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: bold;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 0;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+      .device-tabs {
+        flex-direction: column;
+      }
+      .device-tab {
+        width: 100%;
+        text-align: left;
+      }
+      button {
+        flex: 1;
+        min-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <a href="/" class="back">← Back to Dashboard</a>
+    
+    <header>
+      <h1>🎯 Customize Your Dashboard</h1>
+      <p class="subtitle">Choose which features appear on each device. Optimize for how you work — on mobile, tablet, or desktop.</p>
+    </header>
+
+    <div class="device-tabs">
+      <button class="device-tab active" data-device="mobile">📱 Mobile (6-8 features)</button>
+      <button class="device-tab" data-device="tablet">📱 Tablet (8-12 features)</button>
+      <button class="device-tab" data-device="desktop">💻 Desktop (All features)</button>
+    </div>
+
+    <div class="info-box" id="deviceInfo">
+      <strong>📱 Mobile Optimized:</strong> Choose up to 8 features. Tap layout lets you focus on what matters most when you're on the go.
+    </div>
+
+    <div class="status-bar">
+      <div class="counter">
+        <div class="counter-number" id="count">0</div>
+        <div class="counter-label" id="countLabel">of 8 selected</div>
+      </div>
+      <div style="color: #777; font-size: 0.9rem;">Real-time sync across all devices</div>
+    </div>
+
+    <div class="error" id="error"></div>
+    <div class="success" id="success"></div>
+
+    <h2 id="featuresTitle">Mobile Features</h2>
+    <div id="modules" class="modules-grid">
+      <!-- Modules will be loaded here -->
+    </div>
+
+    <div class="feature-description" id="description">
+      <h3>📱 Why Customize?</h3>
+      <ul>
+        <li>Focus on your most-used features</li>
+        <li>Reduce clutter in your mobile app</li>
+        <li>Switch between devices seamlessly</li>
+        <li>Different layouts per device type</li>
+      </ul>
+    </div>
+
+    <div class="button-group">
+      <button class="primary" id="saveBtn" disabled>✓ Save Layout</button>
+      <button class="secondary" id="resetBtn">↻ Reset to Default</button>
+    </div>
+  </div>
+
+  <script type="module">
+    // Device configurations
+    const deviceConfigs = {
+      mobile: {
+        label: 'Mobile Optimized',
+        limit: 8,
+        icon: '📱',
+        features: [
+          { id: 'expenses', name: 'Scan Receipts', desc: 'Log expenses by snapping receipts' },
+          { id: 'contacts', name: 'Quick Contacts', desc: 'Add or view clients on the go' },
+          { id: 'invoices', name: 'Send Invoices', desc: 'Create & send payment links' },
+          { id: 'stock', name: 'Inventory Stock', desc: 'Update stock from delivery slips' },
+          { id: 'tasks', name: 'Task Board', desc: 'View your today's tasks' },
+          { id: 'rewards', name: 'Loyalty Points', desc: 'Track your SAURA Credits' },
+          { id: 'wallet', name: 'Wallet Balance', desc: 'Check your account balance' },
+          { id: 'alerts', name: 'AI Alerts', desc: 'Get smart notifications' }
+        ]
+      },
+      tablet: {
+        label: 'Tablet Optimized',
+        limit: 12,
+        icon: '📱',
+        features: [
+          { id: 'expenses', name: 'Expense Management', desc: 'Full expense tracking and reports' },
+          { id: 'contacts', name: 'Contact Manager', desc: 'Full CRM with detailed profiles' },
+          { id: 'invoices', name: 'Invoicing', desc: 'Create, send, and track invoices' },
+          { id: 'stock', name: 'Inventory', desc: 'Manage stock and warehouse' },
+          { id: 'tasks', name: 'Tasks & Projects', desc: 'Full project management' },
+          { id: 'rewards', name: 'Loyalty & Rewards', desc: 'Points and tier system' },
+          { id: 'wallet', name: 'Financial Hub', desc: 'Wallet, payments, and cash flow' },
+          { id: 'alerts', name: 'AI Insights', desc: 'Smart recommendations' },
+          { id: 'reports', name: 'Reports', desc: 'Custom reports and exports' },
+          { id: 'team', name: 'Team Management', desc: 'Manage team members' },
+          { id: 'settings', name: 'Settings', desc: 'Configure your workspace' },
+          { id: 'profile', name: 'Profile', desc: 'User profile and preferences' }
+        ]
+      },
+      desktop: {
+        label: 'Full Desktop Suite',
+        limit: 999,
+        icon: '💻',
+        features: [
+          { id: 'dashboard', name: 'Dashboard', desc: 'Complete business overview with KPIs' },
+          { id: 'expenses', name: 'Expense Management', desc: 'Full expense tracking, OCR, and reports' },
+          { id: 'contacts', name: 'Advanced CRM', desc: 'Full CRM with AI insights and analytics' },
+          { id: 'invoices', name: 'Invoicing Pro', desc: 'Professional invoicing with automation' },
+          { id: 'stock', name: 'Inventory Pro', desc: 'Full inventory and warehouse management' },
+          { id: 'tasks', name: 'Project Suite', desc: 'Advanced project management and collaboration' },
+          { id: 'po', name: 'Purchase Orders', desc: 'Manage POs and suppliers' },
+          { id: 'rewards', name: 'Loyalty Platform', desc: 'Complete rewards and tier system' },
+          { id: 'wallet', name: 'Financial Suite', desc: 'Complete financial management' },
+          { id: 'alerts', name: 'AI Assistant', desc: 'Advanced AI with actions and recommendations' },
+          { id: 'reports', name: 'Advanced Reports', desc: 'Custom reports, exports, and scheduling' },
+          { id: 'team', name: 'Team Management', desc: 'Full team collaboration and RBAC' },
+          { id: 'api', name: 'API Integration', desc: 'Full API and webhook access' },
+          { id: 'audit', name: 'Audit & Compliance', desc: 'Audit logs and compliance reports' },
+          { id: 'settings', name: 'Advanced Settings', desc: 'Full workspace configuration' },
+          { id: 'profile', name: 'Profile', desc: 'User profile and preferences' }
+        ]
+      }
+    };
+
+    const deviceTabs = document.querySelectorAll('.device-tab');
+    const modulesContainer = document.getElementById('modules');
+    const countEl = document.getElementById('count');
+    const countLabelEl = document.getElementById('countLabel');
+    const infoBoxEl = document.getElementById('deviceInfo');
+    const featuresTitleEl = document.getElementById('featuresTitle');
+    const descriptionEl = document.getElementById('description');
+    const errorEl = document.getElementById('error');
+    const successEl = document.getElementById('success');
+    const saveBtn = document.getElementById('saveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    
+    let currentDevice = 'mobile';
+    let selectedCount = 0;
+    let selectedModules = {};
+
+    // Initialize with mock data (replace with Firebase in production)
+    function initializeLayout() {
+      renderFeatures();
+      updateCounter();
+    }
+
+    function renderFeatures() {
+      const config = deviceConfigs[currentDevice];
+      modulesContainer.innerHTML = '';
+      
+      config.features.forEach(feature => {
+        const div = document.createElement('div');
+        div.className = 'module-item';
+        const isChecked = selectedModules[currentDevice]?.[feature.id] || false;
+        
+        div.innerHTML = `
+          <input type="checkbox" id="mod-${feature.id}" data-id="${feature.id}" ${isChecked ? 'checked' : ''}>
+          <div class="module-label">
+            <div class="module-name">${feature.name}</div>
+            <div class="module-desc">${feature.desc}</div>
+          </div>
+        `;
+        modulesContainer.appendChild(div);
+
+        const checkbox = div.querySelector('input');
+        checkbox.addEventListener('change', (e) => {
+          const limit = config.limit;
+          const checked = document.querySelectorAll('#modules input:checked').length;
+          
+          if (checked > limit) {
+            e.target.checked = false;
+            errorEl.textContent = `⚠️ Maximum ${limit} features for ${config.label}`;
+            errorEl.style.display = 'block';
+            return;
+          }
+          
+          errorEl.style.display = 'none';
+          if (!selectedModules[currentDevice]) selectedModules[currentDevice] = {};
+          selectedModules[currentDevice][feature.id] = checkbox.checked;
+          updateCounter();
+        });
+      });
+    }
+
+    function updateCounter() {
+      const limit = deviceConfigs[currentDevice].limit;
+      selectedCount = Object.values(selectedModules[currentDevice] || {}).filter(Boolean).length;
+      countEl.textContent = selectedCount;
+      countLabelEl.textContent = `of ${limit} selected`;
+      saveBtn.disabled = selectedCount === 0;
+    }
+
+    // Device tab switching
+    deviceTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        deviceTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentDevice = tab.dataset.device;
+        
+        const config = deviceConfigs[currentDevice];
+        infoBoxEl.innerHTML = `<strong>${config.icon} ${config.label}:</strong> Choose up to ${config.limit} features. Each device has its own optimized layout.`;
+        featuresTitleEl.textContent = `${config.label} Features`;
+        
+        renderFeatures();
+        updateCounter();
+      });
+    });
+
+    // Save handler
+    saveBtn.addEventListener('click', async () => {
+      successEl.textContent = '✅ Layout saved! Changes sync across your devices.';
+      successEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      
+      setTimeout(() => {
+        successEl.style.display = 'none';
+      }, 4000);
+      
+      console.log('Saved configuration:', selectedModules);
+      // In production: await updateDoc(doc(db, 'users', user.uid), { dashboardLayouts: selectedModules });
+    });
+
+    // Reset handler
+    resetBtn.addEventListener('click', () => {
+      if (confirm('Reset to default layout for this device?')) {
+        selectedModules[currentDevice] = {};
+        renderFeatures();
+        updateCounter();
+        errorEl.style.display = 'none';
+      }
+    });
+
+    // Initialize
+    initializeLayout();
+  </script>
+</body>
+</html>
