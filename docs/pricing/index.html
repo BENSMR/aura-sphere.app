@@ -2,15 +2,53 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pricing — Aurasphere</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22%2300e0ff%22/></svg>">
   <style>
-    body { background: #000; color: #ccc; font-family: sans-serif; padding: 3rem 1.5rem 20rem 1.5rem; max-width: 900px; margin: 0 auto; line-height: 1.6; }
-    h1 { color: white; margin-bottom: 2rem; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; color: #ccc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 3rem 1.5rem 20rem 1.5rem; max-width: 900px; margin: 0 auto; line-height: 1.6; }
+    h1 { color: white; margin-bottom: 2rem; font-size: 2rem; font-weight: 800; }
     .plan { background: rgba(20,20,40,0.6); padding: 1.5rem; margin: 1.5rem 0; border-radius: 12px; border-left: 3px solid #00e0ff; }
-    .plan h2 { color: #00e0ff; margin-bottom: 1rem; }
-    .price { font-size: 1.2rem; margin: 0.5rem 0; }
+    .plan h2 { color: #00e0ff; margin-bottom: 1rem; font-size: 1.3rem; font-weight: 700; }
+    .price { font-size: 1.1rem; margin: 0.5rem 0; }
     .annual { color: #ffd700; font-weight: bold; }
+    @media (max-width: 768px) {
+      body {
+        padding: 2rem 1rem 18rem 1rem;
+      }
+      h1 {
+        font-size: 1.6rem;
+        margin-bottom: 1.5rem;
+      }
+      .plan {
+        padding: 1.2rem;
+        margin: 1rem 0;
+      }
+      .plan h2 {
+        font-size: 1.1rem;
+      }
+      .price {
+        font-size: 1rem;
+      }
+    }
+    @media (max-width: 480px) {
+      body {
+        padding: 1.5rem 0.75rem 15rem 0.75rem;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+      .plan {
+        padding: 1rem;
+      }
+      .plan h2 {
+        font-size: 1rem;
+      }
+      .price {
+        font-size: 0.95rem;
+      }
+    }
   </style>
 </head>
 <body>

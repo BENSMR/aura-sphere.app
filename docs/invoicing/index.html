@@ -145,6 +145,69 @@
     }
     footer p { margin: 0.5rem 0; }
     footer a { color: #ffd700; text-decoration: none; font-weight: 600; }
+    @media (max-width: 768px) {
+      .content {
+        padding: 1.5rem;
+        padding-bottom: 15rem;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+      h2 {
+        font-size: 1.3rem;
+        margin: 2rem 0 1rem;
+      }
+      .description {
+        font-size: 1rem;
+      }
+      .buttons {
+        gap: 0.75rem;
+      }
+      .btn {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.9rem;
+        flex: 1;
+        min-width: 140px;
+      }
+      .features-list {
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+      }
+      .features-list li {
+        margin: 0.8rem 0;
+      }
+      .pricing {
+        padding: 1.5rem;
+      }
+      footer {
+        padding: 1.5rem;
+      }
+    }
+    @media (max-width: 480px) {
+      .content {
+        padding: 1rem;
+        padding-bottom: 12rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      .badge {
+        width: 45px;
+        height: 45px;
+        font-size: 0.7rem;
+      }
+      .buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .btn {
+        width: 100%;
+        padding: 0.9rem 1rem;
+      }
+      .description {
+        font-size: 0.95rem;
+      }
+    }
   </style>
 </head>
 <body>
