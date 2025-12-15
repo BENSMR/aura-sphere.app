@@ -7,6 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22%2300e0ff%22/></svg>">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #000000 0%, #0a0a12 100%);
@@ -15,50 +16,71 @@
       display: flex;
       flex-direction: column;
     }
+    
     .content {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 2rem;
-      padding-bottom: 20rem;
+      padding-bottom: 25rem;
     }
+    
     .container {
       max-width: 700px;
       width: 100%;
       text-align: center;
     }
+    
     .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 50px;
       height: 50px;
       border-radius: 50%;
       font-size: 0.75rem;
       font-weight: 700;
       color: #000;
-      margin: 0 auto 2rem;
+      margin-bottom: 2rem;
       background: linear-gradient(135deg, #ffd700, #ffed4e);
       box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
     }
+    
     h1 {
       font-size: 2.5rem;
       color: #ffd700;
       margin-bottom: 1rem;
       font-weight: 800;
     }
+    
     .description {
       font-size: 1.1rem;
       margin-bottom: 2rem;
-      color: #999;
       line-height: 1.6;
+      color: #999;
     }
+    
     h2 {
       font-size: 1.6rem;
       color: #ffffff;
       margin: 3rem 0 1.5rem;
+      text-align: center;
+      position: relative;
+      padding-bottom: 1rem;
     }
+    
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 2px;
+      background: #ffd700;
+    }
+    
     .features-list {
       background: rgba(255, 215, 0, 0.05);
       border-left: 4px solid #ffd700;
@@ -67,63 +89,77 @@
       margin: 2rem 0;
       text-align: left;
     }
+    
     .features-list li {
       list-style: none;
       margin: 1rem 0;
       padding-left: 1.5rem;
       position: relative;
     }
+    
     .features-list li::before {
       content: '✓';
       position: absolute;
       left: 0;
       color: #ffd700;
       font-weight: bold;
+      font-size: 1.2rem;
     }
-    .buttons {
+    
+    .button-group {
       display: flex;
       gap: 1rem;
       justify-content: center;
       flex-wrap: wrap;
       margin: 2rem 0;
     }
+    
     .btn {
       padding: 1rem 2rem;
       border-radius: 8px;
       font-weight: 600;
       transition: all 0.3s ease;
+      display: inline-block;
       text-decoration: none;
-      border: none;
+      border: 2px solid transparent;
       font-size: 0.95rem;
-      cursor: pointer;
     }
+    
     .btn-primary {
       background: #ffd700;
       color: #000;
     }
+    
     .btn-primary:hover {
       background: #ffed4e;
       transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
     }
+    
     .btn-secondary {
       background: transparent;
       color: #ffd700;
       border: 2px solid #ffd700;
     }
+    
     .btn-secondary:hover {
       background: #ffd700;
       color: #000;
+      transform: translateY(-2px);
     }
+    
     .btn-back {
       background: transparent;
       color: #777;
       border: 2px solid #777;
-      margin-top: 1rem;
+      margin-top: 1.5rem;
     }
+    
     .btn-back:hover {
       color: #b0b0b0;
       border-color: #b0b0b0;
     }
+    
     .pricing {
       background: rgba(255, 215, 0, 0.08);
       border: 1px solid rgba(255, 215, 0, 0.2);
@@ -131,10 +167,17 @@
       padding: 2rem;
       margin: 2rem 0;
     }
+    
     .pricing strong {
       color: #ffd700;
       font-size: 1.3rem;
     }
+    
+    .pricing p {
+      margin: 0.5rem 0;
+      font-size: 0.95rem;
+    }
+    
     footer {
       background: rgba(10, 10, 20, 0.8);
       border-top: 1px solid rgba(255, 215, 0, 0.1);
@@ -143,16 +186,45 @@
       font-size: 0.8rem;
       color: #777;
     }
-    footer p { margin: 0.5rem 0; }
-    footer a { color: #ffd700; text-decoration: none; font-weight: 600; }
+    
+    footer p {
+      margin: 0.5rem 0;
+    }
+    
+    footer a {
+      color: #ffd700;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    footer a:hover {
+      color: #ffed4e;
+    }
+    
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
+
   <div class="content">
     <div class="container">
       <div class="badge">CORE</div>
+      
       <h1>CRM Dashboard</h1>
       <p class="description">Your command center for contacts, tasks, wallet, and ecosystem management.</p>
+
       <div class="features-list">
         <ul>
           <li>Manage all your business contacts in one place</li>
@@ -162,24 +234,35 @@
           <li>Real-time analytics and insights</li>
         </ul>
       </div>
-      <h2>Get Started Now</h2>
-      <div class="buttons">
+
+      <h2>Get Started</h2>
+      <div class="button-group">
         <a href="https://app.aura-sphere.app/register" class="btn btn-primary">📱 Create Account</a>
-        <a href="https://app.aura-sphere.app/download" class="btn btn-secondary">⬇️ Download</a>
+        <a href="https://app.aura-sphere.app/download" class="btn btn-secondary">⬇️ Download App</a>
       </div>
-      <p style="margin: 1.5rem 0; color: #888;">Have an account? <a href="https://app.aura-sphere.app/login" style="color: #ffd700;">Sign In</a></p>
+
+      <p style="margin: 1.5rem 0; color: #888;">Already have an account? <a href="https://app.aura-sphere.app/login" style="color: #ffd700; font-weight: 600;">Sign In</a></p>
+
       <div class="pricing">
-        <p><strong>$9.99 - $29/month</strong><br/>30% off annual plans</p>
+        <p><strong>$9.99 - $29/month</strong></p>
+        <p>30% discount on annual plans</p>
         <p style="font-size: 0.85rem; color: #888;">Start free • No credit card required</p>
       </div>
-      <a href="/" class="btn btn-back">← Back Home</a>
+
+      <a href="/" class="btn btn-back">← Back to Home</a>
     </div>
   </div>
+
   <footer>
     <p>© 2025 Aurasphere — Sovereign Digital Life</p>
-    <p>Operated by <strong style="color: #b0b0b0;">Black Diamond LTD</strong> (UIC: 207807571)</p>
-    <p><a href="/support">Support</a> | <a href="/privacy">Privacy</a> | <a href="/terms">Terms</a></p>
-    <p><a href="mailto:hello@aura-sphere.app">hello@aura-sphere.app</a></p>
+    <p>Operated by <strong style="color: #b0b0b0;">Black Diamond LTD</strong> (UIC: 207807571), Sofia, Bulgaria</p>
+    <p>
+      <a href="/support">Support</a> |
+      <a href="/privacy">Privacy</a> |
+      <a href="/terms">Terms</a>
+    </p>
+    <p>Contact: <a href="mailto:hello@aura-sphere.app">hello@aura-sphere.app</a></p>
   </footer>
+
 </body>
 </html>

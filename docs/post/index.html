@@ -8,180 +8,71 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #000000 0%, #0a0a12 100%);
       color: #b0b0b0;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 2rem;
-      padding-bottom: 20rem;
     }
-    .container {
-      text-align: center;
-      max-width: 700px;
-      width: 100%;
-      margin-top: 3rem;
-    }
-    h1 {
-      font-size: 2.5rem;
-      color: #00ffaa;
-      margin-bottom: 1rem;
-    }
-    h2 {
-      font-size: 1.5rem;
-      color: #ffffff;
-      margin: 2.5rem 0 1.5rem 0;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(0, 255, 170, 0.2);
-    }
-    p {
-      font-size: 1.1rem;
-      margin-bottom: 1.5rem;
-      line-height: 1.6;
-    }
-    .coming-soon {
-      font-size: 0.95rem;
-      color: #888;
-      margin: 1rem 0;
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #000;
-      margin-bottom: 2rem;
-      background: linear-gradient(135deg, #00ffaa, #33ffcc);
-      box-shadow: 0 0 8px rgba(0, 255, 170, 0.4);
-    }
-    .badge-text {
-      display: block;
-      font-size: 0.7rem;
-    }
-    .button-group {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 2rem 0;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.9rem 1.8rem;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
-    .btn-primary {
-      background: #00ffaa;
-      color: #000;
-    }
-    .btn-primary:hover {
-      background: #33ffcc;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(0, 255, 170, 0.3);
-    }
-    .btn-secondary {
-      background: transparent;
-      color: #00ffaa;
-      border: 2px solid #00ffaa;
-    }
-    .btn-secondary:hover {
-      background: #00ffaa;
-      color: #000;
-      transform: translateY(-2px);
-    }
-    .btn-back {
-      background: transparent;
-      color: #888;
-      border: 2px solid #888;
-      margin-top: 2rem;
-    }
-    .btn-back:hover {
-      color: #b0b0b0;
-      border-color: #b0b0b0;
-    }
-    .features-list {
-      text-align: left;
-      background: rgba(0, 255, 170, 0.05);
-      border-left: 3px solid #00ffaa;
-      padding: 1.5rem;
-      margin: 1.5rem 0;
-      border-radius: 4px;
-    }
-    .features-list li {
-      list-style: none;
-      margin: 0.8rem 0;
-      padding-left: 1.5rem;
-      position: relative;
-    }
-    .features-list li:before {
-      content: "✓";
-      position: absolute;
-      left: 0;
-      color: #00ffaa;
-      font-weight: bold;
-    }
+    .content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; padding-bottom: 20rem; }
+    .container { max-width: 700px; width: 100%; text-align: center; }
+    .badge { width: 50px; height: 50px; border-radius: 50%; font-size: 0.75rem; font-weight: 700; color: #000; margin: 0 auto 2rem; background: linear-gradient(135deg, #00ffaa, #33ffcc); box-shadow: 0 4px 16px rgba(0, 255, 170, 0.3); display: inline-flex; align-items: center; justify-content: center; }
+    h1 { font-size: 2.5rem; color: #00ffaa; margin-bottom: 1rem; font-weight: 800; }
+    .description { font-size: 1.1rem; margin-bottom: 2rem; color: #999; line-height: 1.6; }
+    h2 { font-size: 1.6rem; color: #ffffff; margin: 3rem 0 1.5rem; }
+    .features-list { background: rgba(0, 255, 170, 0.05); border-left: 4px solid #00ffaa; border-radius: 8px; padding: 2rem; margin: 2rem 0; text-align: left; }
+    .features-list li { list-style: none; margin: 1rem 0; padding-left: 1.5rem; position: relative; }
+    .features-list li::before { content: '✓'; position: absolute; left: 0; color: #00ffaa; font-weight: bold; }
+    .buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin: 2rem 0; }
+    .btn { padding: 1rem 2rem; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; text-decoration: none; border: none; font-size: 0.95rem; cursor: pointer; }
+    .btn-primary { background: #00ffaa; color: #000; }
+    .btn-primary:hover { background: #33ffcc; transform: translateY(-2px); }
+    .btn-secondary { background: transparent; color: #00ffaa; border: 2px solid #00ffaa; }
+    .btn-secondary:hover { background: #00ffaa; color: #000; }
+    .btn-back { background: transparent; color: #777; border: 2px solid #777; margin-top: 1rem; }
+    .btn-back:hover { color: #b0b0b0; border-color: #b0b0b0; }
+    .pricing { background: rgba(0, 255, 170, 0.08); border: 1px solid rgba(0, 255, 170, 0.2); border-radius: 8px; padding: 2rem; margin: 2rem 0; }
+    .pricing strong { color: #00ffaa; font-size: 1.3rem; }
+    footer { background: rgba(10, 10, 20, 0.8); border-top: 1px solid rgba(255, 215, 0, 0.1); padding: 2rem; text-align: center; font-size: 0.8rem; color: #777; }
+    footer p { margin: 0.5rem 0; }
+    footer a { color: #ffd700; text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="badge"><span class="badge-text">MEDIA</span></div>
-    <h1>AuraPost</h1>
-    <p>Generate social media content in multiple dialects — client-side, zero tracking.</p>
-
-    <div class="features-list">
-      <ul>
-        <li>Create content in 50+ languages and dialects</li>
-        <li>Multi-platform optimization (Instagram, Twitter, LinkedIn, TikTok)</li>
-        <li>AI-powered suggestions and hashtag generation</li>
-        <li>Scheduler for batch posting</li>
-        <li>Analytics and engagement tracking</li>
-        <li>100% client-side processing — your data stays private</li>
-      </ul>
-    </div>
-
-    <h2>Start Creating Content</h2>
-    <p>Join creators worldwide using AuraPost for authentic engagement</p>
-    
-    <div class="button-group">
-      <a href="https://app.aura-sphere.app/register" class="btn btn-primary">📱 Create Account</a>
-      <a href="https://app.aura-sphere.app/download" class="btn btn-secondary">⬇️ Download App</a>
-    </div>
-
-    <p class="coming-soon">Already have an account? <a href="https://app.aura-sphere.app/login" style="color: #00ffaa; text-decoration: none; font-weight: 600;">Sign In</a></p>
-
-    <h2>Pricing</h2>
-    <p><strong style="color: #00ffaa;">$6/month or $29/year</strong> (52% discount on annual plans)</p>
-    <p style="font-size: 0.95rem;">Start free • No credit card required • Cancel anytime</p>
-
-    <div class="button-group">
-      <a href="/" class="btn btn-back">← Back to Home</a>
+  <div class="content">
+    <div class="container">
+      <div class="badge">MEDIA</div>
+      <h1>AuraPost</h1>
+      <p class="description">Generate social media content in multiple dialects — client-side, zero tracking.</p>
+      <div class="features-list">
+        <ul>
+          <li>Create content in 50+ languages and dialects</li>
+          <li>Multi-platform optimization (Instagram, Twitter, LinkedIn, TikTok)</li>
+          <li>AI-powered suggestions and hashtag generation</li>
+          <li>Content scheduler for batch posting</li>
+          <li>Analytics and engagement tracking</li>
+          <li>100% client-side processing — your data stays private</li>
+        </ul>
+      </div>
+      <h2>Create & Share</h2>
+      <div class="buttons">
+        <a href="https://app.aura-sphere.app/register" class="btn btn-primary">📱 Create Account</a>
+        <a href="https://app.aura-sphere.app/download" class="btn btn-secondary">⬇️ Download</a>
+      </div>
+      <p style="margin: 1.5rem 0; color: #888;">Have an account? <a href="https://app.aura-sphere.app/login" style="color: #00ffaa;">Sign In</a></p>
+      <div class="pricing">
+        <p><strong>$6/month or $29/year</strong><br/>52% off annual</p>
+        <p style="font-size: 0.85rem; color: #888;">Start free • No credit card required</p>
+      </div>
+      <a href="/" class="btn btn-back">← Back Home</a>
     </div>
   </div>
-
-  <footer style="position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 1.5rem; font-size: 0.85rem; color: #666; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 100%); z-index: 1000;">
-    <p style="margin: 0.5rem 0; color: #999;">© 2025 Aurasphere — Sovereign Digital Life</p>
-    <p style="margin: 0.5rem 0; color: #999;">Operated by <strong style="color: #b0b0b0;">Black Diamond LTD</strong> (UIC: 207807571), Sofia, Bulgaria</p>
-    <p style="margin: 1rem 0;">
-      <a href="/support" style="color: #ffd700; margin: 0 8px; text-decoration: none; font-weight: 600;">Support</a> |
-      <a href="/privacy" style="color: #ffd700; margin: 0 8px; text-decoration: none; font-weight: 600;">Privacy</a> |
-      <a href="/terms" style="color: #ffd700; margin: 0 8px; text-decoration: none; font-weight: 600;">Terms</a>
-    </p>
-    <p style="margin: 0.5rem 0;">Contact: <a href="mailto:hello@aura-sphere.app" style="color: #ffd700; text-decoration: none; font-weight: 600;">hello@aura-sphere.app</a></p>
+  <footer>
+    <p>© 2025 Aurasphere — Sovereign Digital Life</p>
+    <p>Operated by <strong style="color: #b0b0b0;">Black Diamond LTD</strong> (UIC: 207807571)</p>
+    <p><a href="/support">Support</a> | <a href="/privacy">Privacy</a> | <a href="/terms">Terms</a></p>
+    <p><a href="mailto:hello@aura-sphere.app">hello@aura-sphere.app</a></p>
   </footer>
 </body>
 </html>
