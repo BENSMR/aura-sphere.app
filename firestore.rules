@@ -161,19 +161,26 @@ service cloud.firestore {
                     && request.resource.data.keys().hasOnly(['status', 'completedAt', 'notes']);
     }
 
-    // Expenses - Owners full access, Employees can create their own
+    // Expenses - Users can create and read own, owners can update/delete
+    match /expenses/{expenseId} {
+      allow create: if request.auth != null 
+                      && request.resource.data.userId == request.auth.uid
+                      && request.resource.data.amount > 0
+                      && request.resource.data.vendor != null
+                      && request.resource.data.items is list;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null 
+                      && resource.data.userId == request.auth.uid
+                      && request.resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // User expenses subcollection (legacy support)
     match /users/{uid}/expenses/{expenseId} {
       allow read: if request.auth.uid == uid;
       allow create: if request.auth.uid == uid && request.resource.data.createdBy == request.auth.uid;
       allow update: if request.auth.uid == uid && (isOwner() || resource.data.createdBy == request.auth.uid);
       allow delete: if request.auth.uid == uid && isOwner();
-    }
-
-    match /expenses/{expenseId} {
-      allow create: if request.auth != null && request.resource.data.createdBy == request.auth.uid;
-      allow read: if isOwner() || resource.data.createdBy == request.auth.uid;
-      allow update: if isOwner() || (isEmployee() && resource.data.createdBy == request.auth.uid);
-      allow delete: if isOwner();
     }
 
     // ==================== OWNER-ONLY FEATURES ====================
