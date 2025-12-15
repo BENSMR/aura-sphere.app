@@ -173,3 +173,4 @@ export { onUserLogin } from './tokens/onUserLogin';
 export { onTokenCredit } from './tokens/milestoneChecker';
 export { dailyLoyaltyHousekeeping } from './tokens/dailyStreakScheduler';
 export { sendWelcomeEmail, sendPasswordResetEmail } from './auth/welcomeEmail';
+export { monitorExpenses, getExpenseStream, cleanupOldAlerts } from './expenses/expenseListener';

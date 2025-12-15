@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import '../models/expense.dart';
 import '../services/expense_service.dart';
+import '../services/expense_realtime_listener.dart';
 
 /// Provider for managing expense state
 class ExpenseProvider extends ChangeNotifier {
   final ExpenseService _service = ExpenseService();
+  final ExpenseRealtimeListener _realtimeListener = ExpenseRealtimeListener();
 
   List<Expense> _expenses = [];
   Map<String, dynamic> _stats = {};
   bool _isLoading = false;
   String? _error;
+  Map<String, dynamic> _lastAlert = {};
+  List<Map<String, dynamic>> _highValueAlerts = [];
 
   // Getters
   List<Expense> get expenses => _expenses;
@@ -18,6 +22,8 @@ class ExpenseProvider extends ChangeNotifier {
   String? get error => _error;
   int get expenseCount => _expenses.length;
   double get totalAmount => _expenses.fold(0, (sum, e) => sum + e.amount);
+  Map<String, dynamic> get lastAlert => _lastAlert;
+  List<Map<String, dynamic>> get highValueAlerts => _highValueAlerts;
 
   /// Load all expenses for current user
   Future<void> loadExpenses({String? status}) async {
@@ -172,9 +178,52 @@ class ExpenseProvider extends ChangeNotifier {
         .toList();
   }
 
+  /// Initialize real-time listeners for alerts and notifications
+  void initializeRealtimeListeners() {
+    _realtimeListener.initializeExpenseAlerts(
+      onNewAlert: (alert) {
+        _lastAlert = alert;
+        notifyListeners();
+      },
+    );
+
+    _realtimeListener.initializeHighValueAlerts(
+      onHighValueAlert: (alerts) {
+        _highValueAlerts = alerts;
+        notifyListeners();
+      },
+    );
+  }
+
+  /// Stream expenses in real-time
+  Stream<List<Expense>> getExpenseStream() {
+    return _realtimeListener.streamUserExpenses();
+  }
+
+  /// Stream expense statistics in real-time
+  Stream<Map<String, dynamic>> getStatsStream() {
+    return _realtimeListener.streamExpenseStats();
+  }
+
+  /// Listen to expenses by status in real-time
+  Stream<List<Expense>> getExpensesByStatusStream(String status) {
+    return _realtimeListener.streamExpensesByStatus(status);
+  }
+
+  /// Get high-value alerts (expenses > $100)
+  List<Map<String, dynamic>> getHighValueAlerts() {
+    return _highValueAlerts;
+  }
+
+  /// Get last alert received
+  Map<String, dynamic> getLastAlert() {
+    return _lastAlert;
+  }
+
   /// Clear error
   void clearError() {
     _error = null;
     notifyListeners();
   }
 }
+
