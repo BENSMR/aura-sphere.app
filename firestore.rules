@@ -175,8 +175,8 @@ service cloud.firestore {
       allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
-    // Contacts - Users can create and read own, update own
-    match /contacts/{contactId} {
+    // Contacts - User ownership-based access
+    match /contacts/{id} {
       allow create: if request.auth != null 
                       && request.resource.data.userId == request.auth.uid
                       && request.resource.data.name != null
@@ -188,8 +188,8 @@ service cloud.firestore {
       allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
-    // Stock/Inventory - Users can create and read own, update own
-    match /stock/{stockId} {
+    // Stock/Inventory - User ownership-based access
+    match /stock/{id} {
       allow create: if request.auth != null 
                       && request.resource.data.userId == request.auth.uid
                       && request.resource.data.item != null
@@ -202,8 +202,8 @@ service cloud.firestore {
       allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
-    // Tasks - Users can create and read own, update own
-    match /tasks/{taskId} {
+    // Tasks - User ownership-based access
+    match /tasks/{id} {
       allow create: if request.auth != null 
                       && request.resource.data.userId == request.auth.uid
                       && request.resource.data.title != null
