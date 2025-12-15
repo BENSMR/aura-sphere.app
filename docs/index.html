@@ -129,20 +129,11 @@
       color: #777;
       font-size: 0.9rem;
     }
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
-      margin: 0 1rem;
+    footer p {
+      margin: 0.8rem 0;
     }
-    footer a:hover {
-      text-decoration: underline;
-    }
-    .footer-nav {
-      margin: 1rem 0 2rem;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 1rem;
+    footer strong {
+      color: var(--white);
     }
   </style>
 </head>
@@ -221,15 +212,14 @@
   <!-- Footer -->
   <footer>
     <div class="container">
-      <div class="footer-nav">
-        <a href="/pricing/">Pricing</a>
-        <a href="/terms/">Terms</a>
-        <a href="/privacy/">Privacy</a>
-        <a href="/support/">Support</a>
-      </div>
       <p>© 2025 Aurasphere — Sovereign Digital Life</p>
-      <p>Operated by Black Diamond LTD (UIC: 207807571), Sofia, Bulgaria</p>
-      <p><a href="mailto:hello@aura-sphere.app">hello@aura-sphere.app</a></p>
+      <p>Operated by <strong>Black Diamond LTD</strong> (UIC: 207807571), Sofia, Bulgaria</p>
+      <p>
+        <a href="/support" style="color:var(--accent); margin:0 8px; text-decoration:none;">Support</a> |
+        <a href="/privacy" style="color:var(--accent); margin:0 8px; text-decoration:none;">Privacy</a> |
+        <a href="/terms" style="color:var(--accent); margin:0 8px; text-decoration:none;">Terms</a>
+      </p>
+      <p>Contact: <a href="mailto:hello@aura-sphere.app" style="color:var(--accent); text-decoration:none;">hello@aura-sphere.app</a></p>
     </div>
   </footer>
 
