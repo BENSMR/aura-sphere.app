@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:aura_sphere_pro/providers/expenses_provider.dart';
-import 'package:aura_sphere_pro/utils/expense_validator.dart';
+import '../providers/expenses_provider.dart';
+import '../utils/expense_validator.dart';
 
 /// Expense tracking screen
 class ExpenseScreen extends StatefulWidget {

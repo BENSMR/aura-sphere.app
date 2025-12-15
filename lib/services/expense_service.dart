@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:aura_sphere_pro/models/expense.dart';
-import 'package:aura_sphere_pro/utils/logger.dart';
+import '../models/expense.dart';
+import '../utils/logger.dart';
 
 /// Service for managing expenses in Firestore
 class ExpenseService {

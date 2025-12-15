@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:aura_sphere_pro/services/mobile_layout_service.dart';
+import '../services/mobile_layout_service.dart';
 
 /// Provider for managing mobile dashboard layout
 class MobileLayoutProvider extends ChangeNotifier {

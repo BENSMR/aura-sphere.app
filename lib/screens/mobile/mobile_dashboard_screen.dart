@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:aura_sphere_pro/providers/mobile_layout_provider.dart';
-import 'package:aura_sphere_pro/config/constants.dart';
+import '../../providers/mobile_layout_provider.dart';
+import '../../config/constants.dart';
 
 /// Mobile Dashboard Screen - Renders only enabled features
 class MobileDashboardScreen extends StatefulWidget {

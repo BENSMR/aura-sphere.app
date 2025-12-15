@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:aura_sphere_pro/models/expense.dart';
-import 'package:aura_sphere_pro/services/expense_service.dart';
+import '../models/expense.dart';
+import '../services/expense_service.dart';
 
 /// Provider for managing expense state
 class ExpenseProvider extends ChangeNotifier {

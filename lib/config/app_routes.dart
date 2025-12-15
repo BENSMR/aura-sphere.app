@@ -41,6 +41,7 @@ import '../screens/expenses/expense_list_screen.dart';
 import '../screens/expenses/expense_scan_screen.dart';
 import '../screens/expenses/expense_review_screen.dart';
 import '../screens/expenses/expense_detail_screen.dart';
+import '../screens/expense_screen.dart';
 import '../screens/anomalies/anomaly_center_screen.dart';
 import '../screens/anomalies/alerts_center_screen.dart';
 import '../screens/anomalies/anomaly_dashboard_screen.dart';
@@ -61,6 +62,7 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String dashboard = '/dashboard';
   static const String expenseScanner = '/expense-scanner';
+  static const String expenses = '/expense';
   static const String aiAssistant = '/ai-assistant';
   static const String crm = '/crm';
   static const String crmCreate = '/crm/create';
@@ -129,6 +131,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const EmployeeDashboardScreen());
       case expenseScanner:
         return MaterialPageRoute(builder: (_) => const ExpenseScannerScreen());
+      case expenses:
+        return MaterialPageRoute(builder: (_) => const ExpenseScreen());
       case crm:
         return MaterialPageRoute(builder: (_) => const CrmListScreen());
       case crmCreate:
