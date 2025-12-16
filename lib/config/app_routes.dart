@@ -53,6 +53,8 @@ import '../screens/ai/finance_coach_screen.dart';
 import '../screens/billing/token_shop_screen.dart';
 import '../screens/wallet/token_store_screen.dart';
 import '../screens/billing/payment_success_page.dart';
+import '../screens/mobile/mobile_dashboard_screen.dart';
+import '../screens/mobile/customize_mobile_dashboard_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -96,6 +98,8 @@ class AppRoutes {
   static const String tokenStore = '/wallet/tokens';
   static const String paymentSuccess = '/billing/success';
   static const String templateGallery = '/settings/templates';
+  static const String mobileDashboard = '/mobile/dashboard';
+  static const String customizeMobileDashboard = '/mobile/customize';
   static const String invoiceAudit = '/invoices/audit';
   static const String waitlist = '/waitlist';
   static const String financeDashboard = '/finance/dashboard';
@@ -195,6 +199,10 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const TokenShopScreen());
       case tokenStore:
         return MaterialPageRoute(builder: (_) => const TokenStoreScreen());
+      case mobileDashboard:
+        return MaterialPageRoute(builder: (_) => const MobileDashboardScreen());
+      case customizeMobileDashboard:
+        return MaterialPageRoute(builder: (_) => const CustomizeMobileDashboardScreen());
       case paymentSuccess:
         // Extract session_id from deep link
         final sessionId = settings.arguments as String?;

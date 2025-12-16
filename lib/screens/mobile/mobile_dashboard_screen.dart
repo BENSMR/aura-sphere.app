@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/mobile_layout_provider.dart';
 import '../../config/constants.dart';
+import 'customize_mobile_dashboard_screen.dart';
 
 /// Mobile Dashboard Screen - Renders only enabled features
 class MobileDashboardScreen extends StatefulWidget {
@@ -93,12 +94,11 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
                 IconButton(
                   icon: const Icon(Icons.settings),
                   onPressed: () {
-                    // Navigate to customize page
-                    // Navigator.of(context).push(
-                    //   MaterialPageRoute(
-                    //     builder: (context) => const CustomizeDashboardScreen(),
-                    //   ),
-                    // );
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const CustomizeMobileDashboardScreen(),
+                      ),
+                    );
                   },
                 ),
               ],
@@ -126,12 +126,11 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () {
-                      // Navigate to customize dashboard
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (context) => const CustomizeDashboardScreen(),
-                      //   ),
-                      // );
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const CustomizeMobileDashboardScreen(),
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.settings),
                     label: const Text('Customize'),
