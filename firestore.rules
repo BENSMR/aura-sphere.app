@@ -1,5 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
+  // ==================== HELPER FUNCTIONS ====================
   function isAdmin() {
     return request.auth != null && request.auth.token.admin == true;
   }
@@ -18,6 +19,35 @@ service cloud.firestore {
   // Check if user is employee role
   function isEmployee() {
     return getUserRole() == 'employee';
+  }
+
+  // Check authentication
+  function isAuthenticated() {
+    return request.auth != null;
+  }
+
+  // Check if user owns resource
+  function isResourceOwner(userId) {
+    return request.auth.uid == userId;
+  }
+
+  // Validate data types for common fields
+  function hasValidEmail(email) {
+    return email is string && 
+           email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+  }
+
+  function hasValidPhone(phone) {
+    return phone is string && phone.matches('^[+0-9 ()-]+$');
+  }
+
+  function hasValidAmount(amount) {
+    return amount is number && amount > 0;
+  }
+
+  // Rate limiting check
+  function isRateLimited(collection) {
+    return request.time < resource.data.lastModified.toMillis() + 1000;
   }
 
   match /databases/{database}/documents {
@@ -132,87 +162,190 @@ service cloud.firestore {
 
     // Clients - Owners full access, Employees read-only (assigned)
     match /users/{uid}/clients/{clientId} {
-      allow read: if request.auth.uid == uid && isOwner();
-      allow read: if request.auth.uid == uid && isEmployee() 
+      allow read: if isResourceOwner(uid) && isOwner();
+      allow read: if isResourceOwner(uid) && isEmployee() 
                    && resource.data.assignedTo == request.auth.uid;
-      allow write: if request.auth.uid == uid && isOwner();
+      allow write: if isResourceOwner(uid) && isOwner()
+                      && request.resource.data.name is string
+                      && request.resource.data.name.size() > 0
+                      && (request.resource.data.email == null || hasValidEmail(request.resource.data.email))
+                      && (request.resource.data.phone == null || hasValidPhone(request.resource.data.phone));
     }
 
     match /clients/{clientId} {
-      allow read: if isOwner() || (isEmployee() && resource.data.assignedTo == request.auth.uid);
-      allow write: if isOwner();
+      allow read: if (isOwner() || (isEmployee() && resource.data.assignedTo == request.auth.uid))
+                      && resource.data.name is string;
+      allow write: if isOwner()
+                      && request.resource.data.name is string
+                      && request.resource.data.name.size() > 0;
     }
 
     // Tasks - Owners full access, Employees can read/update assigned tasks only
     match /users/{uid}/tasks/{taskId} {
-      allow read: if request.auth.uid == uid && isOwner();
-      allow read: if request.auth.uid == uid && isEmployee() 
+      allow read: if isResourceOwner(uid) && isOwner();
+      allow read: if isResourceOwner(uid) && isEmployee() 
                    && resource.data.assignedTo == request.auth.uid;
-      allow write: if request.auth.uid == uid && isOwner();
-      allow update: if request.auth.uid == uid && isEmployee() 
+      allow write: if isResourceOwner(uid) && isOwner();
+      allow update: if isResourceOwner(uid) && isEmployee() 
                     && resource.data.assignedTo == request.auth.uid
                     && request.resource.data.keys().hasOnly(['status', 'completedAt', 'notes']);
     }
 
     match /tasks/{taskId} {
-      allow read: if isOwner() || (isEmployee() && resource.data.assignedTo == request.auth.uid);
-      allow write: if isOwner();
+      allow read: if (isOwner() || (isEmployee() && resource.data.assignedTo == request.auth.uid))
+                      && resource.data.title is string;
+      allow write: if isOwner()
+                      && request.resource.data.title is string
+                      && request.resource.data.title.size() > 0;
       allow update: if isEmployee() && resource.data.assignedTo == request.auth.uid
                     && request.resource.data.keys().hasOnly(['status', 'completedAt', 'notes']);
     }
 
+    // ==================== EXPENSES ====================
     // Expenses - Users can create and read own, owners can update/delete
     match /expenses/{expenseId} {
-      allow create: if request.auth != null 
+      allow create: if isAuthenticated() 
                       && request.resource.data.userId == request.auth.uid
-                      && request.resource.data.amount > 0
-                      && request.resource.data.vendor != null
-                      && request.resource.data.items is list;
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow update: if request.auth != null 
-                      && resource.data.userId == request.auth.uid
-                      && request.resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+                      && hasValidAmount(request.resource.data.amount)
+                      && request.resource.data.vendor is string
+                      && request.resource.data.vendor.size() > 0
+                      && request.resource.data.items is list
+                      && request.resource.data.category is string
+                      && request.resource.data.date is timestamp;
+      allow read: if isAuthenticated() 
+                   && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() 
+                     && resource.data.userId == request.auth.uid
+                     && request.resource.data.userId == request.auth.uid
+                     && request.resource.data.keys().hasOnly([
+                          'userId', 'amount', 'vendor', 'items', 'category', 
+                          'date', 'notes', 'receipt', 'status', 'lastModified'
+                        ]);
+      allow delete: if isAuthenticated() 
+                     && resource.data.userId == request.auth.uid;
     }
 
+    // Expenses subcollection for detailed line items
+    match /expenses/{expenseId}/items/{itemId} {
+      allow read: if isAuthenticated() 
+                   && get(/databases/$(database)/documents/expenses/$(expenseId)).data.userId == request.auth.uid;
+      allow write: if isAuthenticated() 
+                    && get(/databases/$(database)/documents/expenses/$(expenseId)).data.userId == request.auth.uid;
+    }
+
+    // ==================== CONTACTS ====================
     // Contacts - User ownership-based access
     match /contacts/{id} {
-      allow create: if request.auth != null 
+      allow create: if isAuthenticated() 
                       && request.resource.data.userId == request.auth.uid
-                      && request.resource.data.name != null
-                      && request.resource.data.phone != null;
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow update: if request.auth != null 
+                      && request.resource.data.name is string
+                      && request.resource.data.name.size() > 0
+                      && request.resource.data.phone is string
+                      && hasValidPhone(request.resource.data.phone)
+                      && (request.resource.data.email == null || hasValidEmail(request.resource.data.email))
+                      && request.resource.data.type in ['client', 'supplier', 'other'];
+      allow read: if isAuthenticated() 
+                   && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() 
                       && resource.data.userId == request.auth.uid
-                      && request.resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+                      && request.resource.data.userId == request.auth.uid
+                      && (request.resource.data.email == null || hasValidEmail(request.resource.data.email))
+                      && request.resource.data.keys().hasOnly([
+                           'userId', 'name', 'phone', 'email', 'type', 
+                           'company', 'address', 'notes', 'tags', 'lastModified'
+                         ]);
+      allow delete: if isAuthenticated() 
+                     && resource.data.userId == request.auth.uid;
     }
 
+    // Contacts subcollection for interaction history
+    match /contacts/{contactId}/interactions/{interactionId} {
+      allow read: if isAuthenticated() 
+                   && get(/databases/$(database)/documents/contacts/$(contactId)).data.userId == request.auth.uid;
+      allow create: if isAuthenticated() 
+                     && get(/databases/$(database)/documents/contacts/$(contactId)).data.userId == request.auth.uid
+                     && request.resource.data.date is timestamp
+                     && request.resource.data.type in ['call', 'email', 'meeting', 'note'];
+      allow delete: if isAuthenticated() 
+                     && get(/databases/$(database)/documents/contacts/$(contactId)).data.userId == request.auth.uid;
+    }
+
+    // ==================== STOCK/INVENTORY ====================
     // Stock/Inventory - User ownership-based access
     match /stock/{id} {
-      allow create: if request.auth != null 
+      allow create: if isAuthenticated() 
                       && request.resource.data.userId == request.auth.uid
-                      && request.resource.data.item != null
+                      && request.resource.data.item is string
+                      && request.resource.data.item.size() > 0
+                      && request.resource.data.quantity is number
                       && request.resource.data.quantity >= 0
-                      && request.resource.data.cost >= 0;
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow update: if request.auth != null 
+                      && hasValidAmount(request.resource.data.cost)
+                      && request.resource.data.sku is string
+                      && request.resource.data.category is string;
+      allow read: if isAuthenticated() 
+                   && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() 
                       && resource.data.userId == request.auth.uid
-                      && request.resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+                      && request.resource.data.userId == request.auth.uid
+                      && request.resource.data.quantity >= 0
+                      && (request.resource.data.cost == null || request.resource.data.cost > 0)
+                      && request.resource.data.keys().hasOnly([
+                           'userId', 'item', 'quantity', 'cost', 'sku', 
+                           'category', 'supplier', 'location', 'reorderLevel', 
+                           'notes', 'lastModified'
+                         ]);
+      allow delete: if isAuthenticated() 
+                     && resource.data.userId == request.auth.uid;
     }
 
+    // Stock movement history - audit trail
+    match /stock/{stockId}/movements/{movementId} {
+      allow read: if isAuthenticated() 
+                   && get(/databases/$(database)/documents/stock/$(stockId)).data.userId == request.auth.uid;
+      allow create: if isAuthenticated() 
+                     && get(/databases/$(database)/documents/stock/$(stockId)).data.userId == request.auth.uid
+                     && request.resource.data.type in ['in', 'out', 'adjustment']
+                     && request.resource.data.quantity is number
+                     && request.resource.data.date is timestamp;
+      allow delete: if false; // Audit trail is immutable
+    }
+
+    // ==================== TASKS ====================
     // Tasks - User ownership-based access
     match /tasks/{id} {
-      allow create: if request.auth != null 
+      allow create: if isAuthenticated() 
                       && request.resource.data.userId == request.auth.uid
-                      && request.resource.data.title != null
-                      && request.resource.data.dueDate != null;
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow update: if request.auth != null 
+                      && request.resource.data.title is string
+                      && request.resource.data.title.size() > 0
+                      && request.resource.data.dueDate is timestamp
+                      && request.resource.data.status in ['open', 'in_progress', 'completed', 'cancelled'];
+      allow read: if isAuthenticated() 
+                   && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() 
                       && resource.data.userId == request.auth.uid
-                      && request.resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+                      && request.resource.data.userId == request.auth.uid
+                      && request.resource.data.status in ['open', 'in_progress', 'completed', 'cancelled']
+                      && request.resource.data.keys().hasOnly([
+                           'userId', 'title', 'dueDate', 'status', 'description', 
+                           'priority', 'assignedTo', 'completedAt', 'tags', 
+                           'relatedExpenseId', 'notes', 'lastModified'
+                         ]);
+      allow delete: if isAuthenticated() 
+                     && resource.data.userId == request.auth.uid;
+    }
+
+    // Tasks subcollection for comments/history
+    match /tasks/{taskId}/comments/{commentId} {
+      allow read: if isAuthenticated() 
+                   && get(/databases/$(database)/documents/tasks/$(taskId)).data.userId == request.auth.uid;
+      allow create: if isAuthenticated() 
+                     && get(/databases/$(database)/documents/tasks/$(taskId)).data.userId == request.auth.uid
+                     && request.resource.data.text is string
+                     && request.resource.data.text.size() > 0
+                     && request.resource.data.userId == request.auth.uid
+                     && request.resource.data.date is timestamp;
+      allow delete: if isAuthenticated() 
+                     && resource.data.userId == request.auth.uid;
     }
 
     // Mobile Modules Configuration - User-specific feature toggles
@@ -224,13 +357,25 @@ service cloud.firestore {
     // ==================== OWNER-ONLY FEATURES ====================
     // These are blocked entirely for employees
 
-    // Invoices - Owner only
+    // ==================== INVOICES ====================
+    // Invoices - Owner only with data validation
     match /users/{uid}/invoices/{docId} {
-      allow read, write: if request.auth.uid == uid && isOwner();
+      allow read: if isResourceOwner(uid) && isOwner();
+      allow write: if isResourceOwner(uid) && isOwner()
+                      && request.resource.data.invoiceNumber is string
+                      && request.resource.data.clientId is string
+                      && hasValidAmount(request.resource.data.total)
+                      && request.resource.data.items is list
+                      && request.resource.data.items.size() > 0
+                      && request.resource.data.dueDate is timestamp
+                      && request.resource.data.status in ['draft', 'sent', 'paid', 'overdue', 'cancelled'];
     }
 
     match /invoices/{docId} {
-      allow read, write: if isOwner();
+      allow read, write: if isOwner()
+                           && resource.data.invoiceNumber is string
+                           && resource.data.total is number
+                           && resource.data.total > 0;
     }
 
     // Wallet & Billing - Owner only
