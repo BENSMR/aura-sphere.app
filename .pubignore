@@ -1,0 +1,14 @@
+*.md
+*.patch
+*EXAMPLES.*
+*DOCUMENTATION.*
+*GUIDE.*
+*SUMMARY.*
+*CHECKLIST.*
+*REFERENCE.*
+*REPORT.*
+*MANIFEST.*
+*.iml
+.env*
+firebase.json
+.firebaserc

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aurasphere — Sovereign Digital Life</title>
+  <meta name="description" content="AuraPost, AuraLink, AuraShield & CRM Dashboard — a unified ecosystem for creators, agencies, and privacy-conscious professionals.">
+  <style>
+    :root {
+      --black: #000000;
+      --white: #ffffff;
+      --light-gray: #b0b0b0;
+      --accent: #00e0ff;
+      --gold: #ffd700;
+      --green: #00ffaa;
+      --red: #ff5588;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--black);
+      color: var(--light-gray);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+    h1, h2, h3 {
+      color: var(--white);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .container { width: 90%; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+    section { padding: 5rem 0; }
+    .text-center { text-align: center; }
+    header {
+      padding: 1.5rem 0;
+      background: rgba(8,8,18,0.95);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(0,224,255,0.1);
+    }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo { display: flex; align-items: center; gap: 16px; }
+    .dynamic-orb {
+      width: 50px; height: 50px; position: relative;
+    }
+    .orb-center {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px; height: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(0,224,255,0.6);
+    }
+    .logo-text {
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--white), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 8rem 0 6rem;
+      background: #0a0a12;
+      position: relative;
+    }
+    .hero h1 { font-size: 3rem; margin-bottom: 1.5rem; }
+    .hero p { font-size: 1.2rem; max-width: 700px; margin: 0 auto 2rem; }
+
+    .ecosystem-role {
+      background: rgba(10,10,25,0.7);
+      border-radius: 20px;
+      padding: 2.5rem;
+      max-width: 850px;
+      margin: 0 auto 4rem;
+      border: 1px solid rgba(0,224,255,0.15);
+      text-align: center;
+    }
+    .ecosystem-role h2 { color: var(--accent); margin-bottom: 1rem; }
+
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .app-card {
+      background: rgba(15,15,35,0.6);
+      border-radius: 18px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s;
+      border: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .app-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent);
+    }
+    .app-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--black);
+    }
+    .app-card h3 { margin: 0 0 1rem; font-size: 1.4rem; }
+    .app-card p { margin-bottom: 1.2rem; font-size: 0.95rem; }
+
+    footer {
+      text-align: center;
+      padding: 3rem 0 2rem;
+      border-top: 1px solid #1a1a30;
+      color: #777;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container header-content">
+      <div class="logo">
+        <div class="dynamic-orb">
+          <div class="orb-center"></div>
+        </div>
+        <div class="logo-text">AURASPHERE</div>
+      </div>
+      <div style="color: var(--accent); font-weight:600;">Sovereign Digital Life</div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>The Aurasphere Ecosystem</h1>
+      <p>A unified, privacy-first platform where your identity, data, and creativity remain yours — forever.</p>
+    </div>
+  </section>
+
+  <!-- Philosophy -->
+  <section class="container">
+    <div class="ecosystem-role">
+      <h2>Why Aurasphere Exists</h2>
+      <p>
+        Today's digital tools extract value from you — your attention, your data, your content. 
+        Aurasphere flips this: <strong>you are the center</strong>. 
+        Every app orbits you, serving your needs without surveillance, lock-in, or hidden agendas.
+      </p>
+    </div>
+
+    <h2 class="text-center">The Ecosystem in Harmony</h2>
+    <p class="text-center" style="margin: 1rem auto 2.5rem; max-width: 650px;">
+      One identity. Total control. Each app plays a strategic role.
+    </p>
+
+    <div class="apps-grid">
+      
+      <!-- CRM Dashboard -->
+      <a href="/invoicing/" class="app-card">
+        <div class="app-badge" style="background:var(--gold);">CORE</div>
+        <h3>CRM Dashboard</h3>
+        <p>Your command center: contacts, tasks, wallet, and ecosystem launchpad.</p>
+      </a>
+
+      <!-- AuraPost -->
+      <a href="/post/" class="app-card">
+        <div class="app-badge" style="background:var(--green);">MEDIA</div>
+        <h3>AuraPost</h3>
+        <p>Generate social media content in multiple dialects — client-side, zero tracking.</p>
+      </a>
+
+      <!-- AuraLink -->
+      <a href="/link/" class="app-card">
+        <div class="app-badge" style="background:var(--accent);">NETWORK</div>
+        <h3>AuraLink</h3>
+        <p>Sovereign professional networking — no algorithm, no data harvesting.</p>
+      </a>
+
+      <!-- AuraShield -->
+      <a href="/shield/" class="app-card">
+        <div class="app-badge" style="background:var(--red);">SECURITY</div>
+        <h3>AuraShield</h3>
+        <p>Proactive AI security agent for your devices — works offline.</p>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>© 2025 Aurasphere — Sovereign Digital Life</p>
+      <p>Operated by Black Diamond LTD (UIC: 207807571), Sofia, Bulgaria</p>
+      <p><a href="mailto:hello@aura-sphere.app" style="color: var(--accent); text-decoration: none;">hello@aura-sphere.app</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>

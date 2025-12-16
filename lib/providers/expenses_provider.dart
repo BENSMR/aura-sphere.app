@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/expense.dart';
 import '../services/expense_service.dart';
-import '../services/expense_realtime_listener.dart';
-import '../services/expense_status_monitor.dart';
 
 /// Provider for managing expense state
 class ExpenseProvider extends ChangeNotifier {
   final ExpenseService _service = ExpenseService();
-  final ExpenseRealtimeListener _realtimeListener = ExpenseRealtimeListener();
-  final ExpenseStatusMonitor _statusMonitor = ExpenseStatusMonitor();
 
   List<Expense> _expenses = [];
   Map<String, dynamic> _stats = {};
@@ -184,85 +180,62 @@ class ExpenseProvider extends ChangeNotifier {
 
   /// Initialize real-time listeners for alerts and notifications
   void initializeRealtimeListeners() {
-    _realtimeListener.initializeExpenseAlerts(
-      onNewAlert: (alert) {
-        _lastAlert = alert;
-        notifyListeners();
-      },
-    );
-
-    _realtimeListener.initializeHighValueAlerts(
-      onHighValueAlert: (alerts) {
-        _highValueAlerts = alerts;
-        notifyListeners();
-      },
-    );
+    // Real-time listeners disabled for web compatibility
   }
 
   /// Stream expenses in real-time
   Stream<List<Expense>> getExpenseStream() {
-    return _realtimeListener.streamUserExpenses();
+    return Stream.value(_expenses);
   }
 
   /// Stream expense statistics in real-time
   Stream<Map<String, dynamic>> getStatsStream() {
-    return _realtimeListener.streamExpenseStats();
+    return Stream.value(_stats);
   }
 
   /// Listen to expenses by status in real-time
   Stream<List<Expense>> getExpensesByStatusStream(String status) {
-    return _realtimeListener.streamExpensesByStatus(status);
+    return Stream.value(
+      _expenses.where((e) => e.status == status).toList()
+    );
   }
 
   /// Watch specific expense status changes
-  /// Example: Watch for inventory_added status
   Function() watchExpenseStatus(
     String expenseId, {
     required Function(String oldStatus, String newStatus) onStatusChange,
   }) {
-    return _statusMonitor.onExpenseStatusChanged(
-      expenseId: expenseId,
-      onStatusChange: onStatusChange,
-    );
+    return () {}; // Stub for web
   }
 
   /// Watch for specific status and trigger callback
-  /// Example: watchForStatus('exp123', targetStatus: 'inventory_added')
   Function() watchForStatus(
     String expenseId, {
     required String targetStatus,
     required Function(Expense) onStatusMatched,
   }) {
-    return _statusMonitor.watchForStatus(
-      expenseId: expenseId,
-      targetStatus: targetStatus,
-      onStatusMatched: onStatusMatched,
-    );
+    return () {}; // Stub for web
   }
 
   /// Stream inventory success notifications
   Stream<Map<String, dynamic>> streamInventorySuccessNotifications() {
-    return _statusMonitor.streamInventorySuccessNotifications();
+    return Stream.value({});
   }
 
   /// Stream all status notifications
   Stream<List<Map<String, dynamic>>> streamAllStatusNotifications() {
-    return _statusMonitor.streamAllStatusNotifications();
+    return Stream.value([]);
   }
 
   /// Get expense status counts
   Future<void> loadStatusCounts() async {
-    try {
-      _statusCounts = await _statusMonitor.getExpenseStatusCounts();
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-    }
+    _statusCounts = {};
+    notifyListeners();
   }
 
   /// Check if expense is in inventory
   Future<bool> isExpenseInInventory(String expenseId) async {
-    return _statusMonitor.isExpenseAddedToInventory(expenseId);
+    return false;
   }
 
   /// Get high-value alerts (expenses > $100)

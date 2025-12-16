@@ -46,6 +46,15 @@ class CRMQuickActions extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  // Helper to safely show snackbars in async context
+  void showSnackSafe(BuildContext context, String message) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
+
   // ---------------- Actions ----------------
 
   Future<void> _callPhone(BuildContext context) async {

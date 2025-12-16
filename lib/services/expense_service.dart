@@ -184,7 +184,11 @@ class ExpenseService {
     try {
       final expenses =
           await getUserExpenses(status: status, startDate: startDate, endDate: endDate);
-      return expenses.fold(0.0, (sum, expense) => sum + expense.amount);
+      double total = 0.0;
+      for (final expense in expenses) {
+        total += expense.amount;
+      }
+      return total;
     } catch (e) {
       logger.error('Error calculating total', {'error': e.toString()});
       return 0.0;
