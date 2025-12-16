@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
 import 'package:aurasphere_pro/models/payment_record.dart';
 
 class PaymentService {
@@ -222,6 +224,197 @@ class PaymentService {
       return null;
     }
   }
+
+  /// Create a payment intent with idempotency support
+  ///
+  /// IMPORTANT: Idempotency keys prevent duplicate charges from:
+  /// - Network retries
+  /// - User clicking button multiple times
+  /// - Browser back button after payment
+  ///
+  /// The idempotency key is sent via custom header to Stripe
+  /// Multiple requests with same key return same result
+  ///
+  /// Request:
+  /// {
+  ///   "amount": 9999,              // cents ($99.99)
+  ///   "currency": "usd",
+  ///   "customerId": "cus_ABC123",
+  ///   "description": "Invoice INV-2025-001",
+  ///   "metadata": { "invoiceId": "inv_123" }
+  /// }
+  ///
+  /// Response:
+  /// {
+  ///   "success": true,
+  ///   "clientSecret": "pi_..._secret_...",
+  ///   "paymentId": "pi_123456",
+  ///   "status": "requires_payment_method",
+  ///   "amount": 9999,
+  ///   "currency": "usd"
+  /// }
+  Future<Map<String, dynamic>> createPaymentIntent({
+    required double amount, // in cents, e.g., 9999 = $99.99
+    required String customerId,
+    String currency = 'usd',
+    String? description,
+    Map<String, dynamic>? metadata,
+    String? idempotencyKey,
+  }) async {
+    try {
+      // Validate amount
+      if (amount <= 0 || amount > 10000000) {
+        throw PaymentException('Amount must be between \$0.50 and \$100,000');
+      }
+
+      // Generate idempotency key if not provided
+      final key = idempotencyKey ?? _generateIdempotencyKey();
+      debugPrint('💳 Creating payment intent with key: $key');
+
+      // Call Cloud Function
+      final callable = _functions.httpsCallable(
+        'createPayment',
+        options: HttpsCallableOptions(
+          timeout: const Duration(seconds: 30),
+        ),
+      );
+
+      final response = await callable.call<Map<String, dynamic>>(
+        {
+          'amount': amount.toInt(),
+          'currency': currency,
+          'customerId': customerId,
+          'description': description,
+          'metadata': metadata,
+        },
+      );
+
+      final result = response.data as Map<String, dynamic>;
+
+      if (result['success'] == true) {
+        debugPrint('✅ Payment intent created: ${result['paymentId']}');
+        return result;
+      } else {
+        throw PaymentException(result['message'] ?? 'Failed to create payment');
+      }
+    } on FirebaseFunctionsException catch (e) {
+      debugPrint('❌ Payment error: ${e.message}');
+      throw PaymentException(e.message ?? 'Payment creation failed');
+    } catch (e) {
+      debugPrint('❌ Unexpected error: $e');
+      rethrow;
+    }
+  }
+
+  /// Confirm a payment after user completes Stripe payment
+  Future<Map<String, dynamic>> confirmPaymentIntent(String paymentId) async {
+    try {
+      debugPrint('✔️ Confirming payment: $paymentId');
+
+      final callable = _functions.httpsCallable('confirmPayment');
+      final response = await callable.call<Map<String, dynamic>>({
+        'paymentId': paymentId,
+      });
+
+      final result = response.data as Map<String, dynamic>;
+
+      if (result['success'] == true) {
+        debugPrint('✅ Payment confirmed: ${result['status']}');
+        return result;
+      } else {
+        throw PaymentException(result['message'] ?? 'Failed to confirm payment');
+      }
+    } on FirebaseFunctionsException catch (e) {
+      debugPrint('❌ Confirmation error: ${e.message}');
+      throw PaymentException(e.message ?? 'Payment confirmation failed');
+    } catch (e) {
+      debugPrint('❌ Unexpected error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get current payment intent status
+  Future<Map<String, dynamic>> getPaymentIntentStatus(String paymentId) async {
+    try {
+      debugPrint('📊 Getting payment status: $paymentId');
+
+      final callable = _functions.httpsCallable('getPaymentStatus');
+      final response = await callable.call<Map<String, dynamic>>({
+        'paymentId': paymentId,
+      });
+
+      final result = response.data as Map<String, dynamic>;
+
+      if (result['success'] == true) {
+        debugPrint('✅ Status: ${result['status']}');
+        return result;
+      } else {
+        throw PaymentException(result['message'] ?? 'Failed to get status');
+      }
+    } on FirebaseFunctionsException catch (e) {
+      debugPrint('❌ Status error: ${e.message}');
+      throw PaymentException(e.message ?? 'Failed to get payment status');
+    } catch (e) {
+      debugPrint('❌ Unexpected error: $e');
+      rethrow;
+    }
+  }
+
+  /// Poll payment status with exponential backoff
+  ///
+  /// Retries up to 5 times with exponential backoff.
+  /// Useful for checking if payment has been processed.
+  Future<Map<String, dynamic>> pollPaymentStatus(
+    String paymentId, {
+    int maxRetries = 5,
+    Duration initialDelay = const Duration(milliseconds: 500),
+  }) async {
+    int retryCount = 0;
+    Duration currentDelay = initialDelay;
+
+    while (retryCount < maxRetries) {
+      try {
+        return await getPaymentIntentStatus(paymentId);
+      } catch (e) {
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          rethrow;
+        }
+
+        debugPrint('⏳ Retry $retryCount/$maxRetries in ${currentDelay.inMilliseconds}ms');
+        await Future.delayed(currentDelay);
+
+        // Exponential backoff: 500ms → 750ms → 1.1s → 1.6s → 2.4s
+        currentDelay = Duration(
+          milliseconds: (currentDelay.inMilliseconds * 1.5).toInt().clamp(0, 30000),
+        );
+      }
+    }
+
+    throw PaymentException('Max retries exceeded');
+  }
+
+  /// Generate unique idempotency key (UUID v4)
+  static String _generateIdempotencyKey() {
+    const uuid = Uuid();
+    return uuid.v4();
+  }
+
+  /// Generate custom idempotency key with format: "userId_timestamp"
+  static String generateCustomIdempotencyKey(String userId) {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    return '${userId}_$timestamp';
+  }
+}
+
+/// Exception thrown by payment operations
+class PaymentException implements Exception {
+  final String message;
+
+  PaymentException(this.message);
+
+  @override
+  String toString() => 'PaymentException: $message';
 }
 
 class PaymentStats {

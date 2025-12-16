@@ -87,6 +87,7 @@ export { createCheckoutSession } from './payments/createCheckoutSession';
 export { createTokenCheckoutSession } from './payments/createTokenCheckoutSession';
 export { stripeTokenWebhook } from './payments/stripeTokenWebhook';
 export { stripeWebhook } from './payments/stripeWebhook';
+export { createPayment, confirmPayment, getPaymentStatus, handleStripeWebhook } from './billing/paymentService';
 export { migrateBusinessProfiles, verifyBusinessProfileMigration, rollbackBusinessProfileMigration } from './migrations/migrate_business_profiles';
 export { createCheckoutSession as createCheckoutSessionBilling } from './billing/createCheckoutSession';
 export { stripeWebhook as stripeWebhookBilling } from './billing/stripeWebhook';
