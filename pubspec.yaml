@@ -52,7 +52,7 @@ dependencies:
   
   # Error Tracking & Analytics
   sentry_flutter: ^7.10.0
-  firebase_crashlytics: ^3.5.0
+  firebase_crashlytics: ^4.0.0
   flutter_localizations:
     sdk: flutter
   lottie: ^2.4.0

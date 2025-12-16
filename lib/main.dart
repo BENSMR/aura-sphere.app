@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'app/app.dart';
 
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+    
+    // Initialize Firebase Crashlytics
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+    // Pass all uncaught "fatal" errors from the framework to Crashlytics
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
     
     // Initialize Sentry for crash reporting
     await SentryFlutter.init(
@@ -57,7 +69,8 @@ void main() {
   }, (error, stack) {
     debugPrint('Uncaught error: $error');
     debugPrintStack(stackTrace: stack);
-    // Report uncaught errors to Sentry
+    // Report uncaught errors to both Firebase Crashlytics and Sentry
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     Sentry.captureException(error, stackTrace: stack);
   });
 }
