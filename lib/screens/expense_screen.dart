@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/expenses_provider.dart';
 import '../utils/expense_validator.dart';
+import '../core/utils/context_helpers.dart';
 
 /// Expense tracking screen
 class ExpenseScreen extends StatefulWidget {
@@ -71,12 +72,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     );
 
     if (errors.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errors.values.first),
-          backgroundColor: Colors.red,
-        ),
-      );
+      showErrorSnackBar(errors.values.first);
       return;
     }
 
@@ -92,13 +88,8 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
       description: _descriptionController.text.trim(),
     );
 
-    if (result != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Expense added successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+    if (result != null && context.mounted) {
+      showSuccessSnackBar('Expense added successfully');
 
       // Clear form
       _amountController.clear();
@@ -112,13 +103,9 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
         _items.clear();
         _selectedCategory = 'other';
       });
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(provider.error ?? 'Failed to add expense'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    } else if (context.mounted) {
+      final provider = context.read<ExpenseProvider>();
+      showErrorSnackBar(provider.error ?? 'Failed to add expense');
     }
   }
 
