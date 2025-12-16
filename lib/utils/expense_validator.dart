@@ -1,101 +1,182 @@
 /// Validator class for expense data
+/// 
+/// Provides client-side validation for expense forms.
+/// Server-side validation in Cloud Functions is REQUIRED - these checks
+/// are for UX only and can be bypassed.
+/// 
+/// Amount limits: $0.01 - $100,000.00
+/// Vendor: 2-100 characters
+/// Items: 1-20 items, each 1-50 characters
+/// Description: 0-500 characters (optional)
 class ExpenseValidator {
+  // Amount limits
+  static const double amountMin = 0.01;
+  static const double amountMax = 100000.0;
+
+  // String limits
+  static const int vendorMin = 2;
+  static const int vendorMax = 100;
+  static const int itemMin = 1;
+  static const int itemMax = 50;
+  static const int itemsLimit = 20;
+  static const int descriptionMax = 500;
+
+  // Valid categories
+  static const List<String> validCategories = [
+    'travel',
+    'meals',
+    'office_supplies',
+    'equipment',
+    'software',
+    'marketing',
+    'other',
+  ];
+
   /// Validate expense amount
+  /// 
+  /// Rules:
+  /// - Must be a number between $0.01 and $100,000.00
+  /// - Maximum 2 decimal places
   static String? validateAmount(double amount) {
-    if (amount <= 0) {
-      return 'Amount must be greater than 0';
+    if (amount < amountMin) {
+      return 'Amount must be at least \$${amountMin.toStringAsFixed(2)}';
     }
-    if (amount > 999999.99) {
-      return 'Amount cannot exceed 999,999.99';
+    if (amount > amountMax) {
+      return 'Amount cannot exceed \$${amountMax.toStringAsFixed(2)}';
     }
+
+    // Check decimal places (max 2)
+    final rounded = double.parse(amount.toStringAsFixed(2));
+    if (amount != rounded) {
+      return 'Amount can have at most 2 decimal places';
+    }
+
     return null;
   }
 
   /// Validate vendor name
+  /// 
+  /// Rules:
+  /// - Required field
+  /// - 2-100 characters
+  /// - Alphanumeric, spaces, and basic punctuation only
   static String? validateVendor(String vendor) {
     final trimmed = vendor.trim();
     if (trimmed.isEmpty) {
       return 'Vendor name is required';
     }
-    if (trimmed.length < 2) {
-      return 'Vendor name must be at least 2 characters';
+    if (trimmed.length < vendorMin) {
+      return 'Vendor name must be at least $vendorMin characters';
     }
-    if (trimmed.length > 100) {
-      return 'Vendor name cannot exceed 100 characters';
+    if (trimmed.length > vendorMax) {
+      return 'Vendor name cannot exceed $vendorMax characters';
+    }
+
+    // Disallow suspicious characters
+    final validPattern = RegExp(r"^[a-zA-Z0-9\s\-&'.,]+$");
+    if (!validPattern.hasMatch(trimmed)) {
+      return 'Vendor name contains invalid characters';
+    }
+
+    return null;
+  }
+
+  /// Validate individual item description
+  /// 
+  /// Rules:
+  /// - 1-50 characters
+  /// - Non-empty
+  static String? validateItem(String item) {
+    final trimmed = item.trim();
+    if (trimmed.isEmpty) {
+      return 'Item description cannot be empty';
+    }
+    if (trimmed.length > itemMax) {
+      return 'Item cannot exceed $itemMax characters';
     }
     return null;
   }
 
-  /// Validate items list
+  /// Validate items array
+  /// 
+  /// Rules:
+  /// - At least 1 item required
+  /// - Maximum 20 items
+  /// - Each item validated individually
   static String? validateItems(List<String> items) {
     if (items.isEmpty) {
       return 'At least one item is required';
     }
-    if (items.length > 20) {
-      return 'Cannot add more than 20 items';
+    if (items.length > itemsLimit) {
+      return 'Cannot add more than $itemsLimit items';
     }
 
-    for (final item in items) {
-      final trimmed = item.trim();
-      if (trimmed.isEmpty) {
-        return 'Item cannot be empty';
-      }
-      if (trimmed.length > 50) {
-        return 'Item description cannot exceed 50 characters';
+    for (int i = 0; i < items.length; i++) {
+      final error = validateItem(items[i]);
+      if (error != null) {
+        return 'Item ${i + 1}: $error';
       }
     }
 
     return null;
   }
 
-  /// Validate description
+  /// Validate description (optional)
+  /// 
+  /// Rules:
+  /// - Optional field (0-500 characters if provided)
   static String? validateDescription(String? description) {
     if (description == null || description.isEmpty) {
       return null; // Optional field
     }
-    if (description.length > 500) {
-      return 'Description cannot exceed 500 characters';
+    if (description.length > descriptionMax) {
+      return 'Description cannot exceed $descriptionMax characters';
     }
     return null;
   }
 
-  /// Validate category
+  /// Validate category (optional)
+  /// 
+  /// Rules:
+  /// - Optional field
+  /// - Must be from valid category list if provided
   static String? validateCategory(String? category) {
-    final validCategories = [
-      'travel',
-      'meals',
-      'office_supplies',
-      'equipment',
-      'software',
-      'marketing',
-      'other',
-    ];
-
     if (category == null || category.isEmpty) {
       return null; // Optional field
     }
 
     if (!validCategories.contains(category)) {
-      return 'Invalid category';
+      return 'Invalid category. Must be one of: ${validCategories.join(', ')}';
     }
 
     return null;
   }
 
-  /// Validate receipt URL
+  /// Validate receipt URL (optional)
+  /// 
+  /// Rules:
+  /// - Optional field
+  /// - Must be valid HTTP(S) URL if provided
   static String? validateReceiptUrl(String? url) {
     if (url == null || url.isEmpty) {
       return null; // Optional field
     }
 
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      return 'Receipt URL must start with http:// or https://';
+    try {
+      Uri.parse(url);
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return 'Receipt URL must start with http:// or https://';
+      }
+      return null;
+    } catch (e) {
+      return 'Receipt URL must be a valid URL';
     }
-
-    return null;
   }
 
   /// Validate entire expense
+  /// 
+  /// Returns a map of field -> error message for any invalid fields.
+  /// Empty map means all fields are valid.
   static Map<String, String> validateExpense({
     required double amount,
     required String vendor,
@@ -137,5 +218,51 @@ class ExpenseValidator {
     }
 
     return errors;
+  }
+
+  /// Check if expense has validation errors
+  /// 
+  /// Returns true if any field has validation errors.
+  static bool hasErrors({
+    required double amount,
+    required String vendor,
+    required List<String> items,
+    String? description,
+    String? category,
+    String? receiptUrl,
+  }) {
+    final errors = validateExpense(
+      amount: amount,
+      vendor: vendor,
+      items: items,
+      description: description,
+      category: category,
+      receiptUrl: receiptUrl,
+    );
+    return errors.isNotEmpty;
+  }
+
+  /// Get first validation error message
+  /// 
+  /// Returns the first error found, useful for displaying a single
+  /// error message to the user instead of all validation errors.
+  static String? getFirstError({
+    required double amount,
+    required String vendor,
+    required List<String> items,
+    String? description,
+    String? category,
+    String? receiptUrl,
+  }) {
+    final errors = validateExpense(
+      amount: amount,
+      vendor: vendor,
+      items: items,
+      description: description,
+      category: category,
+      receiptUrl: receiptUrl,
+    );
+    if (errors.isEmpty) return null;
+    return errors.values.first;
   }
 }

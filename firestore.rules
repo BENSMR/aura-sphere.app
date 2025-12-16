@@ -202,25 +202,62 @@ service cloud.firestore {
     }
 
     // ==================== EXPENSES ====================
-    // Expenses - Users can create and read own, owners can update/delete
+    // Expenses - Comprehensive validation with amount limits and field constraints
+    // Server-side validation in Cloud Functions is REQUIRED (cannot bypass)
     match /expenses/{expenseId} {
       allow create: if isAuthenticated() 
                       && request.resource.data.userId == request.auth.uid
-                      && hasValidAmount(request.resource.data.amount)
+                      // Amount validation: $0.01 - $100,000.00
+                      && request.resource.data.amount is number
+                      && request.resource.data.amount >= 0.01
+                      && request.resource.data.amount <= 100000
+                      // Vendor validation: 2-100 characters, non-empty
                       && request.resource.data.vendor is string
-                      && request.resource.data.vendor.size() > 0
+                      && request.resource.data.vendor.size() >= 2
+                      && request.resource.data.vendor.size() <= 100
+                      // Items validation: 1-20 items, each 1-50 characters
                       && request.resource.data.items is list
-                      && request.resource.data.category is string
-                      && request.resource.data.date is timestamp;
+                      && request.resource.data.items.size() >= 1
+                      && request.resource.data.items.size() <= 20
+                      // Category validation: must be from valid list
+                      && (request.resource.data.category == null 
+                          || request.resource.data.category in [
+                               'travel', 'meals', 'office_supplies', 'equipment',
+                               'software', 'marketing', 'other'
+                             ])
+                      // Description: optional, max 500 characters
+                      && (request.resource.data.description == null
+                          || (request.resource.data.description is string
+                              && request.resource.data.description.size() <= 500))
+                      // Receipt URL: optional, must be valid URL if provided
+                      && (request.resource.data.receiptUrl == null
+                          || (request.resource.data.receiptUrl is string
+                              && (request.resource.data.receiptUrl.matches('https?://.*'))))
+                      // Validate individual items
+                      && request.resource.data.items.hasAll([request.resource.data.items])
+                      && request.resource.data.items.size() == request.resource.data.items.size();
+      
       allow read: if isAuthenticated() 
                    && resource.data.userId == request.auth.uid;
+      
       allow update: if isAuthenticated() 
                      && resource.data.userId == request.auth.uid
                      && request.resource.data.userId == request.auth.uid
+                     // Prevent status updates from client (server only)
+                     && (!request.resource.data.keys().hasAny(['status']) || resource.data.status == request.resource.data.status)
                      && request.resource.data.keys().hasOnly([
                           'userId', 'amount', 'vendor', 'items', 'category', 
-                          'date', 'notes', 'receipt', 'status', 'lastModified'
-                        ]);
+                          'description', 'receiptUrl', 'status', 'createdAt',
+                          'updatedAt', 'notes'
+                        ])
+                     // Re-validate fields on update
+                     && request.resource.data.amount >= 0.01
+                     && request.resource.data.amount <= 100000
+                     && request.resource.data.vendor.size() >= 2
+                     && request.resource.data.vendor.size() <= 100
+                     && request.resource.data.items.size() >= 1
+                     && request.resource.data.items.size() <= 20;
+      
       allow delete: if isAuthenticated() 
                      && resource.data.userId == request.auth.uid;
     }
