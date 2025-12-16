@@ -45,6 +45,19 @@
       appId: "1:876321378652:web:4da828bbf22c3dbac93199"
     };
     firebase.initializeApp(firebaseConfig);
+
+    // Enable Firestore offline persistence for web
+    const db = firebase.firestore();
+    firebase.firestore().enablePersistence()
+      .catch(err => {
+        if (err.code === 'failed-precondition') {
+          console.warn('⚠️ Firestore persistence disabled: Multiple tabs open');
+        } else if (err.code === 'unimplemented') {
+          console.warn('⚠️ Firestore persistence not supported in this browser');
+        } else {
+          console.error('❌ Firestore persistence error:', err);
+        }
+      });
   </script>
 
   <title>AuraSphere Pro - Business Management Platform</title>
