@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "aura-sphere-pro",
     "public": "build/web",
     "ignore": [
       "firebase.json",

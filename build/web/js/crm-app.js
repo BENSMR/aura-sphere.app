@@ -3,56 +3,20 @@
 // ====================================
 
 const CRM = {
-  maxMobileFeatures: 8,
-  selectedFeatures: [],
-
   // Initialize the app
   init() {
-    this.loadMobileFeatures();
     this.setupEventListeners();
-    this.applyMobileFeatureVisibility();
     this.initializeLanguageUI();
     this.loadDarkModePreference();
     console.log('✅ CRM App Initialized');
   },
 
   // ====================================
-  // Feature Selection (Mobile)
+  // Event Listeners
   // ====================================
 
   setupEventListeners() {
-    // Feature Settings Modal
-    const featureSettingsBtn = document.getElementById('feature-settings-btn');
-    const featureSettingsModal = document.getElementById('feature-settings-modal');
     const closeButtons = document.querySelectorAll('.close-btn');
-    const saveBtn = document.getElementById('save-features-btn');
-    const closeBtnFooter = document.getElementById('close-modal-btn');
-
-    if (featureSettingsBtn) {
-      featureSettingsBtn.addEventListener('click', () => {
-        this.openModal(featureSettingsModal);
-        this.populateFeatureCheckboxes();
-      });
-    }
-
-    closeButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.target.closest('.modal').classList.remove('active');
-      });
-    });
-
-    if (closeBtnFooter) {
-      closeBtnFooter.addEventListener('click', () => {
-        featureSettingsModal.classList.remove('active');
-      });
-    }
-
-    if (saveBtn) {
-      saveBtn.addEventListener('click', () => {
-        this.saveFeatureSelection();
-        featureSettingsModal.classList.remove('active');
-      });
-    }
 
     // Export Modal
     const exportBtn = document.getElementById('export-btn');
@@ -102,46 +66,6 @@ const CRM = {
     if (modal) {
       modal.classList.add('active');
     }
-  },
-
-  populateFeatureCheckboxes() {
-    const checkboxes = document.querySelectorAll('.feature-select');
-    checkboxes.forEach(checkbox => {
-      checkbox.checked = this.selectedFeatures.includes(checkbox.value);
-    });
-  },
-
-  saveFeatureSelection() {
-    const checkboxes = document.querySelectorAll('.feature-select:checked');
-    this.selectedFeatures = Array.from(checkboxes).map(cb => cb.value);
-
-    if (this.selectedFeatures.length > this.maxMobileFeatures) {
-      alert(`Maximum ${this.maxMobileFeatures} features allowed`);
-      return;
-    }
-
-    localStorage.setItem('aurora_mobile_features', JSON.stringify(this.selectedFeatures));
-    this.applyMobileFeatureVisibility();
-    console.log('✅ Features saved:', this.selectedFeatures);
-  },
-
-  loadMobileFeatures() {
-    const saved = localStorage.getItem('aurora_mobile_features');
-    this.selectedFeatures = saved ? JSON.parse(saved) : ['clients', 'invoices', 'tasks', 'expenses'];
-  },
-
-  applyMobileFeatureVisibility() {
-    const cards = document.querySelectorAll('.crm-card');
-    const isMobile = window.innerWidth < 768;
-
-    cards.forEach(card => {
-      const feature = card.getAttribute('data-feature');
-      if (isMobile && !this.selectedFeatures.includes(feature)) {
-        card.classList.remove('mobile-visible');
-      } else {
-        card.classList.add('mobile-visible');
-      }
-    });
   },
 
   // ====================================
@@ -297,7 +221,6 @@ const CRM = {
 
   backupData() {
     const backup = {
-      features: this.selectedFeatures,
       timestamp: new Date().toISOString(),
       clients: document.getElementById('clients-list').innerHTML,
       invoices: document.getElementById('invoices-list').innerHTML,

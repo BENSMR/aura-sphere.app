@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "aurasphere-pro"
-  }
+  },
+  "targets": {
+    "aurasphere-pro": {
+      "hosting": {
+        "aura-sphere-pro": [
+          "aura-sphere-pro"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
