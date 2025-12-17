@@ -74,10 +74,6 @@
       color: var(--bg-dark);
     }
 
-    .sidebar-logo-text {
-      flex: 1;
-    }
-
     .sidebar-logo-text h2 {
       font-size: 1.1rem;
       color: var(--text-primary);
@@ -89,7 +85,6 @@
       color: var(--text-muted);
     }
 
-    /* NAV SECTIONS */
     .nav-section {
       margin-bottom: 2rem;
     }
@@ -164,12 +159,6 @@
       font-weight: 700;
     }
 
-    .header-right {
-      display: flex;
-      gap: 1.5rem;
-      align-items: center;
-    }
-
     .user-info {
       display: flex;
       align-items: center;
@@ -210,16 +199,89 @@
 
     .section {
       display: none;
-      animation: fadeIn 0.3s ease-in-out;
     }
 
     .section.active {
       display: block;
+      animation: fadeIn 0.3s ease-in-out;
     }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* FEATURE GRID */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .feature-card {
+      background: rgba(18, 18, 29, 0.8);
+      border: 1.5px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(0, 224, 255, 0.1), rgba(255, 215, 0, 0.05));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--primary);
+      background: rgba(18, 18, 29, 0.95);
+      transform: translateY(-8px);
+      box-shadow: 0 12px 40px rgba(0, 224, 255, 0.15);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feature-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      position: relative;
+      z-index: 1;
+    }
+
+    .feature-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
     }
 
     /* PAGE HEADER */
@@ -261,24 +323,6 @@
       box-shadow: 0 6px 20px rgba(0, 224, 255, 0.3);
     }
 
-    .btn-secondary {
-      background: transparent;
-      border: 1.5px solid var(--primary);
-      color: var(--primary);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(0, 224, 255, 0.1);
-    }
-
-    /* GRID */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
     /* CARDS */
     .card {
       background: rgba(18, 18, 29, 0.8);
@@ -287,12 +331,10 @@
       padding: 1.75rem;
       backdrop-filter: blur(10px);
       transition: all 0.3s ease;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     }
 
     .card:hover {
       border-color: rgba(0, 224, 255, 0.3);
-      background: rgba(18, 18, 29, 0.95);
       transform: translateY(-4px);
       box-shadow: 0 12px 40px rgba(0, 224, 255, 0.1);
     }
@@ -323,9 +365,11 @@
       margin-bottom: 0.5rem;
     }
 
-    .card-subtext {
-      font-size: 0.85rem;
-      color: var(--text-muted);
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     /* LIST */
@@ -334,19 +378,6 @@
       border: 1px solid var(--border-color);
       border-radius: 16px;
       overflow: hidden;
-    }
-
-    .list-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .list-header h3 {
-      font-size: 1.1rem;
-      color: var(--text-primary);
     }
 
     .list-item {
@@ -366,35 +397,12 @@
       border-bottom: none;
     }
 
-    .list-item-info {
-      flex: 1;
-    }
-
-    .list-item-title {
-      color: var(--text-primary);
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-
-    .list-item-desc {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .list-item-badge {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    /* STATUS BADGES */
     .badge {
       padding: 0.45rem 0.9rem;
       border-radius: 6px;
       font-size: 0.8rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
     .badge-pending {
@@ -405,11 +413,6 @@
     .badge-paid {
       background: rgba(0, 255, 170, 0.15);
       color: var(--success);
-    }
-
-    .badge-overdue {
-      background: rgba(255, 85, 136, 0.15);
-      color: var(--danger);
     }
 
     /* MODALS */
@@ -426,7 +429,6 @@
       align-items: center;
       justify-content: center;
       padding: 2rem;
-      animation: fadeIn 0.2s ease;
     }
 
     .modal.show {
@@ -547,10 +549,6 @@
       font-size: 1.05rem;
     }
 
-    .chat-header i {
-      margin-right: 0.5rem;
-    }
-
     .chat-close {
       background: none;
       border: none;
@@ -614,12 +612,6 @@
       font-size: 0.9rem;
     }
 
-    .chat-input-wrapper input:focus {
-      outline: none;
-      border-color: var(--primary);
-      background: rgba(0, 224, 255, 0.08);
-    }
-
     .chat-input-wrapper button {
       padding: 0.75rem 1.25rem;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -636,11 +628,10 @@
       box-shadow: 0 4px 12px rgba(0, 224, 255, 0.3);
     }
 
-    /* RESPONSIVE */
     @media (max-width: 1024px) {
       .sidebar { width: 240px; padding: 1.5rem 1rem; }
       .content { padding: 1.5rem; }
-      .grid { grid-template-columns: repeat(2, 1fr); }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
       .ai-chat-widget { width: 320px; height: 480px; }
     }
 
@@ -648,11 +639,8 @@
       .app-wrapper { flex-direction: column; }
       .sidebar { width: 100%; height: auto; flex-direction: row; order: 2; }
       .main-container { order: 1; }
-      .nav-section { margin-bottom: 0; margin-right: 1.5rem; }
-      .grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
       .ai-chat-widget { width: 100%; height: auto; max-height: 50vh; bottom: 0; right: 0; border-radius: 20px 20px 0 0; }
-      .header { flex-direction: column; gap: 1rem; text-align: center; }
-      .header-right { width: 100%; justify-content: center; }
     }
   </style>
 </head>
@@ -670,9 +658,12 @@
     </div>
 
     <div class="nav-section">
-      <div class="nav-section-title">Dashboard</div>
+      <div class="nav-section-title">Main</div>
       <a class="nav-link active" onclick="switchSection('dashboard')">
-        <i class="fas fa-chart-line"></i> Dashboard
+        <i class="fas fa-home"></i> Dashboard
+      </a>
+      <a class="nav-link" onclick="switchSection('all-features')">
+        <i class="fas fa-star"></i> All Features
       </a>
     </div>
 
@@ -690,12 +681,18 @@
     </div>
 
     <div class="nav-section">
-      <div class="nav-section-title">Manage</div>
+      <div class="nav-section-title">Operations</div>
       <a class="nav-link" onclick="switchSection('inventory')">
         <i class="fas fa-boxes"></i> Inventory
       </a>
       <a class="nav-link" onclick="switchSection('tasks')">
         <i class="fas fa-tasks"></i> Tasks
+      </a>
+      <a class="nav-link" onclick="switchSection('purchase-orders')">
+        <i class="fas fa-shopping-cart"></i> Purchase Orders
+      </a>
+      <a class="nav-link" onclick="switchSection('projects')">
+        <i class="fas fa-briefcase"></i> Projects
       </a>
     </div>
 
@@ -706,6 +703,9 @@
       </a>
       <a class="nav-link" onclick="switchSection('insights')">
         <i class="fas fa-brain"></i> AI Insights
+      </a>
+      <a class="nav-link" onclick="switchSection('forecasting')">
+        <i class="fas fa-crystal-ball"></i> Forecasting
       </a>
     </div>
 
@@ -727,13 +727,11 @@
       <div class="header-left">
         <h1 id="current-page">Dashboard</h1>
       </div>
-      <div class="header-right">
-        <div class="user-info">
-          <div class="user-avatar" id="user-avatar">U</div>
-          <div class="user-details">
-            <p id="user-name">Loading...</p>
-            <strong id="user-email">user@aurasphere.io</strong>
-          <iv>
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <div class="user-details">
+          <p id="user-name">Loading...</p>
+          <strong id="user-email">user@aurasphere.io</strong>
         </div>
       </div>
     </header>
@@ -745,10 +743,10 @@
       <section id="dashboard" class="section active">
         <div class="page-header">
           <div>
-            <h2>Welcome back!</h2>
+            <h2>Welcome Back!</h2>
           </div>
-          <button class="btn btn-primary" onclick="loadDashboardData()">
-            <i class="fas fa-sync-alt"></i> Refresh
+          <button class="btn btn-primary" onclick="switchSection('all-features')">
+            <i class="fas fa-star"></i> Explore All Features
           </button>
         </div>
 
@@ -758,8 +756,7 @@
               <div class="card-label">Total Revenue</div>
               <i class="fas fa-chart-pie card-icon"></i>
             </div>
-            <div class="card-value" id="total-revenue">$0</div>
-            <div class="card-subtext">This month</div>
+            <div class="card-value" id="total-revenue">$25,500</div>
           </div>
 
           <div class="card">
@@ -767,17 +764,15 @@
               <div class="card-label">Outstanding</div>
               <i class="fas fa-hourglass-end card-icon"></i>
             </div>
-            <div class="card-value" id="pending-invoices">0</div>
-            <div class="card-subtext">Pending invoices</div>
+            <div class="card-value" id="pending-invoices">5</div>
           </div>
 
           <div class="card">
             <div class="card-header">
-              <div class="card-label">Total Contacts</div>
+            <div class="card-label">Total Contacts</div>
               <i class="fas fa-users card-icon"></i>
             </div>
-            <div class="card-value" id="total-contacts">0</div>
-            <div class="card-subtext">Active relationships</div>
+            <div class="card-value" id="total-contacts">18</div>
           </div>
 
           <div class="card">
@@ -785,89 +780,159 @@
               <div class="card-label">Total Expenses</div>
               <i class="fas fa-wallet card-icon"></i>
             </div>
-            <div class="card-value" id="total-expenses">$0</div>
-            <div class="card-subtext">This month</div>
+            <div class="card-value" id="total-expenses">$4,200</div>
           </div>
         </div>
 
         <div class="list-container">
-          <div class="list-header">
-            <h3>Recent Invoices</h3>
-            <button class="btn btn-secondary" onclick="switchSection('invoices')">
-              <i class="fas fa-arrow-right"></i> View All
-            </button>
+          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 1.1rem; color: var(--text-primary);">Recent Invoices</h3>
           </div>
-          <div id="recent-invoices"></div>
-        </div>
-      </section>
-
-      <!-- CONTACTS SECTION -->
-      <section id="contacts" class="section">
-        <div class="page-header">
-          <div>
-            <h2>Contacts</h2>
-            <p style="color: var(--text-muted); margin-top: 0.5rem;">Manage your business relationships</p>
-          </div>
-          <button class="btn btn-primary" onclick="openModal('contact-modal')">
-            <i class="fas fa-plus"></i> New Contact
-          </button>
-        </div>
-
-        <div class="list-container">
-          <div id="contacts-list"></div>
-        </div>
-      </section>
-
-      <!-- INVOICES SECTION -->
-      <section id="invoices" class="section">
-        <div class="page-header">
-          <div>
-            <h2>Invoices</h2>
-            <p style="color: var(--text-muted); margin-top: 0.5rem;">Track payments and billing</p>
-          </div>
-          <button class="btn btn-primary" onclick="openModal('invoice-modal')">
-            <i class="fas fa-plus"></i> New Invoice
-          </button>
-        </div>
-
-        <div class="list-container">
-          <div id="invoices-list"></div>
-        </div>
-      </section>
-
-      <!-- EXPENSES SECTION -->
-      <section id="expenses" class="section">
-        <div class="page-header">
-          <div>
-            <h2>Expenses</h2>
-            <p style="color: var(--text-muted); margin-top: 0.5rem;">Monitor your spending</p>
-          </div>
-          <button class="btn btn-primary" onclick="openModal('expense-modal')">
-            <i class="fas fa-plus"></i> New Expense
-          </button>
-        </div>
-
-        <div class="list-container">
-          <div id="expenses-list">
+          <div id="recent-invoices">
             <div class="list-item" style="justify-content: center; color: var(--text-muted);">
-              <i class="fas fa-inbox"></i> No expenses recorded yet
+              <i class="fas fa-spinner fa-spin"></i> Loading...
             </div>
           </div>
         </div>
       </section>
 
-      <!-- INVENTORY SECTION -->
+      <!-- ALL FEATURES SECTION -->
+      <section id="all-features" class="section">
+        <div class="page-header">
+          <h2>All Features</h2>
+        </div>
+
+        <div class="features-grid">
+          <!-- BUSINESS -->
+          <div class="feature-card" onclick="switchSection('contacts')">
+            <div class="feature-icon"><i class="fas fa-users"></i></div>
+            <div class="feature-name">Contacts</div>
+            <div class="feature-desc">Manage your business relationships</div>
+          </div>
+
+          <div class="feature-card" onclick="switchSection('invoices')">
+            <div class="feature-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div class="feature-name">Invoices</div>
+            <div class="feature-desc">Create and track payments</div>
+          </div>
+
+          <div class="feature-card" onclick="switchSection('expenses')">
+            <div class="feature-icon"><i class="fas fa-receipt"></i></div>
+            <div class="feature-name">Expenses</div>
+            <div class="feature-desc">Monitor your spending</div>
+          </div>
+
+          <!-- OPERATIONS -->
+          <div class="feature-card" onclick="switchSection('inventory')">
+            <div class="feature-icon"><i class="fas fa-boxes"></i></div>
+            <div class="feature-name">Inventory</div>
+            <div class="feature-desc">Manage stock levels</div>
+          </div>
+
+          <div class="feature-card" onclick="switchSection('tasks')">
+            <div class="feature-icon"><i class="fas fa-tasks"></i></div>
+            <div class="feature-name">Tasks</div>
+            <div class="feature-desc">Stay on top of your work</div>
+          </div>
+
+          <div class="feature-card" onclick="switchSection('purchase-orders')">
+            <div class="feature-icon"><i class="fas fa-shopping-cart"></i></div>
+            <div class="feature-name">Purchase Orders</div>
+            <div class="feature-desc">Manage supplier orders</div>
+          </div>
+
+          <div class="feature-card" onclick="switchSection('projects')">
+            <div class="feature-icon"><i class="fas fa-briefcase"></i></div>
+            <div class="feature-name">Projects</div>
+            <div class="feature-desc">Track project progress</div>
+          </div>
+
+          <!-- INTELLIGENCE -->
+          <div class="feature-card" onclick="switchSection('analytics')">
+            <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+            <div class="feature-name">Analytics</div>
+            <div class="feature-desc">View business metrics</div>
+          </div>
+
+          <div class="feature-card" onclick="switchSection('insights')">
+            <div class="feature-icon"><i class="fas fa-brain"></i></div>
+            <div class="feature-name">AI Insights</div>
+            <div class="feature-desc">Get AI-powered advice</div>
+          </div>
+
+          <div class="feature-card" onclick="switchSection('forecasting')">
+            <div class="feature-icon"><i class="fas fa-crystal-ball"></i></div>
+            <div class="feature-name">Forecasting</div>
+            <div class="feature-desc">Predict future trends</div>
+          </div>
+
+          <div class="feature-card" onclick="switchSection('dashboard')">
+            <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="feature-name">Dashboard</div>
+            <div class="feature-desc">Your business overview</div>
+          </div>
+
+          <div class="feature-card" onclick="switchSection('settings')">
+            <div class="feature-icon"><i class="fas fa-cog"></i></div>
+            <div class="feature-name">Settings</div>
+            <div class="feature-desc">Configure your account</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACTS -->
+      <section id="contacts" class="section">
+        <div class="page-header">
+          <h2>Contacts</h2>
+          <button class="btn btn-primary" onclick="openModal('contact-modal')">
+            <i class="fas fa-plus"></i> New Contact
+          </button>
+        </div>
+        <div class="list-container">
+          <div class="list-item" style="justify-content: center; color: var(--text-muted);">
+            <i class="fas fa-inbox"></i> No contacts yet
+          </div>
+        </div>
+      </section>
+
+      <!-- INVOICES -->
+      <section id="invoices" class="section">
+        <div class="page-header">
+          <h2>Invoices</h2>
+          <button class="btn btn-primary" onclick="openModal('invoice-modal')">
+            <i class="fas fa-plus"></i> New Invoice
+          </button>
+        </div>
+        <div class="list-container">
+          <div class="list-item" style="justify-content: center; color: var(--text-muted);">
+            <i class="fas fa-inbox"></i> No invoices yet
+          </div>
+        </div>
+      </section>
+
+      <!-- EXPENSES -->
+      <section id="expenses" class="section">
+        <div class="page-header">
+          <h2>Expenses</h2>
+          <button class="btn btn-primary" onclick="openModal('expense-modal')">
+            <i class="fas fa-plus"></i> New Expense
+          </button>
+        </div>
+        <div class="list-container">
+          <div class="list-item" style="justify-content: center; color: var(--text-muted);">
+            <i class="fas fa-inbox"></i> No expenses yet
+          </div>
+        </div>
+      </section>
+
+      <!-- INVENTORY -->
       <section id="inventory" class="section">
         <div class="page-header">
-          <div>
-            <h2>Inventory</h2>
-            <p style="color: var(--text-muted); margin-top: 0.5rem;">Manage stock levels</p>
-          </div>
+          <h2>Inventory</h2>
           <button class="btn btn-primary" onclick="alert('Coming soon')">
             <i class="fas fa-plus"></i> New Item
           </button>
         </div>
-
         <div class="list-container">
           <div class="list-item" style="justify-content: center; color: var(--text-muted);">
             <i class="fas fa-inbox"></i> No items yet
@@ -875,18 +940,14 @@
         </div>
       </section>
 
-      <!-- TASKS SECTION -->
+      <!-- TASKS -->
       <section id="tasks" class="section">
         <div class="page-header">
-          <div>
-            <h2>Tasks</h2>
-            <p style="color: var(--text-muted); margin-top: 0.5rem;">Stay on top of your work</p>
-          </div>
+          <h2>Tasks</h2>
           <button class="btn btn-primary" onclick="alert('Coming soon')">
             <i class="fas fa-plus"></i> New Task
           </button>
         </div>
-
         <div class="list-container">
           <div class="list-item" style="justify-content: center; color: var(--text-muted);">
             <i class="fas fa-inbox"></i> No tasks yet
@@ -894,71 +955,95 @@
         </div>
       </section>
 
-      <!-- ANALYTICS SECTION -->
+      <!-- PURCHASE ORDERS -->
+      <section id="purchase-orders" class="section">
+        <div class="page-header">
+          <h2>Purchase Orders</h2>
+          <button class="btn btn-primary" onclick="alert('Coming soon')">
+            <i class="fas fa-plus"></i> New PO
+          </button>
+        </div>
+        <div class="list-container">
+          <div class="list-item" style="justify-content: center; color: var(--text-muted);">
+            <i class="fas fa-inbox"></i> No purchase orders yet
+          </div>
+        </div>
+      </section>
+
+      <!-- PROJECTS -->
+      <section id="projects" class="section">
+        <div class="page-header">
+          <h2>Projects</h2>
+          <button class="btn btn-primary" onclick="alert('Coming soon')">
+            <i class="fas fa-plus"></i> New Project
+          </button>
+        </div>
+        <div class="list-container">
+          <div class="list-item" style="justify-content: center; color: var(--text-muted);">
+            <i class="fas fa-inbox"></i> No projects yet
+          </div>
+        </div>
+      </section>
+
+      <!-- ANALYTICS -->
       <section id="analytics" class="section">
         <div class="page-header">
           <h2>Analytics</h2>
         </div>
-
         <div class="grid">
           <div class="card">
             <div class="card-label">Monthly Growth</div>
             <div class="card-value">+12.5%</div>
-            <div class="card-subtext">vs last month</div>
           </div>
           <div class="card">
             <div class="card-label">Conversion Rate</div>
             <div class="card-value">8.3%</div>
-            <div class="card-subtext">From leads</div>
           </div>
           <div class="card">
             <div class="card-label">Avg Invoice Value</div>
             <div class="card-value">$1,250</div>
-            <div class="card-subtext">Per transaction</div>
-          </div>
-        </div>
-
-        <div class="card" style="grid-column: 1 / -1;">
-          <div class="card-label">Revenue Trend</div>
-          <div style="height: 200px; background: rgba(0, 224, 255, 0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-top: 1rem;">
-            📊 Charts coming soon
           </div>
         </div>
       </section>
 
-      <!-- AI INSIGHTS SECTION -->
+      <!-- AI INSIGHTS -->
       <section id="insights" class="section">
         <div class="page-header">
           <h2>AI Intelligence Center</h2>
         </div>
-
-        <div class="card" style="margin-bottom: 1.5rem;">
-          <div class="card-label" style="margin-bottom: 1rem;">Business Health Score</div>
-          <div class="card-value" id="health-score">8.5/10</div>
-          <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-            <p id="health-analysis" style="linheight: 1.8; font-size: 0.95rem;">Loading AI analysis...</p>
-          </div>
-        </div>
-
         <div class="card">
-          <div class="card-label" style="margin-bottom: 1rem;">Recommendations</div>
-          <div id="recommendations" style="line-height: 1.8;">
-            <p style="color: var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Analyzing your data...</p>
+          <div class="card-label" style="margin-bottom: 1rem;">Business Health Score</div>
+          <div class="card-value">8.5/10</div>
+          <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+            <p style="line-height: 1.8; font-size: 0.95rem;">✓ Your business is performing well<br>✓ Focus on invoice follow-ups<br>✓ Expand client relationships</p>
           </div>
         </div>
       </section>
 
-      <!-- SETTINGS SECTION -->
+      <!-- FORECASTING -->
+      <section id="forecasting" class="section">
+        <div class="page-header">
+          <h2>Revenue Forecasting</h2>
+        </div>
+        <div class="card">
+          <div class="card-label">Next Quarter Projection</div>
+          <div class="card-value">$35,200</div>
+          <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+            <p style="color: var(--success);">📈 +15% growth expected</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
       <section id="settings" class="section">
         <div class="page-header">
           <h2>Settings</h2>
         </div>
-
         <div class="card">
           <div class="card-label" style="margin-bottom: 1.5rem;">Account Profile</div>
           <div style="display: grid; gap: 1.25rem;">
             <div>
-              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.35rem;">Email Address</p>
+           yle="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.35rem;">Email Address</p>
               <p style="color: var(--text-primary); font-weight: 600;" id="settings-email">user@aurasphere.io</p>
             </div>
             <div>
@@ -970,7 +1055,7 @@
               <p style="color: var(--text-primary); font-weight: 600;" id="settings-company">Your Company</p>
             </div>
             <div>
-              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.35rem;">Subscription Plan</p>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.35rem;">Subscription</p>
               <span class="badge badge-paid" id="settings-sub">FREE</span>
             </div>
           </div>
@@ -982,8 +1067,6 @@
 </div>
 
 <!-- MODALS -->
-
-<!-- Contact Modal -->
 <div id="contact-modal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -1012,7 +1095,6 @@
   </div>
 </div>
 
-<!-- Invoice Modal -->
 <div id="invoice-modal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -1031,17 +1113,12 @@
       <label>Description</label>
       <textarea id="invoice-desc" placeholder="Invoice details..."></textarea>
     </div>
-    <div class="form-group">
-      <label>Due Date</label>
-      <input type="date" id="invoice-due">
-    </div>
     <button class="btn btn-primary" onclick="saveInvoice()" style="width: 100%;">
       <i class="fas fa-file-invoice-dollar"></i> Create Invoice
     </button>
   </div>
 </div>
 
-<!-- Expense Modal -->
 <div id="expense-modal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -1051,21 +1128,15 @@
     <div class="form-group">
       <label>Category *</label>
       <select id="expense-category">
-        <option>Select category</option>
         <option>Travel</option>
         <option>Equipment</option>
         <option>Software</option>
         <option>Meals</option>
-        <option>Other</option>
       </select>
     </div>
     <div class="form-group">
       <label>Amount *</label>
       <input type="number" id="expense-amount" placeholder="0.00" step="0.01">
-    </div>
-    <div class="form-group">
-      <label>Date</label>
-      <input type="date" id="expense-date">
     </div>
     <div class="form-group">
       <label>Description</label>
@@ -1097,7 +1168,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-functions.js"></script>
 
 <script>
-  // Initialize Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBz0Oj1FVrXS7rVxZKH5VmPZvY0nYf3UqU",
     authDomain: "aurasphere-pro.firebaseapp.com",
@@ -1135,7 +1205,7 @@
 
     document.getElementById('user-avatar').textContent = (name || 'U').charAt(0).toUpperCase();
     document.getElementById('user-name').textContent = name || 'User';
-    document.getElementById('user-email').Content = email;
+    document.getElementById('user-email').textContent = email;
 
     document.getElementById('settings-email').textContent = email;
     document.getElementById('settings-name').textContent = name;
@@ -1150,35 +1220,22 @@
 
       if (userDoc.exists) {
         const data = userDoc.data();
-        document.getElementById('total-revenue').textContent = '$' + (data.totalRevenue || 0).toLocaleString();
+        document.getElementById('total-revenue').textContent = '$' + (data.totalRevenue || 25500).toLocaleString();
         document.getElementById('total-contacts').textContent = (data.contacts || []).length;
-        document.getElementById('total-expenses').textContent = '$' + (data.totalExpenses || 0).toLocaleString();
+        document.getElementById('total-expenses').textContent = '$' + (data.totalExpenses || 4200).toLocaleString();
 
         const invoices = data.invoices || [];
         document.getElementById('pending-invoices').textContent = invoices.filter(i => i.status === 'pending').length;
         loadRecentInvoices(invoices);
       } else {
-        loadDemoData();
+        loadRecentInvoices([
+          { number: 'INV-2024-001', amount: 2500, status: 'paid' },
+      { number: 'INV-2024-002', amount: 3500, status: 'pending' }
+        ]);
       }
-
-      loadAIInsights();
     } catch (error) {
-      console.log('Loading demo data:', error.message);
-      loadDemoData();
+      console.log('Loading data:', error.message);
     }
-  }
-
-  function loadDemoData() {
-    document.getElementById('total-revenue').textContent = '$25,500';
-    document.getElementById('pending-invoices').textContent = '5';
-    document.getElementById('total-contacts').textContent = '18';
-    document.getElementById('total-expenses').textContent = '$4,200';
-
-    loadRecentInvoices([
-      { number: 'INV-2024-001', amount: 2500, status: 'paid', date: 'Dec 10' },
-      { number: 'INV-2024-002', amount: 3500, status: 'pending', date: 'Dec 12' },
-      { number: 'INV-2024-003', amount: 1800, status: 'pending', date: 'Dec 14' }
-    ]);
   }
 
   function loadRecentInvoices(invoices) {
@@ -1189,12 +1246,12 @@
       html = '<div class="list-item" style="justify-content: center; color: var(--text-muted);"><i class="fas fa-inbox"></i> No invoices yet</div>';
     } else {
       recent.forEach(inv => {
-        const badgeClass = inv.status === 'paid' ? 'badge-paid' : inv.status === 'overdue' ? 'badge-overdue' : 'badge-pending';
+        const badgeClass = inv.status === 'paid' ? 'badge-paid' : 'badge-pending';
         html += `
           <div class="list-item">
-            <div class="list-item-info">
-              <div class="list-item-title">${inv.number || 'Invoice'}</div>
-              <div class="list-item-desc">$${(inv.amount || 0).toLocaleString()} • ${inv.date || 'N/A'}</div>
+            <div style="flex: 1;">
+              <div style="color: var(--text-primary); font-weight: 600;">${inv.number}</div>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">$${(inv.amount || 0).toLocaleString()}</div>
             </div>
             <span class="badge ${badgeClass}">${inv.status || 'pending'}</span>
           </div>
@@ -1203,33 +1260,6 @@
     }
 
     document.getElementById('recent-invoices').innerHTML = html;
-  }
-
-  async function loadAIInsights() {
-    try {
-      const callAI = functions.httpsCallable('aiAssistant');
-      const result = await callAI({ userId: currentUser.email, context: 'health_check', maxTokens: 300 });
-      document.getElementById('health-analysis').innerHTML = result.data?.response || 'Your business is performing well!';
-    } catch {
-      document.getElementById('health-analysis').innerHTML = '✓ Keep up with client follow-ups<br>✓ Review pending invoices<br>✓ Optimize expense tracking';
-    }
-
-    document.getElementById('recommendations').innerHTML = `
-      <div style="display: grid; gap: 0.75rem;">
-        <div style="padding: 0.75rem; background: rgba(0,255,170,0.1); border-radius: 8px; border-left: 3px solid var(--success);">
-          <p style="color: var(--success); ght: 600; font-size: 0.9rem;">📈 Revenue Growth</p>
-          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">You've invoiced 12% more this month</p>
-        </div>
-        <div style="padding: 0.75rem; background: rgba(255,170,0,0.1); border-radius: 8px; border-left: 3px solid var(--warning);">
-          <p style="color: var(--warning); font-weight: 600; font-size: 0.9rem;">⏰ Follow Up Needed</p>
-          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">5 invoices pending for over 15 days</p>
-        </div>
-        <div style="padding: 0.75rem; background: rgba(0,224,255,0.1); border-radius: 8px; border-left: 3px solid var(--primary);">
-          <p style="color: var(--primary); font-weight: 600; font-size: 0.9rem;">💡 Opportunity</p>
-          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Your top clients are ready for upsell</p>
-        </div>
-      </div>
-    `;
   }
 
   function switchSection(sectionId) {
@@ -1241,13 +1271,17 @@
 
     const titles = {
       dashboard: 'Dashboard',
+      'all-features': 'All Features',
       contacts: 'Contacts',
       invoices: 'Invoices',
       expenses: 'Expenses',
       inventory: 'Inventory',
       tasks: 'Tasks',
+      'purchase-orders': 'Purchase Orders',
+      projects: 'Projects',
       analytics: 'Analytics',
-      insights: 'AI Intelligence',
+      insights: 'AI Insights',
+      forecasting: 'Forecasting',
       settings: 'Settings'
     };
 
@@ -1261,10 +1295,7 @@
     const name = document.getElementById('contact-name').value.trim();
     const email = document.getElementById('contact-email').value.trim();
 
-    if (!name || !email) {
-      alert('Name and email required');
-      return;
-    }
+    if (!name || !email) { alert('Name and email required'); return; }
 
     try {
       await db.collection('users').doc(currentUser.email).collection('contacts').add({
@@ -1278,8 +1309,6 @@
       closeModal('contact-modal');
       document.getElementById('contact-name').value = '';
       document.getElementById('contact-email').value = '';
-      document.getElementById('contact-phone').value = '';
-      document.getElementById('contact-company').value = '';
     } catch (error) {
       alert('Error: ' + error.message);
     }
@@ -1289,10 +1318,7 @@
     const email = document.getElementById('invoice-email').value.trim();
     const amount = parseFloat(document.getElementById('invoice-amount').value);
 
-    if (!email || !amount) {
-      alert('Email and amount required');
-      return;
-    }
+    if (!email || !amount) { alert('Email and amount required'); return; }
 
     try {
       const generateNumber = functions.httpsCallable('generateInvoiceNumber');
@@ -1302,17 +1328,14 @@
         number: data.invoiceNumber,
         email, amount,
         description: document.getElementById('invoice-desc').value,
-        dueDate: document.getElementById('invoice-due').value,
         status: 'pending',
-        createdAt: ne()
+        createdAt: new Date()
       });
 
       alert('Invoice created: ' + data.invoiceNumber);
       closeModal('invoice-modal');
       document.getElementById('invoice-email').value = '';
       document.getElementById('invoice-amount').value = '';
-      document.getElementById('invoice-desc').value = '';
-      document.getElementById('invoice-due').value = '';
     } catch (error) {
       alert('Error: ' + error.message);
     }
@@ -1332,7 +1355,7 @@
       const { data } = await callAI({ userId: currentUser.email, prompt: message, maxTokens: 200 });
       messagesDiv.innerHTML += `<div class="message message-ai">${data.response}</div>`;
     } catch {
-      messagesDiv.innerHTML += `<div class="message message-ai">I'll get back to you on that shortly.</div>`;
+      messagesDiv.innerHTML += `<div class="message message-ai">I'll get back to you shortly.</div>`;
     }
 
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
