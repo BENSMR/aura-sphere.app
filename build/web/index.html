@@ -98,7 +98,6 @@
       text-decoration: none;
       color: inherit;
       transition: transform 0.2s;
-      cursor: pointer;
     }
     .app-card:hover {
       transform: translateY(-4px);
@@ -116,6 +115,7 @@
       margin-bottom: 1.2rem;
       font-size: 0.88rem;
     }
+    /* 🔐 AuraShield: electric blue + gold + green */
     .app-badge.shield {
       background: linear-gradient(135deg, var(--accent), var(--gold), var(--green));
     }
@@ -133,27 +133,6 @@
       font-size: 0.97rem;
       color: #a0a0d0;
       font-weight: 600;
-      margin-bottom: 1rem;
-    }
-    .platforms {
-      display: flex;
-      justify-content: center;
-      gap: 0.6rem;
-      margin: 1.2rem 0;
-      flex-wrap: wrap;
-    }
-    .platform {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: var(--light-gray);
-      padding: 0.3rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.78rem;
-    }
-    .signin-note {
-      font-size: 0.85rem;
-      color: #888;
-      margin-top: 0.8rem;
     }
 
     .pricing-summary {
@@ -164,12 +143,6 @@
       border: 1px solid rgba(0,224,255,0.1);
       text-align: center;
     }
-    
-    .pricing-summary h2 {
-      color: var(--white);
-      margin-bottom: 1rem;
-      font-size: 1.8rem;
-    }
 
     footer {
       text-align: center;
@@ -178,54 +151,14 @@
       color: #777;
       font-size: 0.92rem;
     }
-    .legal-links {
-      margin: 1.5rem 0;
-    }
     .legal-links a {
       color: var(--accent);
       text-decoration: none;
       margin: 0 12px;
-      transition: color 0.3s;
-    }
-    .legal-links a:hover {
-      color: var(--green);
     }
     .company-info {
       margin-top: 1.2rem;
       color: #888;
-    }
-    
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-    footer a:hover {
-      color: var(--green);
-    }
-
-    .crm-link {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 0.6rem 1.2rem;
-      background: linear-gradient(135deg, var(--accent), var(--green));
-      color: var(--black);
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: transform 0.2s;
-    }
-    .crm-link:hover {
-      transform: scale(1.05);
-    }
-
-    @media (max-width: 768px) {
-      .hero h1 { font-size: 2rem; }
-      .hero p { font-size: 1rem; }
-      .apps-grid { grid-template-columns: 1fr; }
-      .logo-text { font-size: 1.3rem; }
-      header .header-content { flex-direction: column; gap: 1rem; }
-      section { padding: 4rem 0; }
     }
   </style>
 </head>
@@ -251,78 +184,36 @@
   <section class="container">
     <div class="apps-grid">
       
-      <!-- CRM Dashboard -->
-      <div class="app-card">
+      <!-- CRM Dashboard (ONLY FUNCTIONAL LINK) -->
+      <a href="/crm.html" class="app-card">
         <div class="app-badge" style="background: linear-gradient(135deg, var(--gold), #ffaa00);">CORE</div>
         <h3>CRM Dashboard</h3>
-        <p>Your command center: contacts, tasks, wallet, invoices, expenses, and ecosystem launchpad.</p>
+        <p>Your command center: contacts, tasks, wallet, and ecosystem launchpad.</p>
         <div class="pricing">$9.99–$29/month<br><small>(30% off annual)</small></div>
-        <div class="platforms">
-          <span class="platform">iOS</span>
-          <span class="platform">Android</span>
-          <span class="platform">Windows</span>
-          <span class="platform">macOS</span>
-          <span class="platform">Web</span>
-        </div>
-        <a href="/crm.html" class="crm-link">Launch CRM Dashboard</a>
-        <p class="signin-note">Sign in with your Aurasphere account</p>
-        <p style="font-size:0.88rem; color:#888; margin-top:0.5rem;">
-          ✅ All 8 features always visible
-        </p>
-      </div>
+      </a>
 
       <!-- AuraPost -->
       <div class="app-card">
         <div class="app-badge" style="background: linear-gradient(135deg, var(--green), #00cc88);">MEDIA</div>
         <h3>AuraPost</h3>
-        <p>Generate authentic social content — client-side, zero tracking, privacy-first.</p>
+        <p>Generate authentic social content — client-side, zero tracking.</p>
         <div class="pricing">$6/month<br><small>or $29/year</small></div>
-        <div class="platforms">
-          <span class="platform">iOS</span>
-          <span class="platform">Android</span>
-          <span class="platform">Windows</span>
-          <span class="platform">macOS</span>
-        </div>
-        <p class="signin-note">Sign in with your Aurasphere account</p>
-        <p style="font-size:0.88rem; color:#888; margin-top:0.5rem;">
-          ✅ Coming Soon
-        </p>
       </div>
 
       <!-- AuraLink -->
       <div class="app-card">
         <div class="app-badge" style="background: linear-gradient(135deg, var(--accent), #00aaff);">NETWORK</div>
         <h3>AuraLink</h3>
-        <p>Sovereign professional networking — no algorithm, no data harvesting, you own your network.</p>
+        <p>Sovereign professional networking — no algorithm, no data harvesting.</p>
         <div class="pricing">$5/month<br><small>or $20/year</small></div>
-        <div class="platforms">
-          <span class="platform">iOS</span>
-          <span class="platform">Android</span>
-          <span class="platform">Windows</span>
-          <span class="platform">macOS</span>
-        </div>
-        <p class="signin-note">Sign in with your Aurasphere account</p>
-        <p style="font-size:0.88rem; color:#888; margin-top:0.5rem;">
-          ✅ Coming Soon
-        </p>
       </div>
 
       <!-- AuraShield -->
       <div class="app-card">
         <div class="app-badge shield">SHIELD</div>
         <h3>AuraShield</h3>
-        <p>Proactive AI security agent — works offline, guards your sovereignty, protects your privacy.</p>
+        <p>Proactive AI security agent — works offline, guards your sovereignty.</p>
         <div class="pricing">$5/month<br><small>or $20/year</small></div>
-        <div class="platforms">
-          <span class="platform">iOS</span>
-          <span class="platform">Android</span>
-          <span class="platform">Windows</span>
-          <span class="platform">macOS</span>
-        </div>
-        <p class="signin-note">Sign in with your Aurasphere account</p>
-        <p style="font-size:0.88rem; color:#8m;">
-          ✅ Coming Soon
-        </p>
       </div>
     </div>
 
@@ -350,10 +241,9 @@
       <p>© 2025 Aurasphere — Sovereign Digital Life</p>
       
       <div class="legal-links">
-        <a href="/support.html">Support</a>
-        <a href="/privacy.html">Privacy</a>
-        <a href="/crm.html">Dashboard</a>
-        <a href="/terms.html">Terms</a>
+        <a href="/support">Support</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
       </div>
 
       <div class="company-info">
@@ -361,13 +251,9 @@
       </div>
       
       <p style="margin-top: 1.2rem;">
-        Contact: <a href="mailto:hello@aura-sphere.app">hello@aura-sphere.app</a>
+        Contact: <a href="mailto:hello@aura-sphere.app" style="color:var(--accent); text-decoration:none;">hello@aura-sphere.app</a>
       </p>
     </div>
   </footer>
-
-  <!-- Language Support -->
-  <script src="/js/translations.js"></script>
-  <script src="/js/language-switcher.js"></script>
 </body>
 </html>
