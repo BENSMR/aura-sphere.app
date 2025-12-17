@@ -562,11 +562,11 @@
       }
 
       if (password !== confirmPass) {
-        document.getElementById('error-confirm')ue;
+      if (password !== confirmPass) {
+        document.getElementById('error-confirm').classList.add('show');
+        hasErrors = true;
       }
 
-      if (!terms) {
-        document.getElementById('error-terms').classList.add('show');
         hasErrors = true;
       }
 
