@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - AuraSphere Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        nav {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav > div {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav h1 {
+            color: #fff;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        nav h1::before {
+            content: "✨";
+            font-size: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .page-header h2 {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .settings-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .settings-card h3 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-section {
+            margin-bottom: 2rem;
+        }
+
+        .settings-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        label::before {
+            content: "→ ";
+            color: #667eea;
+            margin-right: 0.25rem;
+        }
+
+        select, input[type="text"], input[type="email"] {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            min-width: 200px;
+        }
+
+        #lang-select {
+            direction: ltr;
+        }
+
+        .setting-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-top: 0.25rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-save {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .divider {
+            height: 1px;
+            background: #eee;
+            margin: 2rem 0;
+        }
+
+        .help-text {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .page-header h2 {
+                font-size: 1.8rem;
+            }
+
+            .container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            select {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div>
+            <h1>AuraSphere Pro</h1>
+            <div id="language-switcher"></div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h2 data-i18n="settings">Settings</h2>
+            <p>Manage your preferences and application settings</p>
+        </div>
+
+        <div id="status-message" class="status-message"></div>
+
+        <form id="settings-form">
+            <!-- Language Settings -->
+            <div class="settings-card">
+                <h3>🌍 Language & Localization</h3>
+                
+                <div class="settings-section">
+                    <div class="setting-item">
+                        <label for="lang-select" data-i18n="language">Language</label>
+                        <select id="lang-select">
+                            <option value="en">🇬🇧 English</option>
+                            <option value="bg">🇧🇬 Български</option>
+                            <option value="fr">🇫🇷 Français</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="it">🇮🇹 Italiano</option>
+                            <option value="pt">🇵🇹 Português</option>
+                            <option value="nl">🇳🇱 Nederlands</option>
+                            <option value="pl">🇵🇱 Polski</option>
+                            <option value="sv">🇸🇪 Svenska</option>
+                            <option value="da">🇩🇰 Dansk</option>
+                            <option value="fi">🇫🇮 Suomi</option>
+                            <option value="el">🇬🇷 Ελληνικά</option>
+                            <option value="cs">🇨🇿 Čeština</option>
+                            <option value="hu">🇭🇺 Magyar</option>
+                            <option value="ro">🇷🇴 Română</option>
+                            <option value="ar">🇸🇦 العربية</option>
+                            <option value="zh">🇨🇳 中文</option>
+                            <option value="ru">🇷🇺 Русский</option>
+                        </select>
+                        <p class="setting-description">Choose your preferred language for the application interface</p>
+                    </div>
+
+                    <div class="help-text">
+                        ℹ️ Your language preference is saved locally and applied immediately across all pages.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appearance Settings -->
+            <div class="settings-card">
+                <h3>🎨 Appearance</h3>
+                
+                <div class="settings-section">
+                    <div class="setting-item">
+                        <label for="theme-select" data-i18n="dark_mode">Dark Mode</label>
+                        <select id="theme-select">
+                            <option value="light">☀️ Light (Default)</option>
+                            <option value="dark">🌙 Dark</option>
+                            <option value="auto">🔄 Auto (System)</option>
+                        </select>
+                        <p class="setting-description">Set your preferred color scheme</p>
+                    </div>
+
+                    <div class="setting-item">
+                        <label for="font-size-select">Font Size</label>
+                        <select id="font-size-select">
+                            <option value="small">Small (12px)</option>
+                            <option value="default" selected>Default (14px)</option>
+                            <option value="large">Large (16px)</option>
+                            <option value="xlarge">Extra Large (18px)</option>
+                        </select>
+                        <p class="setting-description">Adjust text size for better readability</p>
+                    </div>
+
+                    <div class="help-text">
+                        ℹ️ Appearance settings are stored locally and persist across sessions.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="settings-card">
+                <h3>🔔 Notifications</h3>
+                
+                <div class="settings-section">
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="email-notifications" checked>
+                            Enable Email Notifications
+                        </label>
+                        <p class="setting-description">Receive important updates via email</p>
+                    </div>
+
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="browser-notifications" checked>
+                            Enable Browser Notifications
+                        </label>
+                        <p class="setting-description">Get real-time alerts in your browser</p>
+                    </div>
+
+                    <div class="help-text">
+                        ℹ️ You can manage notification frequency and preferences in your account settings.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="settings-card">
+                <h3>🔒 Privacy & Data</h3>
+                
+                <div class="settings-section">
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="analytics" checked>
+                            Allow Analytics
+                        </label>
+                        <p class="setting-description">Help us improve AuraSphere by sharing usage data</p>
+                    </div>
+
+                    <div class="help-text">
+                        ℹ️ We respect your privacy. No personal data is shared without consent.
+                        <br><a href="/privacy" style="color: #667eea;">Read our Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn-save">💾 Save Settings</button>
+                <button type="reset" class="btn-reset">↺ Reset to Defaults</button>
+            </div>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 AuraSphere Pro. Enterprise-grade business management platform.</p>
+        <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.9rem;">
+            <a href="/privacy" style="color: #00d4ff;">Privacy Policy</a> | 
+            <a href="/terms" style="color: #00d4ff;">Terms of Service</a> | 
+            <a href="/support" style="color: #00d4ff;">Support</a>
+        </p>
+    </footer>
+
+    <!-- Load translation and language switcher scripts -->
+    <script src="/js/translations.js"></script>
+    <script src="/js/language-switcher.js"></script>
+
+    <script>
+        // Settings page functionality
+        const form = document.getElementById('settings-form');
+        const statusMessage = document.getElementById('status-message');
+        const langSelect = document.getElementById('lang-select');
+        const themeSelect = document.getElementById('theme-select');
+        const fontSizeSelect = document.getElementById('font-size-select');
+        const emailNotifications = document.getElementById('email-notifications');
+        const browserNotifications = document.getElementById('browser-notifications');
+        const analyticsCheckbox = document.getElementById('analytics');
+
+        // Load saved settings on page load
+        function loadSettings() {
+            const theme = localStorage.getItem('aura-sphere-theme') || 'light';
+            const fontSize = localStorage.getItem('aura-sphere-font-size') || 'default';
+            const emailNotifs = localStorage.getItem('aura-sphere-email-notifs') !== 'false';
+            const browserNotifs = localStorage.getItem('aura-sphere-browser-notifs') !== 'false';
+            const analytics = localStorage.getItem('aura-sphere-analytics') !== 'false';
+
+            themeSelect.value = theme;
+            fontSizeSelect.value = fontSize;
+            emailNotifications.checked = emailNotifs;
+            browserNotifications.checked = browserNotifs;
+            analyticsCheckbox.checked = analytics;
+
+            applyTheme(theme);
+            applyFontSize(fontSize);
+        }
+
+        function applyTheme(theme) {
+            document.body.style.background = theme === 'dark' 
+                ? '#1a1a1a'
+                : theme === 'light'
+                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        }
+
+        function applyFontSize(size) {
+            const sizes = {
+                'small': '12px',
+                'default': '14px',
+                'large': '16px',
+                'xlarge': '18px'
+            };
+            document.body.style.fontSize = sizes[size];
+        }
+
+        // Save settings on form submit
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Save preferences
+            localStorage.setItem('aura-sphere-theme', themeSelect.value);
+            localStorage.setItem('aura-sphere-font-size', fontSizeSelect.value);
+            localStorage.setItem('aura-sphere-email-notifs', emailNotifications.checked);
+            localStorage.setItem('aura-sphere-browser-notifs', browserNotifications.checked);
+            localStorage.setItem('aura-sphere-analytics', analyticsCheckbox.checked);
+
+            // Apply changes
+            applyTheme(themeSelect.value);
+            applyFontSize(fontSizeSelect.value);
+
+            // Show success message
+            showStatusMessage('✓ Settings saved successfully!', 'success');
+        });
+
+        // Handle theme change
+        themeSelect.addEventListener('change', (e) => {
+            applyTheme(e.target.value);
+        });
+
+        // Handle font size change
+        fontSizeSelect.addEventListener('change', (e) => {
+            applyFontSize(e.target.value);
+        });
+
+        function showStatusMessage(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            
+            setTimeout(() => {
+                statusMessage.className = 'status-message';
+            }, 3000);
+        }
+
+        // Load settings on page load
+        document.addEventListener('DOMContentLoaded', loadSettings);
+    </script>
+</body>
+</html>

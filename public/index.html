@@ -29,6 +29,15 @@
             z-index: 1000;
         }
 
+        nav > div {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
         nav h1 {
             color: #fff;
             font-size: 1.5rem;
@@ -40,6 +49,23 @@
         nav h1::before {
             content: "✨";
             font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #00d4ff;
         }
 
         .container {
@@ -261,9 +287,12 @@
 </head>
 <body>
     <nav>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
             <h1>AuraSphere Pro</h1>
-            <div id="language-switcher"></div>
+            <div class="nav-links">
+                <a href="/docs/settings.html">⚙️ Settings</a>
+                <div id="language-switcher"></div>
+            </div>
         </div>
     </nav>
 
