@@ -34,6 +34,18 @@
       max-width: 420px;
       text-align: center;
     }
+    .back-link {
+      display: none;
+      margin-bottom: 1.5rem;
+    }
+    .back-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .back-link a:hover {
+      text-decoration: underline;
+    }
     .logo {
       display: flex;
       align-items: center;
@@ -56,6 +68,11 @@
       color: var(--white);
       font-size: 1.8rem;
       margin-bottom: 0.4rem;
+    }
+    h2 {
+      color: var(--white);
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
     }
     .subtitle {
       color: #b0b0d0;
@@ -95,7 +112,7 @@
       color: var(--white);
       font-size: 0.95rem;
     }
-    input {
+    input, select {
       width: 100%;
       padding: 0.75rem;
       background: rgba(0,10,15,0.5);
@@ -103,26 +120,18 @@
       border-radius: 8px;
       color: var(--white);
       font-size: 1rem;
-      transition: all 0.3s;
     }
-    input:focus {
+    input:focus, select:focus {
       outline: none;
       border-color: var(--accent);
-      background: rgba(0,10,15,0.8);
-    }
-    input::placeholder {
-      color: #666;
     }
     .password-toggle {
       position: absolute;
       right: 12px;
-      top: 37px;
+      top: 42px;
       cursor: pointer;
-      color: #888;
-      transition: color 0.3s;
-    }
-    .password-toggle:hover {
       color: var(--accent);
+      font-size: 1.1rem;
     }
     .btn {
       width: 100%;
@@ -133,7 +142,7 @@
       font-size: 1rem;
       cursor: pointer;
       margin-top: 0.5rem;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), var(--gold));
@@ -141,7 +150,7 @@
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(0,224,255,0.3);
+      box-shadow: 0 4px 12px rgba(0,224,255,0.3);
     }
     .btn-outline {
       background: transparent;
@@ -174,10 +183,6 @@
     .footer-links a {
       color: var(--accent);
       text-decoration: none;
-      margin: 0 0.5rem;
-    }
-    .footer-links a:hover {
-      text-decoration: underline;
     }
     .demo-link {
       display: inline-block;
@@ -185,49 +190,45 @@
       color: var(--accent);
       text-decoration: none;
       font-size: 0.92rem;
-      transition: all 0.3s;
+      cursor: pointer;
     }
-    .demo-link:hover {
-      text-decoration: underline;
-    }
-    .back-link {
-      text-align: left;
-      margin-bottom: 1rem;
-    }
-    .back-link a {
+    .forgot-link {
+      display: inline-block;
+      margin-top: 0.8rem;
       color: var(--accent);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      cursor: pointer;
     }
-    .back-link a:hover {
+    .forgot-link:hover, .demo-link:hover {
       text-decoration: underline;
     }
 
-    /* Signup Modal */
+    /* Modal Styles */
     .modal {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
+      width: 100%;
+      height: 100%;
       background: rgba(5,5,15,0.95);
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
       z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
     }
     .modal.show {
       display: flex;
     }
     .modal-content {
-      background: rgba(10,10,20,0.95);
+      background: rgba(10,10,20,0.9);
       border: 1px solid rgba(0,224,255,0.15);
       border-radius: 20px;
       padding: 2.5rem;
-      max-width: 420px;
       width: 100%;
-      max-height: 90vh;
+      max-width: 420px;
+      max-height: 85vh;
       overflow-y: auto;
       position: relative;
     }
@@ -237,64 +238,29 @@
       right: 1.5rem;
       background: none;
       border: none;
-      color: #888;
-      font-size: 1.5rem;
+      color: var(--accent);
+      font-size: 1.8rem;
       cursor: pointer;
-      transition: color 0.3s;
+      width: 40px;
+      height: 40px;
     }
     .modal-close:hover {
-      color: var(--accent);
-    }
-    .modal h2 {
-      color: var(--white);
-      font-size: 1.6rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
+      color: var(--gold);
     }
     .field-error {
       display: none;
       color: #ff5588;
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       margin-top: 0.3rem;
     }
     .field-error.show {
       display: block;
     }
     .password-strength {
-      display: none;
-      margin-top: 0.3rem;
-      padding: 0.3rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-    }
-    .password-strength.show {
-      display: block;
-    }
-    .password-strength.weak {
-      background: rgba(255,85,136,0.2);
-      color: #ff5588;
-    }
-    .password-strength.fair {
-      background: rgba(255,215,0,0.2);
-      color: var(--gold);
-    }
-    .password-strength.strong {
-      background: rgba(0,255,170,0.2);
-      color: var(--green);
-    }
-    select {
-      width: 100%;
-      padding: 0.75rem;
-      background: rgba(0,10,15,0.5);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      color: var(--white);
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    select:focus {
-      outline: none;
-      border-color: var(--accent);
+      height: 4px;
+      border-radius: 2px;
+      margin-top: 0.5rem;
+      background: rgba(255,255,255,0.1);
     }
   </style>
 </head>
@@ -302,7 +268,7 @@
 
   <div class="login-container">
     <div class="back-link" id="backLink" style="display: none;">
-      <a href="#" onclick="closeSignup()">← Back to login</a>
+      <a href="#" onclick="backToLogin()">← Back to login</a>
     </div>
 
     <div id="loginView">
@@ -316,7 +282,7 @@
 
       <div id="alert" class="alert"></div>
 
-      <form id="loginForm">
+      <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label for="email">Email Address</label>
           <input type="email" id="email" placeholder="your@email.com" required>
@@ -333,9 +299,9 @@
         <span>or</span>
       </div>
 
-      <button id="createAccountBtn" class="btn btn-outline">Create Account</button>
-
-      <a href="#" onclick="loadDemo()" class="demo-link">→ Try demo account</a>
+      <button type="button" class="btn btn-outline" onclick="openSignup()">Create Account</button>
+      <a onclick="loadDemo()" class="demo-link">→ Try demo account</a>
+      <a onclick="openForgotPassword()" class="forgot-link">Forgot password?</a>
 
       <div class="footer-links">
         <a href="/support">Support</a> • 
@@ -351,7 +317,7 @@
       <button type="button" class="modal-close" onclick="closeSignup()">&times;</button>
       <h2>Create Account</h2>
 
-      <form id="signupForm">
+      <form id="signupForm" onsubmit="handleSignup(event)">
         <div class="form-group">
           <label for="signup-name">Full Name</label>
           <input type="text" id="signup-name" placeholder="John Doe" required>
@@ -376,7 +342,8 @@
         </div>
 
         <div class="form-group">
-          <label for="signup-industry">Industry</labsignup-industry" required>
+          <label for="signup-industry">Industry</label>
+          <select id="signup-industry" required>
             <option value="">Select an industry</option>
             <option value="technology">Technology</option>
             <option value="finance">Finance</option>
@@ -392,7 +359,6 @@
         <div class="form-group">
           <label for="signup-password">Password (min 8 chars)</label>
           <input type="password" id="signup-password" placeholder="••••••••" minlength="8" required onkeyup="checkPasswordStrength()">
-          <i class="fas fa-eye password-toggle" onclick="toggleSignupPassword('signup-password')"></i>
           <div class="password-strength" id="password-strength"></div>
           <div class="field-error" id="error-password">Password must be 8+ characters</div>
         </div>
@@ -407,7 +373,7 @@
         <div class="form-group">
           <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: normal;">
             <input type="checkbox" id="signup-terms" required>
-            I agree to the <a href="/terms/" target="_blank" style="color: var(--accent);">Terms of Service</a>
+            I agree to the <a href="/terms" target="_blank" style="color: var(--accent); text-decoration: none;">Terms of Service</a>
           </label>
           <div class="field-error" id="error-terms">You must accept the terms</div>
         </div>
@@ -417,100 +383,89 @@
     </div>
   </div>
 
+  <!-- Forgot Password Modal -->
+  <div id="forgotModal" class="modal">
+    <div class="modal-content">
+      <button type="button" class="modal-close" onclick="closeForgotPassword()">&times;</button>
+      <h2>Reset Password</h2>
+
+      <form id="forgotForm" onsubmit="handleForgotPassword(event)">
+        <p style="color: #b0b0d0; margin-bottom: 1.5rem; font-size: 0.95rem;">
+          Enter your email address and we'll send you a password reset link.
+        </p>
+
+        <div class="form-group">
+          <label for="forgot-email">Email Address</label>
+          <input type="email" id="forgot-email" placeholder="your@email.c-forgot-email">Valid email is required</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Send Reset Link</button>
+      </form>
+
+      <div style="text-align: center; margin-top: 1.5rem;">
+        <p style="color: #b0b0d0; font-size: 0.9rem;">
+          Remember your password? <a href="#" onclick="closeForgotPassword()" style="color: var(--accent); text-decoration: none;">Back to login</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
   <script>
-    function getRegisteredUsers() {
+    function getUsers() {
       try {
-        const data = localStorage.getItem('registered_users');
-        return data ? JSON.parse(data) : {};
+        return JSON.parse(localStorage.getItem('registered_users')) || {};
       } catch (e) {
         return {};
       }
     }
 
-    function saveRegisteredUsers(users) {
-      try {
-        localStorage.setItem('registered_users', JSON.stringify(users));
-      } catch (e) {
-        console.error('Error saving users:', e);
-      }
+    function saveUsers(users) {
+      localStorage.setItem('registered_users', JSON.stringify(users));
     }
 
-    function showAlert(message, type) {
+    function showAlert(msg, type) {
       const alert = document.getElementById('alert');
       const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
-      alert.innerHTML = `<i class="fas fa-${icon}"></i> <span>${message}</span>`;
+      alert.innerHTML = `<i class="fas fa-${icon}"></i> <span>${msg}</span>`;
       alert.className = `alert show ${type}`;
-      setTimeout(() => {
-        alert.classList.remove('show');
-      }, 4000);
+      setTimeout(() => alert.classList.remove('show'), 4000);
     }
 
     function validateEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
     }
 
     function togglePassword() {
-      const input = document.getElementById('password');
-      const icon = event.currentTarget;
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
+      const field = document.getElementById('password');
+      field.type = field.type === 'password' ? 'text' : 'password';
     }
 
     function toggleSignupPassword(inputId) {
-      const input = document.getElementById(inputId);
-      const icon = event.currentTarget;
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
+      const field = document.getElementById(inputId);
+      field.type = field.type === 'password' ? 'text' : 'password';
     }
 
     function checkPasswordStrength() {
       const password = document.getElementById('signup-password').value;
-      const strengthBar = document.getElementById('password-strength');
-
-      if (password.length === 0) {
-        strengthBar.classList.remove('show');
-        return;
-      }
-
-      strengthBar.classList.add('show');
-      let strength = 0;
-      if (password.length >= 8) strength++;
-      if (password.length >= 12) strength++;
-      if (/[A-Z]/.test(password)) strength++;
-      if (/[0-9]/.test(password)) strength++;
-      if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-      if (strength <= 2) {
-        strengthBar.className = 'password-strength weak show';
-        strengthBar.textContent = '⚠️ Weak';
-      } else if (strength <= 3) {
-        strengthBar.className = 'password-strength fair show';
-        strengthBar.textContent = '⚡ Fair';
-      } else {
-        strengthBar.className = 'password-strength strong show';
-        strengthBar.textContent = '✓ Strong';
-      }
+      const strength = document.getElementById('password-strength');
+      let level = 0;
+      
+      if (password.length >= 8) level++;
+      if (/[A-Z]/.test(password)) level++;
+      if (/[0-9]/.test(password)) level++;
+      if (/[^a-zA-Z0-9]/.test(password)) level++;
+      if (password.length >= 12) level++;
+      
+      const colors = ['', '#ff5588', '#ffaa00', '#ffdd00', '#00ff88', '#00ffaa'];
+      strength.style.background = colors[level];
     }
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
+    function handleLogin(event) {
+      event.preventDefault();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      const users = getRegisteredUsers();
+      const users = getUsers();
 
       if (users[email] && users[email].password === password) {
         const user = users[email];
@@ -518,26 +473,90 @@
         localStorage.setItem('user_email', email);
         localStorage.setItem('user_name', user.name);
         localStorage.setItem('user_company', user.company);
-        localStorage.setItem('user_phone', user.phone || '');
-        localStorage.setItem('user_industry', user.industry || '');
+        localStorage.setItem('user_phone', user.phone);
+        localStorage.setItem('user_industry', user.industry);
         localStorage.setItem('user_subscription', user.subscription);
         localStorage.setItem('user_created_at', user.created_at);
-        
         showAlert('✓ Login successful!', 'success');
         setTimeout(() => window.location.href = '/crm.html', 1000);
       } else {
         showAlert('✕ Invalid email or password', 'error');
       }
-    });
+    }
 
-    document.getElementById('createAccountBtn').addEventListener('click', function() {
-      document.getElementById('signupModal').classList.add('show');
+    function openSignup() {
       document.getElementById('backLink').style.display = 'block';
-    });
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('signupModal').classList.add('show');
+    }
 
-    document.getElementById('signupForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
+    function closeSignup() {
+      document.getElementById('signupModal').classList.remove('show');
+      document.getElementById('backLink').style.display = 'none';
+      document.getElementById('loginView').style.display = 'block';
+      document.getElementById('signupForm').reset();
+      document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+    }
+
+    function openForgotPassword() {
+      document.getElementById('backLink').style.display = 'block';
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('forgotModal').classList.add('show');
+    }
+
+    function closeForgotPassword() {
+      document.getElementById('forgotModal').classList.remove('show');
+      document.getElementById('backLink').style.display = 'none';
+      document.getElementById('loginView').style.display = 'block';
+      document.getElementById('forgotForm').reset();
+      document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+    }
+
+    function backToLogin() {
+      document.getElementById('signupModal').classList.remove('show');
+      document.getElementById('forgotModal').classList.remove('show');
+      document.getElementById('backLink').style.display = 'none';
+      document.getElementById('loginView').style.display = 'block';
+      document.getElementById('signupForm').reset();
+      document.getElementById('forgotForm').reset();
+      document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+    }
+
+    function handleForgotPassword(event) {
+      event.preventDefault();
+      const email = document.getElementById('forgot-email').value.trim();
+
+      document.getElementById('error-forgot-email').classList.remove('show');
+
+      if (!email || !validateEmail(email)) {
+        document.getElementById('error-forgot-email').classList.add('show');
+        return;
+      }
+
+      const users = getUsers();
+      if (!users[email]) {
+        showAlert('✕ Email not found in our records', 'error');
+        document.getElementById('error-forgot-email').classList.add('show');
+        return;
+      }
+
+      // Generate temporary password (in production, send email)
+      const tempPassword = Math.randoString(36).substring(2, 10).toUpperCase();
+      users[email].temp_password = tempPassword;
+      users[email].temp_password_created = new Date().toISOString();
+      saveUsers(users);
+
+      showAlert(`✓ Password reset link sent! Temporary password: ${tempPassword}`, 'success');
+      setTimeout(() => {
+        closeForgotPassword();
+        document.getElementById('email').value = email;
+        document.getElementById('password').value = tempPassword;
+      }, 2000);
+    }
+
+    function handleSignup(event) {
+      event.preventDefault();
+
       const name = document.getElementById('signup-name').value.trim();
       const email = document.getElementById('signup-email').value.trim();
       const company = document.getElementById('signup-company').value.trim();
@@ -549,7 +568,6 @@
 
       let hasErrors = false;
 
-      // Clear previous errors
       document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
 
       if (!name) {
@@ -561,7 +579,7 @@
         document.getElementById('error-signup-email').classList.add('show');
         hasErrors = true;
       } else {
-        const users = getRegisteredUsers();
+        const users = getUsers();
         if (users[email]) {
           showAlert('✕ Email already registered', 'error');
           document.getElementById('error-signup-email').classList.add('show');
@@ -570,7 +588,9 @@
       }
 
       if (!company) {
-        document.getElementById('error-company').classL   }
+        document.getElementById('error-company').classList.add('show');
+        hasErrors = true;
+      }
 
       if (!industry) {
         document.getElementById('error-industry').classList.add('show');
@@ -593,25 +613,18 @@
       }
 
       if (hasErrors) {
-        showAlert('✕ Please fix the errors above', 'error');
+        showAlert('✕ Please fix errors above', 'error');
         return;
       }
 
-      // Create account
-      const users = getRegisteredUsers();
+      const users = getUsers();
       users[email] = {
-        name,
-        email,
-        company,
-        phone,
-        industry,
-        password,
+        name, email, company, phone, industry, password,
         subscription: 'free',
         created_at: new Date().toISOString()
       };
-      saveRegisteredUsers(users);
+      saveUsers(users);
 
-      // Auto-login
       localStorage.setItem('user_logged_in', 'true');
       localStorage.setItem('user_email', email);
       localStorage.setItem('user_name', name);
@@ -623,24 +636,18 @@
 
       showAlert('✓ Account created! Redirecting...', 'success');
       setTimeout(() => window.location.href = '/crm.html', 1500);
-    });
-
-    function closeSignup() {
-      document.getElementById('signupModal').classList.remove('show');
-      document.getElementById('backLink').style.display = 'none';
-      document.getElementById('signupForm').reset();
     }
 
     function loadDemo() {
       localStorage.setItem('user_logged_in', 'true');
       localStorage.setItem('user_email', 'demo@aurasphere.io');
       localStorage.setItem('user_name', 'Demo User');
-      localStorage.setItem('user_company', 'Demo Company Inc.');
+      localStorage.seter_company', 'Demo Company Inc.');
       localStorage.setItem('user_phone', '+1 (555) 000-0000');
       localStorage.setItem('user_industry', 'technology');
       localStorage.setItem('user_subscription', 'professional');
       localStorage.setItem('user_created_at', new Date().toISOString());
-      showAlert('✓ Loading demo account...', 'success');
+      showAlert('✓ Loading demo...', 'success');
       setTimeout(() => window.location.href = '/crm.html', 500);
     }
 
