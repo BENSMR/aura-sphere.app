@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraSphere - Multi-Language Support Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: direction 0.3s ease;
+        }
+
+        body.rtl {
+            direction: rtl;
+            text-align: right;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .lang-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .lang-btn:hover,
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .card ul {
+            list-style: none;
+        }
+
+        .card li {
+            padding: 8px 0;
+            color: #666;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card li:last-child {
+            border-bottom: none;
+        }
+
+        .stat {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .stat .number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .stat .label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .feature-tag {
+            background: #f0f4ff;
+            color: #667eea;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .language-selector {
+                flex-direction: column;
+            }
+
+            .lang-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 data-i18n="app_name">AuraSphere</h1>
+            <p>Multi-Language Support Demo (10 Languages)</p>
+            
+            <div class="language-selector" id="languageSelector">
+                <button class="lang-btn" onclick="changeLanguage('en')">🇬🇧 English</button>
+                <button class="lang-btn" onclick="changeLanguage('ar')">🇸🇦 العربية</button>
+                <button class="lang-btn" onclick="changeLanguage('es')">🇪🇸 Español</button>
+                <button class="lang-btn" onclick="changeLanguage('fr')">🇫🇷 Français</button>
+                <button class="lang-btn" onclick="changeLanguage('de')">🇩🇪 Deutsch</button>
+                <button class="lang-btn" onclick="changeLanguage('tr')">🇹🇷 Türkçe</button>
+                <button class="lang-btn" onclick="changeLanguage('pt')">🇵🇹 Português</button>
+                <button class="lang-btn" onclick="changeLanguage('ru')">🇷🇺 Русский</button>
+                <button class="lang-btn" onclick="changeLanguage('id')">🇮🇩 Bahasa</button>
+                <button class="lang-btn" onclick="changeLanguage('zh')">🇨🇳 中文</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- CRM Card -->
+            <div class="card">
+                <h2 data-i18n="aura_crm">Aurasphere CRM</h2>
+                <ul>
+                    <li data-i18n="clients">Clients</li>
+                    <li data-i18n="invoices">Invoices</li>
+                    <li data-i18n="tasks">Tasks</li>
+                    <li data-i18n="expenses">Expenses</li>
+                </ul>
+                <div class="feature-grid">
+                    <div class="feature-tag" data-i18n="add_client">Add Client</div>
+                    <div class="feature-tag" data-i18n="send_invoice">Send Invoice</div>
+                    <div class="feature-tag" data-i18n="new_task">New Task</div>
+                </div>
+            </div>
+
+            <!-- Features Card -->
+            <div class="card">
+                <h2 data-i18n="dashboard">Dashboard</h2>
+                <ul>
+                    <li data-i18n="scan_receipt">Scan Receipt (OCR)</li>
+                    <li data-i18n="customize_mobile">Customize Mobile (max 8 features)</li>
+                    <li data-i18n="wallet">Wallet</li>
+                </ul>
+                <div class="stat">
+                    <div class="number">12</div>
+                    <div class="label" data-i18n="app_name">Features</div>
+                </div>
+            </div>
+
+            <!-- AuraPost Card -->
+            <div class="card">
+                <h2 data-i18n="aura_post">AuraPost</h2>
+                <ul>
+                    <li data-i18n="generate_post">Generate Social Post</li>
+                    <li data-i18n="saved_posts">Saved Posts</li>
+                    <li data-i18n="privacy_first">Privacy-first AI for social content</li>
+                </ul>
+                <div class="feature-grid">
+                    <div class="feature-tag" data-i18n="egyptian">Egyptian</div>
+                    <div class="feature-tag" data-i18n="gulf">Gulf</div>
+                    <div class="feature-tag" data-i18n="levantine">Levantine</div>
+                    <div class="feature-tag" data-i18n="maghrebi">Maghrebi</div>
+                </div>
+            </div>
+
+            <!-- Pricing Card -->
+            <div class="card">
+                <h2 data-i18n="subscribe">Subscribe</h2>
+                <ul>
+                    <li><strong data-i18n="monthly">Monthly</strong> - Full access</li>
+                    <li><strong data-i18n="yearly">Yearly</strong> - <span data-i18n="annual_save">Save 20%</span></li>
+                    <li data-i18n="free_trial">3-Day Free Trial</li>
+                </ul>
+                <div class="stat">
+                    <div class="number">3</div>
+                    <div class="label" data-i18n="free_trial">Free Trial Days</div>
+                </div>
+            </div>
+
+            <!-- Support Card -->
+            <div class="card">
+                <h2 data-i18n="settings">Settings</h2>
+                <ul>
+                    <li data-i18n="language">Language</li>
+                    <li>Support: <strong data-i18n="contact_support">hello@aura-sphere.app</strong></li>
+                    <li>RTL Support (Arabic)</li>
+                </ul>
+                <div class="stat">
+                    <div class="number">10</div>
+                    <div class="label">Languages</div>
+                </div>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="card">
+                <h2>Statistics</h2>
+                <ul>
+                    <li>✅ Auto Language Detection</li>
+                    <li>✅ RTL Support (Arabic)</li>
+                    <li>✅ LocalStorage Persistence</li>
+                    <li>✅ 100+ OCR Languages</li>
+                </ul>
+                <div class="feature-grid">
+                    <div class="feature-tag">Multi-Currency</div>
+                    <div class="feature-tag">Multi-Tax</div>
+                    <div class="feature-tag">Multi-Language</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🌍 AuraSphere - Privacy-First Business Platform</p>
+            <p>Supporting 10 languages with automatic detection and RTL support</p>
+        </div>
+    </div>
+
+    <!-- Load Translations -->
+    <script src="js/translations.js"></script>
+    <script>
+        // Mark active language button
+        document.addEventListener('DOMContentLoaded', () => {
+            const preferredLang = localStorage.getItem('preferredLanguage') || getUserLanguage();
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                if (btn.textContent.toLowerCase().includes(preferredLang) || 
+                    (preferredLang === 'zh' && btn.textContent.includes('中文')) ||
+                    (preferredLang === 'ar' && btn.textContent.includes('العربية')) ||
+                    (preferredLang === 'en' && btn.textContent.includes('English'))) {
+                    btn.classList.add('active');
+                }
+            });
+        });
+
+        // Update active button on language change
+        window.changeLanguage = function(lang) {
+            localStorage.setItem('preferredLanguage', lang);
+            translateUI(lang);
+            
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        };
+    </script>
+</body>
+</html>
