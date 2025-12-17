@@ -495,7 +495,7 @@
 
         <div class="form-group password-toggle">
           <label for="signup-password">Password (min 8 chars) *</label>
-          <input type="password" id="signer="••••••••" minlength="8" required onkeyup="checkPasswordStrength()">
+          <input type="password" id=eholder="••••••••" minlength="8" required onkeyup="checkPasswordStrength()">
           <i class="fas fa-eye toggle-icon" onclick="togglePasswordVisibility('signup-password', this)"></i>
           <div class="password-strength" id="password-strength"></div>
           <div class="field-error" id="error-password">Password must be at least 8 characters</div>
@@ -560,7 +560,24 @@
   </div>
 
   <script>
-    const registeredUsers = JSON.parse(localStorage.getItem('registered_users')) || {};
+    // Initialize with check for localStorage
+    function getRegisteredUsers() {
+      try {
+        const data = localStorage.getItem('registered_users');
+        return data ? JSON.parse(data) : {};
+      } catch (e) {
+        console.error('Error reading registered users:', e);
+        return {};
+      }
+    }
+
+    function saveRegisteredUsers(users) {
+      try {
+        localStorage.setItem('registered_users', JSON.stringify(users));
+      } catch (e) {
+        console.error('Error saving registered users:', e);
+      }
+    }
 
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(tab => {
@@ -599,8 +616,8 @@
 
     function showAlert(message, type) {
       const alert = document.getElementById('alert');
-      const icon = type === 'success' ? '✓' : '✕';
-      alert.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+      const iconClass = type === 'success' ? 'check-circle' : 'exclamation-circle';
+      alert.innerHTML = `<i class="fas fa-${iconClass}"></i> ${message}`;
       alert.className = `alert show ${type}`;
       setTimeout(() => {
         alert.classList.remove('show');
@@ -613,8 +630,7 @@
     }
 
     function hideFieldError(fieldId) {
-      const error = document.getElementById(`error-${fieldId}`);
-      if (error) error.classList.remove('show');
+      const error = document.getElementById(`error-${fieassList.remove('show');
     }
 
     function showFieldError(fieldId) {
@@ -622,11 +638,19 @@
       if (error) error.classList.add('show');
     }
 
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+
     function validateEmailUniqueness() {
       const email = document.getElementById('signup-email').value;
-      if (registeredUsers[email]) {
+      const registeredUsers = getRegisteredUsers();
+      
+      if (email && registeredUsers[email]) {
         showAlert('This email is already registered', 'error');
-     turn false;
+        showFieldError('email');
+        return false;
       }
       hideFieldError('email');
       return true;
@@ -664,8 +688,9 @@
 
     function handleLogin(event) {
       event.preventDefault();
-      const email = document.getElementById('login-email').value;
+      const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
+      const registeredUsers = getRegisteredUsers();
 
       if (registeredUsers[email] && registeredUsers[email].password === password) {
         const userData = registeredUsers[email];
@@ -700,7 +725,7 @@
 
       let isValid = true;
 
-      // Validation
+   lidation
       if (!name) {
         showFieldError('name');
         isValid = false;
@@ -709,10 +734,6 @@
       }
 
       if (!email || !validateEmail(email)) {
-        showFieldError('email');
-        isValid = false;
-      } else if (registeredUsers[email]) {
-        showAlert('This email is already registered', 'error');
         showFieldError('email');
         isValid = false;
       } else {
@@ -728,7 +749,7 @@
 
       if (password.length < 8) {
         showFieldError('password');
- sValid = false;
+        isValid = false;
       } else {
         hideFieldError('password');
       }
@@ -757,6 +778,14 @@
         return;
       }
 
+      // Check for duplicate email
+      const registeredUsers = getRegisteredUsers();
+      if (registeredUsers[email]) {
+        showAlert('This email is already registered', 'error');
+        showFieldError('email');
+        return;
+      }
+
       // Store user data
       registeredUsers[email] = {
         name,
@@ -764,12 +793,14 @@
         company,
         phone,
         industry,
-        password, // In production, this should be hashed
+        password,
         subscription: 'free',
         created_at: new Date().toISOString()
       };
 
-      localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+      saveRegisteredUsers(registeredUsers);
+
+      // Log in the user
       localStorage.setItem('user_logged_in', 'true');
       localStorage.setItem('user_email', email);
       localStorage.setItem('user_name', name);
@@ -782,17 +813,13 @@
       showAlert('Account created successfully! Redirecting...', 'success');
       setTimeout(() => {
         window.location.href = '/crm.html';
-      }, 1000);
-    }
-
-    function validateEmail(email) {
-      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return re.test(email);
+      }, 1500);
     }
 
     function handlePasswordReset(event) {
       event.preventDefault();
       const email = document.getElementById('reset-email').value;
+      const registeredUsers = getRegisteredUsers();
 
       if (registeredUsers[email]) {
         document.getElementById('reset-step-1').style.display = 'none';
