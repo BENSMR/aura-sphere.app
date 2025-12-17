@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Aurasphere CRM</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black: #05050f;
+      --white: #ffffff;
+      --accent: #00e0ff;
+      --green: #00ffaa;
+      --gold: #ffd700;
+      --gray: #2a2a3e;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--black) 0%, var(--gray) 100%);
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-container {
+      background: rgba(12, 12, 28, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 224, 255, 0.2);
+      border-radius: 20px;
+      padding: 3rem;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0, 224, 255, 0.1);
+    }
+
+    .logo-section {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo-orb {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 1rem;
+      position: relative;
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: var(--black);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--white), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: #a0a0c0;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 224, 255, 0.2);
+      border-radius: 8px;
+      color: var(--white);
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--accent);
+      box-shadow: 0 0 8px rgba(0, 224, 255, 0.3);
+    }
+
+    input::placeholder {
+      color: #777;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.875rem;
+      background: linear-gradient(135deg, var(--accent), var(--green));
+      border: none;
+      border-radius: 8px;
+      color: var(--black);
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1rem;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 224, 255, 0.3);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 2rem 0;
+      color: #666;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .divider span {
+      padding: 0 1rem;
+      font-size: 0.9rem;
+    }
+
+    .demo-section {
+      text-align: center;
+      padding: 1.5rem;
+      background: rgba(0, 224, 255, 0.05);
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .demo-section h3 {
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .demo-credentials {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      color: #a0a0c0;
+    }
+
+    .demo-credentials code {
+      color: var(--green);
+      font-family: 'Courier New', monospace;
+    }
+
+    .btn-demo {
+      width: 100%;
+      padding: 0.75rem;
+      background: rgba(0, 255, 170, 0.1);
+      border: 1px solid var(--green);
+      border-radius: 8px;
+      color: var(--green);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-demo:hover {
+      background: rgba(0, 255, 170, 0.2);
+    }
+
+    .pricing-link {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .pricing-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .pricing-link a:hover {
+      text-decoration: underline;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .back-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="back-link">
+      <a href="/">← Back to Home</a>
+    </div>
+
+    <div class="logo-section">
+      <div class="logo-orb">◉</div>
+      <h1>Aurasphere CRM</h1>
+      <p class="subtitle">Sovereign Business Management</p>
+    </div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="your@email.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn-login">Sign In</button>
+    </form>
+
+    <div class="divider">
+      <span>or try demo</span>
+    </div>
+
+    <div class="demo-section">
+      <h3>Demo Account</h3>
+      <div class="demo-credentials">
+        Email: <code>demo@aurasphere.io</code><br>
+        Password: <code>demo123</code>
+      </div>
+      <button class="btn-demo" onclick="loadDemo()">Load Demo Dashboard</button>
+    </div>
+
+    <div class="pricing-link">
+      <p>No account yet? <a href="/#pricing">View Pricing Plans</a></p>
+    </div>
+  </div>
+
+  <script>
+    // Demo login
+    function loadDemo() {
+      localStorage.setItem('user_logged_in', 'true');
+      localStorage.setItem('user_email', 'demo@aurasphere.io');
+      localStorage.setItem('user_subscription', 'professional');
+      window.location.href = '/crm.html';
+    }
+
+    // Form login
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      if (email && password.length >= 6) {
+        localStorage.setItem('user_logged_in', 'true');
+        localStorage.setItem('user_email', email);
+        localStorage.setItem('user_subscription', 'professional');
+        window.location.href = '/crm.html';
+      }
+    });
+  </script>
+</body>
+</html>

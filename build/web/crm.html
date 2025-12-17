@@ -3,209 +3,573 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AuraSphere Pro CRM - Manage clients, invoices, and business operations">
-  <title>CRM Dashboard - AuraSphere Pro</title>
-  
-  <!-- Styles -->
-  <link rel="stylesheet" href="css/crm-styles.css">
-  <link rel="stylesheet" href="css/responsive.css">
-  
-  <!-- Font Awesome for icons -->
+  <title>CRM Dashboard - Aurasphere</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- jsPDF for PDF export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  
-  <!-- Multi-Language System -->
-  <script src="/js/translations.js"></script>
-  <script src="/js/language-switcher.js"></script>
-  <script src="/js/ocr-handler.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black: #05050f;
+      --white: #ffffff;
+      --accent: #00e0ff;
+      --green: #00ffaa;
+      --gold: #ffd700;
+      --gray: #2a2a3e;
+      --red: #ff5588;
+    }
+
+    body {
+      background: var(--black);
+      color: #a0a0c0;
+      font-family: 'Inter', system-ui, sans-serif;
+      line-height: 1.6;
+    }
+
+    .top-bar {
+      background: rgba(10, 10, 20, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 224, 255, 0.1);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--white), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .subscription-badge {
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, var(--gold), #ffaa00);
+      border-radius: 20px;
+      color: var(--black);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    .logout-btn {
+      padding: 0.5rem 1rem;
+      background: rgba(255, 85, 136, 0.2);
+      border: 1px solid var(--red);
+      color: var(--red);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 85, 136, 0.3);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 2.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--green));
+      color: var(--black);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 224, 255, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(0, 224, 255, 0.1);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 224, 255, 0.2);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .feature-card {
+      background: rgba(12, 12, 28, 0.6);
+      border: 1px solid rgba(0, 224, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--accent);
+      background: rgba(12, 12, 28, 0.9);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+
+    .feature-card h3 {
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 1rem;
+    }
+
+    .feature-status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: rgba(0, 255, 170, 0.1);
+      color: var(--green);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .subscription-section {
+      background: rgba(12, 12, 28, 0.6);
+      border: 1px solid rgba(0, 224, 255, 0.1);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .subscription-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .plan-card {
+      background: rgba(10, 10, 20, 0.8);
+      border: 1px solid rgba(0, 224, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .plan-card.active {
+      border-color: var(--accent);
+      background: rgba(0, 224, 255, 0.1);
+      box-shadow: 0 0 16px rgba(0, 224, 255, 0.2);
+    }
+
+    .plan-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .plan-price {
+      font-size: 1.8rem;
+      color: var(--gold);
+      font-weight: 700;
+      margin: 0.5rem 0;
+    }
+
+    .plan-features {
+      list-style: none;
+      margin: 1.5rem 0;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .plan-features li {
+      padding: 0.5rem 0;
+      color: #a0a0c0;
+    }
+
+    .plan-features li:before {
+      content: "✓ ";
+      color: var(--green);
+      font-weight: 700;
+      margin-right: 0.5rem;
+    }
+
+    .plan-features li.limited:before {
+      content: "✗ ";
+      color: #666;
+    }
+
+    .plan-button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      background: rgba(0, 224, 255, 0.1);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .plan-button:hover {
+      background: rgba(0, 224, 255, 0.2);
+    }
+
+    .download-section {
+      background: rgba(0, 255, 170, 0.05);
+      border: 1px solid rgba(0, 255, 170, 0.2);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .download-card {
+      background: rgba(10, 10, 20, 0.8);
+      border: 1px solid rgba(0, 255, 170, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .download-card:hover {
+      background: rgba(0, 255, 170, 0.1);
+      border-color: var(--green);
+    }
+
+    .download-icon {
+      font-size: 2.5rem;
+      color: var(--green);
+      margin-bottom: 1rem;
+    }
+
+    .download-card h3 {
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .download-card p {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      h1 { font-size: 1.8rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .subscription-grid { grid-template-columns: 1fr; }
+      .download-grid { grid-template-columns: 1fr; }
+      .header { flex-direction: column; }
+      .header-actions { width: 100%; flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+    }
+  </style>
 </head>
 <body>
-  <!-- Navigation Bar -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <div class="nav-logo">
-        <a href="/">
-          <i class="fas fa-circle"></i>
-          <span>AuraSphere Pro</span>
-        </a>
-      </div>
-      
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="/" class="nav-link">Home</a>
-        </li>
-        <li class="nav-item">
-          <a href="/crm.html" class="nav-link active">CRM</a>
-        </li>
-        <li class="nav-item">
-          <a href="/support.html" class="nav-link">Support</a>
-        </li>
-      </ul>
-      
-      <div class="nav-right">
-        <!-- Language Switcher -->
-        <div id="language-switcher-container" style="margin-right: 15px;"></div>
-        
-        <!-- Mobile Menu Toggle -->
-        <div class="hamburger">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </div>
+  <!-- Top Bar with User Info -->
+  <div class="top-bar">
+    <div class="logo">◉ AURASPHERE CRM</div>
+    <div class="user-info">
+      <div id="user-email" class="user-email"></div>
+      <div id="subscription-display" class="subscription-badge"></div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
-  </nav>
+  </div>
 
   <!-- Main Container -->
-  <main class="crm-container">
-    <!-- Header Section -->
-    <header class="crm-header">
-      <div class="header-content">
-        <h1 data-i18n="crm_dashboard">CRM Dashboard</h1>
-        <p data-i18n="crm_subtitle">Manage clients, invoices, and business operations</p>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h1>Dashboard</h1>
+        <p style="color: #888;">Manage your business with Aurasphere</p>
       </div>
-      
       <div class="header-actions">
-        <button class="btn btn-secondary" id="export-btn" data-i18n="export_data">
-          <i class="fas fa-download"></i> Export
+        <button class="btn btn-primary" onclick="exportData()">
+          <i class="fas fa-download"></i> Export Data
+        </button>
+        <button class="btn btn-secondary" onclick="downloadApp()">
+          <i class="fas fa-mobile-alt"></i> Download App
         </button>
       </div>
-    </header>
-
-    <!-- Export Modal -->
-    <div id="export-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 data-i18n="export_data">Export Data</h2>
-          <button class="close-btn">&times;</button>
-        </div>
-        
-        <div class="modal-body">
-          <div class="export-options">
-            <button class="export-option" id="export-pdf-btn">
-              <i class="fas fa-file-pdf"></i>
-              <span data-i18n="export_pdf">Export as PDF</span>
-            </button>
-            <button class="export-option" id="export-csv-btn">
-              <i class="fas fa-file-csv"></i>
-              <span data-i18n="export_csv">Export as CSV</span>
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- CRM Features Grid -->
-    <div class="crm-grid">
-      <!-- Clients Card -->
-      <div class="crm-card" data-feature="clients">
-        <div class="card-header">
-          <h3><i class="fas fa-users"></i> <span data-i18n="clients">Clients</span></h3>
+    <!-- CRM Features -->
+    <section>
+      <h2 style="color: var(--white); margin-bottom: 1.5rem;">CRM Features</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-users"></i></div>
+          <h3>Contact Management</h3>
+          <p>Organize and manage all your business contacts in one place.</p>
+          <span class="feature-status">✓ Active</span>
         </div>
-        <div class="card-body">
-          <p data-i18n="total_clients">Total Clients: 0</p>
-          <button class="btn btn-sm btn-primary" id="add-client-btn" data-i18n="add_client">Add Client</button>
-          <div class="clients-list" id="clients-list"></div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-file-invoice"></i></div>
+          <h3>Invoice Management</h3>
+          <p>Create, track, and manage invoices with ease.</p>
+          <span class="feature-status">✓ Active</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+          <h3>Expense Tracking</h3>
+          <p>Track and categorize all business expenses.</p>
+          <span class="feature-status">✓ Active</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-tasks"></i></div>
+          <h3>Task Management</h3>
+          <p>Organize tasks and projects with team collaboration.</p>
+          <span class="feature-status">✓ Active</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-boxes"></i></div>
+          <h3>Inventory Management</h3>
+         k levels and manage inventory efficiently.</p>
+          <span class="feature-status">✓ Active</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-shopping-cart"></i></div>
+          <h3>Purchase Orders</h3>
+          <p>Create and manage purchase orders for suppliers.</p>
+          <span class="feature-status">✓ Active</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-users-cog"></i></div>
+          <h3>Team Management</h3>
+          <p>Manage team members, roles, and permissions.</p>
+          <span class="feature-status">✓ Active</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-database"></i></div>
+          <h3>Data Analytics</h3>
+          <p>Get insights with detailed business analytics and reports.</p>
+          <span class="feature-status">✓ Active</span>
         </div>
       </div>
+    </section>
 
-      <!-- Invoices Card -->
-      <div class="crm-card" data-feature="invoices">
-        <div class="card-header">
-          <h3><i class="fas fa-file-invoice"></i> <span data-i18n="invoices">Invoices</span></h3>
+    <!-- Subscription Plans -->
+    <section class="subscription-section">
+      <h2 style="color: var(--white);">Your Subscription Plan</h2>
+      <p style="color: #888; margin-bottom: 1.5rem;">Choose the perfect plan for your business needs.</p>
+      
+      <div class="subscription-grid">
+        <div class="plan-card" id="plan-free">
+          <div class="plan-name">Free Trial</div>
+          <div class="plan-price">$0</div>
+          <p style="color: #888; font-size: 0.9rem;">14 days</p>
+          <ul class="plan-features">
+            <li>Contact Management</li>
+            <li>Basic Invoicing</li>
+            <li class="limited">Expense Tracking</li>
+            <li class="limited">Team Features</li>
+            <li class="limited">API Access</li>
+          </ul>
+          <button class="plan-button" onclick="selectPlan('free')">Current Plan</button>
         </div>
-        <div class="card-body">
-          <p data-i18n="total_invoices">Total Invoices: 0</p>
-          <button class="btn btn-sm btn-primary" id="create-invoice-btn" data-i18n="create_invoice">Create Invoice</button>
-          <div class="invoices-list" id="invoices-list"></div>
+
+        <div class="plan-card" id="plan-basic">
+          <div class="plan-name">Basic</div>
+          <div class="plan-price">$9.99</div>
+          <p style="color: #888; font-size: 0.9rem;">per month</p>
+          <ul class="plan-features">
+            <li>Contact Management</li>
+            <li>Full Invoicing</li>
+            <li>Expense Tracking</li>
+            <li class="limited">Team Features</li>
+            <li class="limited">API Access</li>
+          </ul>
+          <button class="plan-button" onclick="selectPlan('basic')">Upgrade</button>
+        </div>
+
+        <div class="plan-card" id="plan-professional">
+          <div class="plan-name">Professional</div>
+          <div class="plan-price">$19.99</div>
+          <p style="color: #888; font-size: 0.9rem;">per month</p>
+          <ul class="plan-features">
+            <li>All Basic Features</li>
+            <li>Team Management (5 users)</li>
+            <li>Advanced Analytics</li>
+            <li>Priority Support</li>
+            <li class="limited">API Access</li>
+          </ul>
+          <button class="plan-button" onclick="selectPlan('professional')">Upgrade</button>
+        </div>
+
+        <div class="plan-card" id="plan-enterprise">
+          <div class="plan-name">Enterprise</div>
+          <div class="plan-price">$29.99</div>
+          <p style="color: #888; font-size: 0.9rem;">per month</p>
+          <ul class="plan-features">
+            <li>All Professional Features</li>
+            <li>Unlimited Team Users</li>
+            <li>Full API Access</li>
+            <li>Custom Integrations</li>
+            <li>24/7 Support</li>
+          </ul>
+          <button class="plan-button" onclick="selectPlan('enterprise')">Upgrade</button>
         </div>
       </div>
+    </section>
 
-      <!-- Tasks Card -->
-      <div class="crm-card" data-feature="tasks">
-        <div class="card-header">
-          <h3><i class="fas fa-tasks"></i> <span data-i18n="tasks">Tasks</span></h3>
+    <!-- Download App -->
+    <section class="download-section">
+      <h2 style="color: var(--white);">Download Aurasphere App</h2>
+      <p style="color: #888; margin-bottom: 1.5rem;">Access your CRM on any device, anywhere, anytime.</p>
+      
+      <div class="download-grid">
+        <div class="download-card" onclick="downloadApp('ios')">
+          <div class="download-icon"><i class="fab fa-apple"></i></div>
+          <h3>iOS App</h3>
+          <p>iPhone & iPad</p>
+          <p style="margin-top: 1rem; color: var(--green); font-size: 0.8rem;">Coming Soon</p>
         </div>
-        <div class="card-body">
-          <p data-i18n="pending_tasks">Pending Tasks: 0</p>
-          <button class="btn btn-sm btn-primary" id="add-task-btn" data-i18n="add_task">Add Task</button>
-          <div class="tasks-list" id="tasks-list"></div>
+
+        <div class="download-card" onclick="downloadApp('android')">
+          <div class="download-icon"><i class="fab fa-android"></i></div>
+          <h3>Android App</h3>
+          <p>All Android Devices</p>
+          <p style="margin-top: 1rem; color: var(--green); font-size: 0.8rem;">Coming Soon</p>
+        </div>
+
+        <div class="download-card" onclick="downloadApp('windows')">
+          <div class="download-icon"><i class="fab fa-windows"></i></div>
+          <h3>Windows Desktop</h3>
+          <p>Windows PC</p>
+          <p style="margin-top: 1rem; color: var(--green); font-size: 0.8rem;">Coming Soon</p>
+        </div>
+
+        <div class="download-card" onclick="downloadApp('mac')">
+          <div class="download-icon"><i class="fab fa-apple"></i></div>
+          <h3>macOS Desktop</h3>
+          <p>Mac Computer</p>
+          <p style="margin-top: 1rem; color: var(--green); font-size: 0.8rem;">Coming Soon</p>
         </div>
       </div>
+    </section>
+  </div>
 
-      <!-- Expenses Card -->
-      <div class="crm-card" data-feature="expenses">
-        <div class="card-header">
-          <h3><i class="fas fa-receipt"></i> <span data-i18n="expenses">Expenses</span></h3>
-        </div>
-        <div class="card-body">
-          <p data-i18n="total_expenses">Total Expenses: $0</p>
-          <button class="btn btn-sm btn-primary" id="add-expense-btn" data-i18n="add_expense">Add Expense</button>
-          <div class="expenses-list" id="expenses-list"></div>
-        </div>
-      </div>
+  <script>
+    // Check login status on page load
+    window.addEventListener('load', function() {
+      const isLoggedIn = localStorage.getItem('user_logged_in');
+      const userEmail = localStorage.getItem('user_email');
+      const userSubscription = localStorage.getItem('user_subscription') || 'free';
 
-      <!-- Wallet Card -->
-      <div class="crm-card" data-feature="wallet">
-        <div class="card-header">
-          <h3><i class="fas fa-wallet"></i> <span data-i18n="wallet">Wallet</span></h3>
-        </div>
-        <div class="card-body">
-          <p data-i18n="account_balance">Account Balance: $0</p>
-          <button class="btn btn-sm btn-success" id="add-funds-btn" data-i18n="add_funds">Add Funds</button>
-          <div class="transactions-list" id="transactions-list"></div>
-        </div>
-      </div>
+      if (!isLoggedIn) {
+        window.location.href = '/crm-login.html';
+      }
 
-      <!-- Analytics Card -->
-      <div class="crm-card" data-feature="analytics">
-        <div class="card-header">
-          <h3><i class="fas fa-chart-bar"></i> <span data-i18n="analytics">Analytics</span></h3>
-        </div>
-        <div class="card-body">
-          <canvas id="analytics-chart"></canvas>
-          <p data-i18n="revenue_overview">Revenue Overview</p>
-        </div>
-      </div>
+      // Update UI with user info
+      document.getElementById('user-email').textContent = userEmail;
+      document.getElementById('subscription-display').textContent = userSubscription.toUpperCase();
 
-      <!-- Calendar Card -->
-      <div class="crm-card" data-feature="calendar">
-        <div class="card-header">
-          <h3><i class="fas fa-calendar"></i> <span data-i18n="calendar">Calendar</span></h3>
-        </div>
-        <div class="card-body">
-          <div id="calendar-widget"></div>
-        </div>
-      </div>
+      // Highlight active plan
+      const planMap = {
+        'free': 'plan-free',
+        'basic': 'plan-basic',
+        'professional': 'plan-professional',
+        'enterprise': 'plan-enterprise'
+      };
 
-      <!-- Settings Card -->
-      <div class="crm-card" data-feature="settings">
-        <div class="card-header">
-          <h3><i class="fas fa-sliders-h"></i> <span data-i18n="settings">Settings</span></h3>
-        </div>
-        <div class="card-body">
-          <button class="btn btn-sm btn-secondary" id="theme-toggle-btn" data-i18n="toggle_dark_mode">Toggle Dark Mode</button>
-          <button class="btn btn-sm btn-secondary" id="backup-btn" data-i18n="backup_data">Backup Data</button>
-        </div>
-      </div>
-    </div>
-  </main>
+      const activePlanId = planMap[userSubscription];
+      if (activePlanId) {
+        const activePlan = document.getElementById(activePlanId);
+        if (activePlan) {
+          activePlan.classList.add('active');
+        }
+      }
+    });
 
-  <!-- Footer -->
-  <footer class="crm-footer">
-    <div class="footer-content">
-      <p>&copy; 2025 AuraSphere Pro. All rights reserved.</p>
-      <div class="footer-links">
-        <a href="/privacy.html" data-i18n="privacy">Privacy</a>
-        <a href="/terms.html" data-i18n="terms">Terms</a>
-        <a href="/support.html" data-i18n="support">Support</a>
-      </div>
-    </div>
-  </footer>
+    function logout() {
+      localStorage.removeItem('user_logged_in');
+      localStorage.removeItem('user_email');
+      localStorage.removeItem('user_subscription');
+      window.location.href = '/crm-login.html';
+    }
 
-  <!-- Scripts -->
-  <script src="js/crm-app.js"></script>
+    function selectPlan(plan) {
+      localStorage.setItem('user_subscription', plan);
+      alert(`Upgraded to ${plan.toUpperCase()} plan!`);
+      location.reload();
+    }
+
+    function exportData() {
+      alert('Export functionality coming soon. Your data will be downloaded as CSV/PDF.');
+    }
+
+    function downloadApp(platform) {
+      alert(`Download link for ${platform.toUpperCase()} coming soon!`);
+    }
+  </script>
 </body>
 </html>
