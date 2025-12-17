@@ -541,7 +541,7 @@
       }
 
       // Generate temporary password (in production, send email)
-      const tempPassword = Math.randoString(36).substring(2, 10).toUpperCase();
+      const tempPassword = Math.random(36).substring(2, 10).toUpperCase();
       users[email].temp_password = tempPassword;
       users[email].temp_password_created = new Date().toISOString();
       saveUsers(users);
@@ -642,7 +642,7 @@
       localStorage.setItem('user_logged_in', 'true');
       localStorage.setItem('user_email', 'demo@aurasphere.io');
       localStorage.setItem('user_name', 'Demo User');
-      localStorage.seter_company', 'Demo Company Inc.');
+      localStorage.setItem('user_company', 'Demo Company Inc.');
       localStorage.setItem('user_phone', '+1 (555) 000-0000');
       localStorage.setItem('user_industry', 'technology');
       localStorage.setItem('user_subscription', 'professional');
