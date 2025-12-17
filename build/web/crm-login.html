@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign In — Aurasphere CRM</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
       --black: #05050f;
@@ -11,6 +12,7 @@
       --light-gray: #a0a0c0;
       --accent: #00e0ff;
       --gold: #ffd700;
+      --green: #00ffaa;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -60,6 +62,28 @@
       font-size: 0.95rem;
       margin-bottom: 2rem;
     }
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .alert.show {
+      display: flex;
+    }
+    .alert.success {
+      background: rgba(0,255,170,0.15);
+      border: 1px solid rgba(0,255,170,0.3);
+      color: var(--green);
+    }
+    .alert.error {
+      background: rgba(255,85,136,0.15);
+      border: 1px solid rgba(255,85,136,0.3);
+      color: #ff5588;
+    }
     .form-group {
       margin-bottom: 1.4rem;
       text-align: left;
@@ -79,10 +103,26 @@
       border-radius: 8px;
       color: var(--white);
       font-size: 1rem;
+      transition: all 0.3s;
     }
     input:focus {
       outline: none;
       border-color: var(--accent);
+      background: rgba(0,10,15,0.8);
+    }
+    input::placeholder {
+      color: #666;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 37px;
+      cursor: pointer;
+      color: #888;
+      transition: color 0.3s;
+    }
+    .password-toggle:hover {
+      color: var(--accent);
     }
     .btn {
       width: 100%;
@@ -93,7 +133,7 @@
       font-size: 1rem;
       cursor: pointer;
       margin-top: 0.5rem;
-      transition: all 0.3s ease;
+      transition: all 0.3s;
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), var(--gold));
@@ -101,7 +141,7 @@
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,224,255,0.3);
+      box-shadow: 0 8px 16px rgba(0,224,255,0.3);
     }
     .btn-outline {
       background: transparent;
@@ -134,6 +174,10 @@
     .footer-links a {
       color: var(--accent);
       text-decoration: none;
+      margin: 0 0.5rem;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
     }
     .demo-link {
       display: inline-block;
@@ -141,57 +185,49 @@
       color: var(--accent);
       text-decoration: none;
       font-size: 0.92rem;
-      cursor: pointer;
+      transition: all 0.3s;
     }
     .demo-link:hover {
       text-decoration: underline;
     }
-    .alert {
-      padding: 1rem;
-      border-radius: 8px;
+    .back-link {
+      text-align: left;
       margin-bottom: 1rem;
-      display: none;
-      border-left: 4px solid;
     }
-    .alert.show {
-      display: block;
+    .back-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.9rem;
     }
-    .alert.success {
-      background: rgba(0,255,170,0.15);
-      border-left-color: #00ffaa;
-      color: #00ffaa;
-    }
-    .alert.error {
-      background: rgba(255,85,136,0.15);
-      border-left-color: #ff5588;
-      color: #ff5588;
+    .back-link a:hover {
+      text-decoration: underline;
     }
 
-    /* Modal Styles */
+    /* Signup Modal */
     .modal {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      right: 0;
+      bottom: 0;
       background: rgba(5,5,15,0.95);
-      z-index: 1000;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       padding: 1.5rem;
+      z-index: 1000;
     }
     .modal.show {
       display: flex;
     }
     .modal-content {
-      background: rgba(10,10,20,0.9);
+      background: rgba(10,10,20,0.95);
       border: 1px solid rgba(0,224,255,0.15);
       border-radius: 20px;
       padding: 2.5rem;
-      width: 100%;
       max-width: 420px;
-      max-height: 85vh;
+      width: 100%;
+      max-height: 90vh;
       overflow-y: auto;
       position: relative;
     }
@@ -201,37 +237,50 @@
       right: 1.5rem;
       background: none;
       border: none;
-      color: var(--accent);
-      font-size: 1.8rem;
+      color: #888;
+      font-size: 1.5rem;
       cursor: pointer;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      transition: color 0.3s;
     }
     .modal-close:hover {
-      color: var(--gold);
+      color: var(--accent);
     }
     .modal h2 {
       color: var(--white);
+      font-size: 1.6rem;
       margin-bottom: 1.5rem;
-      padding-right: 2rem;
+      text-align: center;
     }
     .field-error {
       display: none;
       color: #ff5588;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       margin-top: 0.3rem;
     }
     .field-error.show {
       display: block;
     }
     .password-strength {
-      height: 4px;
-      border-radius: 2px;
-      margin-top: 0.5rem;
-      background: rgba(255,255,255,0.1);
+      display: none;
+      margin-top: 0.3rem;
+      padding: 0.3rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+    .password-strength.show {
+      display: block;
+    }
+    .password-strength.weak {
+      background: rgba(255,85,136,0.2);
+      color: #ff5588;
+    }
+    .password-strength.fair {
+      background: rgba(255,215,0,0.2);
+      color: var(--gold);
+    }
+    .password-strength.strong {
+      background: rgba(0,255,170,0.2);
+      color: var(--green);
     }
     select {
       width: 100%;
@@ -241,6 +290,7 @@
       border-radius: 8px;
       color: var(--white);
       font-size: 1rem;
+      cursor: pointer;
     }
     select:focus {
       outline: none;
@@ -251,40 +301,47 @@
 <body>
 
   <div class="login-container">
-    <div class="logo">
-      <div class="orb">
-        <div class="core"></div>
-      </div>
-      <h1>Aurasphere CRM</h1>
-    </div>
-    <p class="subtitle">Sovereign Business Management</p>
-
-    <div id="alert" class="alert"></div>
-
-    <form id="loginForm" onsubmit="handleLogin(event)">
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" placeholder="your@email.com" required>
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="••••••••" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Sign In</button>
-    </form>
-
-    <div class="divider">
-      <span>or</span>
+    <div class="back-link" id="backLink" style="display: none;">
+      <a href="#" onclick="closeSignup()">← Back to login</a>
     </div>
 
-    <button type="button" class="btn btn-outline" onclick="openSignup()">Create Account</button>
+    <div id="loginView">
+      <div class="logo">
+        <div class="orb">
+          <div class="core"></div>
+        </div>
+        <h1>Aurasphere CRM</h1>
+      </div>
+      <p class="subtitle">Sovereign Business Management</p>
 
-    <a onclick="loadDemo()" class="demo-link">→ Try demo account</a>
+      <div id="alert" class="alert"></div>
 
-    <div class="footer-links">
-      <a href="/support">Support</a> • 
-      <a href="/privacy">Privacy</a> • 
-      <a href="/terms">Terms</a>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="your@email.com" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+          <i class="fas fa-eye password-toggle" onclick="togglePassword()"></i>
+        </div>
+        <button type="submit" class="btn btn-primary">Sign In</button>
+      </form>
+
+      <div class="divider">
+        <span>or</span>
+      </div>
+
+      <button id="createAccountBtn" class="btn btn-outline">Create Account</button>
+
+      <a href="#" onclick="loadDemo()" class="demo-link">→ Try demo account</a>
+
+      <div class="footer-links">
+        <a href="/support">Support</a> • 
+        <a href="/privacy">Privacy</a> • 
+        <a href="/terms">Terms</a>
+      </div>
     </div>
   </div>
 
@@ -294,7 +351,7 @@
       <button type="button" class="modal-close" onclick="closeSignup()">&times;</button>
       <h2>Create Account</h2>
 
-      <form id="signupForm" onsubmit="handleSignup(event)">
+      <form id="signupForm">
         <div class="form-group">
           <label for="signup-name">Full Name</label>
           <input type="text" id="signup-name" placeholder="John Doe" required>
@@ -319,8 +376,7 @@
         </div>
 
         <div class="form-group">
-          <label for="signup-industry">Industry</label>
-          <select id="signup-industry" required>
+          <label for="signup-industry">Industry</labsignup-industry" required>
             <option value="">Select an industry</option>
             <option value="technology">Technology</option>
             <option value="finance">Finance</option>
@@ -336,6 +392,7 @@
         <div class="form-group">
           <label for="signup-password">Password (min 8 chars)</label>
           <input type="password" id="signup-password" placeholder="••••••••" minlength="8" required onkeyup="checkPasswordStrength()">
+          <i class="fas fa-eye password-toggle" onclick="toggleSignupPassword('signup-password')"></i>
           <div class="password-strength" id="password-strength"></div>
           <div class="field-error" id="error-password">Password must be 8+ characters</div>
         </div>
@@ -343,13 +400,14 @@
         <div class="form-group">
           <label for="signup-confirm">Confirm Password</label>
           <input type="password" id="signup-confirm" placeholder="••••••••" required>
+          <i class="fas fa-eye password-toggle" onclick="toggleSignupPassword('signup-confirm')"></i>
           <div class="field-error" id="error-confirm">Passwords must match</div>
         </div>
 
         <div class="form-group">
           <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: normal;">
             <input type="checkbox" id="signup-terms" required>
-            I agree to the <a href="/terms" target="_blank" style="color: var(--accent); text-decoration: none;">Terms of Service</a>
+            I agree to the <a href="/terms/" target="_blank" style="color: var(--accent);">Terms of Service</a>
           </label>
           <div class="field-error" id="error-terms">You must accept the terms</div>
         </div>
@@ -360,35 +418,99 @@
   </div>
 
   <script>
-    function getUsers() {
+    function getRegisteredUsers() {
       try {
-        return JSON.parse(localStorage.getItem('registered_users')) || {};
+        const data = localStorage.getItem('registered_users');
+        return data ? JSON.parse(data) : {};
       } catch (e) {
         return {};
       }
     }
 
-    function saveUsers(users) {
-      localStorage.setItem('registered_users', JSON.stringify(users));
+    function saveRegisteredUsers(users) {
+      try {
+        localStorage.setItem('registered_users', JSON.stringify(users));
+      } catch (e) {
+        console.error('Error saving users:', e);
+      }
     }
 
-    function showAlert(msg, type) {
+    function showAlert(message, type) {
       const alert = document.getElementById('alert');
-      alert.textContent = msg;
-      alert.className = 'alert show ' + type;
-      setTimeout(() => alert.classList.remove('show'), 4000);
+      const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+      alert.innerHTML = `<i class="fas fa-${icon}"></i> <span>${message}</span>`;
+      alert.className = `alert show ${type}`;
+      setTimeout(() => {
+        alert.classList.remove('show');
+      }, 4000);
     }
 
     function validateEmail(email) {
-      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return re.test(email);
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
-    function handleLogin(event) {
-      event.preventDefault();
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const icon = event.currentTarget;
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    function toggleSignupPassword(inputId) {
+      const input = document.getElementById(inputId);
+      const icon = event.currentTarget;
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    function checkPasswordStrength() {
+      const password = document.getElementById('signup-password').value;
+      const strengthBar = document.getElementById('password-strength');
+
+      if (password.length === 0) {
+        strengthBar.classList.remove('show');
+        return;
+      }
+
+      strengthBar.classList.add('show');
+      let strength = 0;
+      if (password.length >= 8) strength++;
+      if (password.length >= 12) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+      if (strength <= 2) {
+        strengthBar.className = 'password-strength weak show';
+        strengthBar.textContent = '⚠️ Weak';
+      } else if (strength <= 3) {
+        strengthBar.className = 'password-strength fair show';
+        strengthBar.textContent = '⚡ Fair';
+      } else {
+        strengthBar.className = 'password-strength strong show';
+        strengthBar.textContent = '✓ Strong';
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      const users = getUsers();
+      const users = getRegisteredUsers();
 
       if (users[email] && users[email].password === password) {
         const user = users[email];
@@ -396,45 +518,25 @@
         localStorage.setItem('user_email', email);
         localStorage.setItem('user_name', user.name);
         localStorage.setItem('user_company', user.company);
-        localStorage.setItem('user_phone', user.phone);
-        localStorage.setItem('user_industry', user.industry);
+        localStorage.setItem('user_phone', user.phone || '');
+        localStorage.setItem('user_industry', user.industry || '');
         localStorage.setItem('user_subscription', user.subscription);
         localStorage.setItem('user_created_at', user.created_at);
+        
         showAlert('✓ Login successful!', 'success');
         setTimeout(() => window.location.href = '/crm.html', 1000);
-      } eror');
+      } else {
+        showAlert('✕ Invalid email or password', 'error');
       }
-    }
+    });
 
-    function openSignup() {
+    document.getElementById('createAccountBtn').addEventListener('click', function() {
       document.getElementById('signupModal').classList.add('show');
-    }
+      document.getElementById('backLink').style.display = 'block';
+    });
 
-    function closeSignup() {
-      document.getElementById('signupModal').classList.remove('show');
-      document.getElementById('signupForm').reset();
-      document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
-    }
-
-    function checkPasswordStrength() {
-      const password = document.getElementById('signup-password').value;
-      const strength = document.getElementById('password-strength');
-      let level = 0;
-      
-      if (password.length >= 8) level++;
-      if (/[A-Z]/.test(password)) level++;
-      if (/[0-9]/.test(password)) level++;
-      if (/[^a-zA-Z0-9]/.test(password)) level++;
-      
-      const colors = ['', '#ff5588', '#ffaa00', '#ffdd00', '#00ff88', '#00ffaa'];
-      const labels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
-      
-      strength.style.background = colors[level];
-      strength.title = labels[level];
-    }
-
-    function handleSignup(event) {
-      event.preventDefault();
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+      e.preventDefault();
       
       const name = document.getElementById('signup-name').value.trim();
       const email = document.getElementById('signup-email').value.trim();
@@ -447,7 +549,7 @@
 
       let hasErrors = false;
 
-      // Clear all errors
+      // Clear previous errors
       document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
 
       if (!name) {
@@ -459,7 +561,7 @@
         document.getElementById('error-signup-email').classList.add('show');
         hasErrors = true;
       } else {
-        const users = getUsers();
+        const users = getRegisteredUsers();
         if (users[email]) {
           showAlert('✕ Email already registered', 'error');
           document.getElementById('error-signup-email').classList.add('show');
@@ -468,9 +570,7 @@
       }
 
       if (!company) {
-        document.getElementById('error-company').classList.add('show');
-        hasErrors = true;
-      }
+        document.getElementById('error-company').classL   }
 
       if (!industry) {
         document.getElementById('error-industry').classList.add('show');
@@ -493,18 +593,23 @@
       }
 
       if (hasErrors) {
-        showAlert('✕ Please fix errors above', 'error');
+        showAlert('✕ Please fix the errors above', 'error');
         return;
       }
 
       // Create account
-      const users = getUsers();
+      const users = getRegisteredUsers();
       users[email] = {
-        name, email, company, phone, industry, password,
+        name,
+        email,
+        company,
+        phone,
+        industry,
+        password,
         subscription: 'free',
         created_at: new Date().toISOString()
       };
-      saveUsers(users);
+      saveRegisteredUsers(users);
 
       // Auto-login
       localStorage.setItem('user_logged_in', 'true');
@@ -518,6 +623,12 @@
 
       showAlert('✓ Account created! Redirecting...', 'success');
       setTimeout(() => window.location.href = '/crm.html', 1500);
+    });
+
+    function closeSignup() {
+      document.getElementById('signupModal').classList.remove('show');
+      document.getElementById('backLink').style.display = 'none';
+      document.getElementById('signupForm').reset();
     }
 
     function loadDemo() {
@@ -529,11 +640,10 @@
       localStorage.setItem('user_industry', 'technology');
       localStorage.setItem('user_subscription', 'professional');
       localStorage.setItem('user_created_at', new Date().toISOString());
-      showAlert('✓ Loading demo...', 'success');
+      showAlert('✓ Loading demo account...', 'success');
       setTimeout(() => window.location.href = '/crm.html', 500);
     }
 
-    // Auto-redirect if logged in
     window.addEventListener('load', function() {
       if (localStorage.getItem('user_logged_in')) {
         window.location.href = '/crm.html';
