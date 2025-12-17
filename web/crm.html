@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AuraSphere Pro CRM - Manage clients, invoices, and business operations">
+  <title>CRM Dashboard - AuraSphere Pro</title>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/crm-styles.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- jsPDF for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <!-- Multi-Language System -->
+  <script src="/js/translations.js"></script>
+  <script src="/js/language-switcher.js"></script>
+  <script src="/js/ocr-handler.js"></script>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <a href="/">
+          <i class="fas fa-circle"></i>
+          <span>AuraSphere Pro</span>
+        </a>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="/" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="/crm.html" class="nav-link active">CRM</a>
+        </li>
+        <li class="nav-item">
+          <a href="/support.html" class="nav-link">Support</a>
+        </li>
+      </ul>
+      
+      <div class="nav-right">
+        <!-- Language Switcher -->
+        <div id="language-switcher-container" style="margin-right: 15px;"></div>
+        
+        <!-- Mobile Menu Toggle -->
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="crm-container">
+    <!-- Header Section -->
+    <header class="crm-header">
+      <div class="header-content">
+        <h1 data-i18n="crm_dashboard">CRM Dashboard</h1>
+        <p data-i18n="crm_subtitle">Manage clients, invoices, and business operations</p>
+      </div>
+      
+      <div class="header-actions">
+        <button class="btn btn-primary" id="feature-settings-btn" data-i18n="customize_features">
+          <i class="fas fa-cog"></i> Customize Features
+        </button>
+        <button class="btn btn-secondary" id="export-btn" data-i18n="export_data">
+          <i class="fas fa-download"></i> Export
+        </button>
+      </div>
+    </header>
+
+    <!-- Feature Settings Modal -->
+    <div id="feature-settings-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 data-i18n="select_mobile_features">Select Mobile Features (Max 8)</h2>
+          <button class="close-btn">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="features-grid">
+            <label class="feature-checkbox">
+              <input type="checkbox" value="clients" class="feature-select">
+              <span><i class="fas fa-users"></i> Clients</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" value="invoices" class="feature-select">
+              <span><i class="fas fa-file-invoice"></i> Invoices</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" value="tasks" class="feature-select">
+              <span><i class="fas fa-tasks"></i> Tasks</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" value="expenses" class="feature-select">
+              <span><i class="fas fa-receipt"></i> Expenses</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" value="wallet" class="feature-select">
+              <span><i class="fas fa-wallet"></i> Wallet</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" value="analytics" class="feature-select">
+              <span><i class="fas fa-chart-bar"></i> Analytics</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" value="calendar" class="feature-select">
+              <span><i class="fas fa-calendar"></i> Calendar</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" value="settings" class="feature-select">
+              <span><i class="fas fa-sliders-h"></i> Settings</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="close-modal-btn" data-i18n="cancel">Cancel</button>
+          <button class="btn btn-primary" id="save-features-btn" data-i18n="save_changes">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="export-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 data-i18n="export_data">Export Data</h2>
+          <button class="close-btn">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="export-options">
+            <button class="export-option" id="export-pdf-btn">
+              <i class="fas fa-file-pdf"></i>
+              <span data-i18n="export_pdf">Export as PDF</span>
+            </button>
+            <button class="export-option" id="export-csv-btn">
+              <i class="fas fa-file-csv"></i>
+              <span data-i18n="export_csv">Export as CSV</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRM Features Grid -->
+    <div class="crm-grid">
+      <!-- Clients Card -->
+      <div class="crm-card" data-feature="clients">
+        <div class="card-header">
+          <h3><i class="fas fa-users"></i> <span data-i18n="clients">Clients</span></h3>
+        </div>
+        <div class="card-body">
+          <p data-i18n="total_clients">Total Clients: 0</p>
+          <button class="btn btn-sm btn-primary" id="add-client-btn" data-i18n="add_client">Add Client</button>
+          <div class="clients-list" id="clients-list"></div>
+        </div>
+      </div>
+
+      <!-- Invoices Card -->
+      <div class="crm-card" data-feature="invoices">
+        <div class="card-header">
+          <h3><i class="fas fa-file-invoice"></i> <span data-i18n="invoices">Invoices</span></h3>
+        </div>
+        <div class="card-body">
+          <p data-i18n="total_invoices">Total Invoices: 0</p>
+          <button class="btn btn-sm btn-primary" id="create-invoice-btn" data-i18n="create_invoice">Create Invoice</button>
+          <div class="invoices-list" id="invoices-list"></div>
+        </div>
+      </div>
+
+      <!-- Tasks Card -->
+      <div class="crm-card" data-feature="tasks">
+        <div class="card-header">
+          <h3><i class="fas fa-tasks"></i> <span data-i18n="tasks">Tasks</span></h3>
+        </div>
+        <div class="card-body">
+          <p data-i18n="pending_tasks">Pending Tasks: 0</p>
+          <button class="btn btn-sm btn-primary" id="add-task-btn" data-i18n="add_task">Add Task</button>
+          <div class="tasks-list" id="tasks-list"></div>
+        </div>
+      </div>
+
+      <!-- Expenses Card -->
+      <div class="crm-card" data-feature="expenses">
+        <div class="card-header">
+          <h3><i class="fas fa-receipt"></i> <span data-i18n="expenses">Expenses</span></h3>
+        </div>
+        <div class="card-body">
+          <p data-i18n="total_expenses">Total Expenses: $0</p>
+          <button class="btn btn-sm btn-primary" id="add-expense-btn" data-i18n="add_expense">Add Expense</button>
+          <div class="expenses-list" id="expenses-list"></div>
+        </div>
+      </div>
+
+      <!-- Wallet Card -->
+      <div class="crm-card" data-feature="wallet">
+        <div class="card-header">
+          <h3><i class="fas fa-wallet"></i> <span data-i18n="wallet">Wallet</span></h3>
+        </div>
+        <div class="card-body">
+          <p data-i18n="account_balance">Account Balance: $0</p>
+          <button class="btn btn-sm btn-success" id="add-funds-btn" data-i18n="add_funds">Add Funds</button>
+          <div class="transactions-list" id="transactions-list"></div>
+        </div>
+      </div>
+
+      <!-- Analytics Card -->
+      <div class="crm-card" data-feature="analytics">
+        <div class="card-header">
+          <h3><i class="fas fa-chart-bar"></i> <span data-i18n="analytics">Analytics</span></h3>
+        </div>
+        <div class="card-body">
+          <canvas id="analytics-chart"></canvas>
+          <p data-i18n="revenue_overview">Revenue Overview</p>
+        </div>
+      </div>
+
+      <!-- Calendar Card -->
+      <div class="crm-card" data-feature="calendar">
+        <div class="card-header">
+          <h3><i class="fas fa-calendar"></i> <span data-i18n="calendar">Calendar</span></h3>
+        </div>
+        <div class="card-body">
+          <div id="calendar-widget"></div>
+        </div>
+      </div>
+
+      <!-- Settings Card -->
+      <div class="crm-card" data-feature="settings">
+        <div class="card-header">
+          <h3><i class="fas fa-sliders-h"></i> <span data-i18n="settings">Settings</span></h3>
+        </div>
+        <div class="card-body">
+          <button class="btn btn-sm btn-secondary" id="theme-toggle-btn" data-i18n="toggle_dark_mode">Toggle Dark Mode</button>
+          <button class="btn btn-sm btn-secondary" id="backup-btn" data-i18n="backup_data">Backup Data</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="crm-footer">
+    <div class="footer-content">
+      <p>&copy; 2025 AuraSphere Pro. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="/privacy.html" data-i18n="privacy">Privacy</a>
+        <a href="/terms.html" data-i18n="terms">Terms</a>
+        <a href="/support.html" data-i18n="support">Support</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/crm-app.js"></script>
+</body>
+</html>

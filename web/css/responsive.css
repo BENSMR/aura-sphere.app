@@ -1,0 +1,195 @@
+/* ====================================
+   Responsive Design - Mobile First
+   ==================================== */
+
+/* Mobile: 0px - 767px */
+
+@media (max-width: 767px) {
+  .nav-menu {
+    gap: 15px;
+    font-size: 14px;
+  }
+
+  .nav-container {
+    height: 60px;
+    padding: 0 15px;
+  }
+
+  .nav-logo a {
+    font-size: 16px;
+    gap: 8px;
+  }
+
+  .nav-logo i {
+    font-size: 20px;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .crm-container {
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+
+  .crm-header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
+  .header-content h1 {
+    font-size: 24px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .crm-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  /* Show only selected features on mobile */
+  .crm-card {
+    display: none;
+  }
+
+  .crm-card.mobile-visible {
+    display: block;
+  }
+
+  .card-header h3 {
+    font-size: 16px;
+  }
+
+  .card-header i {
+    font-size: 20px;
+  }
+
+  .card-body {
+    padding: 15px;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: 500px;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .feature-checkbox {
+    padding: 15px;
+  }
+
+  .feature-checkbox span {
+    font-size: 12px;
+  }
+
+  .export-options {
+    grid-template-columns: 1fr;
+  }
+
+  .crm-footer {
+    padding: 20px 15px;
+  }
+
+  .footer-links {
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .footer-links a {
+    font-size: 12px;
+  }
+}
+
+/* Tablet: 768px - 1023px */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .nav-container {
+    padding: 0 15px;
+  }
+
+  .crm-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .export-options {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Desktop: 1024px and above */
+
+@media (min-width: 1024px) {
+  .crm-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Show all features on desktop */
+  .crm-card {
+    display: block !important;
+  }
+}
+
+/* ====================================
+   Accessibility
+   ==================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.dark-mode-disabled) {
+    background-color: #1f2937;
+    color: #fff;
+  }
+}
+
+/* ====================================
+   Print Styles
+   ==================================== */
+
+@media print {
+  .navbar,
+  .header-actions,
+  .crm-footer {
+    display: none;
+  }
+
+  .crm-container {
+    margin: 0;
+    padding: 0;
+  }
+
+  .crm-card {
+    page-break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+}
