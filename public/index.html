@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraSphere Pro - Enterprise Business Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav h1 {
+            color: #fff;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        nav h1::before {
+            content: "✨";
+            font-size: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .hero {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .hero h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #00d4ff;
+            color: #000;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .cta-button:hover {
+            background: #00f0ff;
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .feature-card p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #667eea;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 3rem 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .stack-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 3rem 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stack-section h3 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tech-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .status-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            border-left: 4px solid #00d4ff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-box h4 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .status-item::before {
+            content: "✓";
+            color: #00d4ff;
+            font-weight: bold;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+        }
+
+        .recent-commits {
+            background: #1e1e1e;
+            color: #00d4ff;
+            padding: 2rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 2rem 0;
+        }
+
+        .commit-item {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-left: 2px solid #00d4ff;
+            padding-left: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h2 {
+                font-size: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>AuraSphere Pro</h1>
+            <div id="language-switcher"></div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h2>Enterprise Business Management Platform</h2>
+            <p>Complete solution for invoicing, payments, expenses, CRM, and business intelligence</p>
+            <button class="cta-button" onclick="document.getElementById('features').scrollIntoView({behavior: 'smooth'})">
+                Explore Features
+            </button>
+        </div>
+
+        <div id="features" class="features-grid">
+            <div class="feature-card">
+                <h3>📸 Receipt OCR</h3>
+                <p>Client-side receipt processing using Tesseract.js. Privacy-first, offline-capable image recognition.</p>
+                <span class="feature-tag">Tesseract.js</span>
+                <span class="feature-tag">Privacy</span>
+                <span class="feature-tag">Offline</span>
+            </div>
+
+            <div class="feature-card">
+                <h3>💰 Smart Validation</h3>
+                <p>Triple-layer validation system (client/server/database) ensures data integrity across all platforms.</p>
+                <span class="feature-tag">3-Layer</span>
+                <span class="feature-tag">Consistent</span>
+                <span class="feature-tag">Secure</span>
+            </div>
+
+            <div class="feature-card">
+                <h3>💳 Payment Processing</h3>
+                <p>Stripe integration with idempotency keys to prevent duplicate charges. Full audit trail.</p>
+                <span class="feature-tag">Stripe</span>
+                <span class="feature-tag">Idempotent</span>
+                <span class="feature-tag">Safe</span>
+            </div>
+
+            <div class="feature-card">
+                <h3>📊 Invoice Management</h3>
+                <p>Professional invoice generation, PDF export, email delivery, and automated reminders.</p>
+                <span class="feature-tag">PDF</span>
+                <span class="feature-tag">Email</span>
+                <span class="feature-tag">Automation</span>
+            </div>
+
+            <div class="feature-card">
+                <h3>👥 CRM System</h3>
+                <p>Complete customer relationship management with contact tracking and interaction history.</p>
+                <span class="feature-tag">Contacts</span>
+                <span class="feature-tag">Insights</span>
+                <span class="feature-tag">Analytics</span>
+            </div>
+
+            <div class="feature-card">
+                <h3>🔐 Enterprise Security</h3>
+                <p>Firebase Crashlytics error tracking, role-based access control, and comprehensive audit logs.</p>
+                <span class="feature-tag">RBAC</span>
+                <span class="feature-tag">Audit</span>
+                <span class="feature-tag">Monitoring</span>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <h3>Application Scale</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">62K+</div>
+                    <div class="stat-label">Lines of Code</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">150+</div>
+                    <div class="stat-label">Cloud Functions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">40+</div>
+                    <div class="stat-label">UI Screens</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Collections</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stack-section">
+            <h3>Technology Stack</h3>
+            <div class="tech-grid">
+                <div class="tech-badge">Flutter 3.x</div>
+                <div class="tech-badge">Firebase</div>
+                <div class="tech-badge">Cloud Functions</div>
+                <div class="tech-badge">Firestore</div>
+                <div class="tech-badge">TypeScript</div>
+                <div class="tech-badge">Dart</div>
+                <div class="tech-badge">Stripe</div>
+                <div class="tech-badge">SendGrid</div>
+            </div>
+        </div>
+
+        <div class="status-box">
+            <h4>Latest Implementation (Dec 16, 2025)</h4>
+            <div class="status-item">Receipt OCR with client-side processing (privacy-first)</div>
+            <div class="status-item">Triple-layer expense validation system</div>
+            <div class="status-item">Payment processing with idempotency keys</div>
+            <div class="status-item">Firebase Crashlytics enterprise error tracking</div>
+            <div class="status-item">Safe BuildContext helpers for async operations</div>
+            <div class="status-item">Firestore offline persistence for web</div>
+            <div class="status-item">500+ lines of security rules</div>
+        </div>
+
+        <div class="recent-commits">
+            <strong>Recent Commits:</strong>
+            <div class="commit-item">fd038440 - Payment creation with idempotency key support</div>
+            <div class="commit-item">a061fd19 - Comprehensive expense validation (3 layers)</div>
+            <div class="commit-item">5692a1a9 - Client-side OCR with Tesseract.js</div>
+            <div class="commit-item">53595f81 - Firebase Crashlytics upgrade</div>
+            <div class="commit-item">ba50d518 - Crashlytics web integration</div>
+            <div class="commit-item">07ce8eb6 - Safe BuildContext helpers</div>
+            <div class="commit-item">853c14e6 - Firestore offline persistence</div>
+        </div>
+
+        <div class="status-box">
+            <h4>✅ Status: Production Ready</h4>
+            <div class="status-item">All code committed and tested</div>
+            <div class="status-item">Firebase security rules deployed</div>
+            <div class="status-item">Cloud Functions exported</div>
+            <div class="status-item">Web app optimized</div>
+            <div class="status-item">Documentation complete</div>
+            <div class="status-item">Ready for deployment</div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 AuraSphere Pro. Enterprise-grade business management platform.</p>
+        <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.9rem;">
+            Deployed on Firebase | Built with Flutter & TypeScript | Secured with Firestore
+        </p>
+    </footer>
+
+    <!-- Load translation and language switcher scripts -->
+    <script src="/js/translations.js"></script>
+    <script src="/js/language-switcher.js"></script>
+</body>
+</html>
