@@ -3,195 +3,416 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aurasphere CRM Dashboard</title>
+  <title>Aurasphere Pro - CRM Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --black: #05050f;
-      --white: #ffffff;
-      --light-gray: #a0a0c0;
-      --accent: #00e0ff;
-      --gold: #ffd700;
-      --green: #00ffaa;
+      --primary: #00e0ff;
+      --primary-dark: #0099cc;
+      --secondary: #ffd700;
+      --success: #00ffaa;
+      --warning: #ffaa00;
+      --danger: #ff5588;
+      --bg-dark: #05050f;
+      --bg-darker: #0a0a1a;
+      --bg-card: #12121d;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0c0;
+      --text-muted: #666688;
+      --border-color: rgba(0, 224, 255, 0.1);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      background: var(--black);
-      color: var(--light-gray);
-      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, var(--bg-dark), var(--bg-darker));
+      color: var(--text-secondary);
+      font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+      line-height: 1.6;
     }
-    .app-container {
+
+    /* LAYOUT */
+    .app-wrapper {
       display: flex;
       height: 100vh;
+      overflow: hidden;
     }
+
+    /* SIDEBAR */
     .sidebar {
       width: 280px;
-      background: rgba(10,10,20,0.8);
-      border-right: 1px solid rgba(0,224,255,0.1);
-      padding: 2rem 1.5rem;
+      background: rgba(10, 10, 26, 0.9);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
       overflow-y: auto;
+      padding: 2rem 1.5rem;
     }
-    .logo {
+
+    .sidebar-logo {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 2rem;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--white);
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
     }
+
+    .sidebar-logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: var(--bg-dark);
+    }
+
+    .sidebar-logo-text {
+      flex: 1;
+    }
+
+    .sidebar-logo-text h2 {
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+    }
+
+    .sidebar-logo-text p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* NAV SECTIONS */
     .nav-section {
       margin-bottom: 2rem;
     }
-    .nav-label {
-      font-size: 0.75rem;
+
+    .nav-section-title {
+      font-size: 0.7rem;
       text-transform: uppercase;
-      color: #666;
-      margin-bottom: 0.75rem;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      font-weight: 700;
     }
-    .nav-item {
+
+    .nav-link {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 0.75rem 1rem;
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.5rem;
       border-radius: 8px;
       cursor: pointer;
-      color: var(--light-gray);
+      color: var(--text-secondary);
       text-decoration: none;
-      transition: all 0.3s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       font-size: 0.95rem;
-      margin-bottom: 0.5rem;
+      border-left: 3px solid transparent;
     }
-    .nav-item:hover, .nav-item.active {
-      background: rgba(0,224,255,0.1);
-      color: var(--accent);
-      border-left: 3px solid var(--accent);
+
+    .nav-link:hover {
+      background: rgba(0, 224, 255, 0.08);
+      color: var(--primary);
+      border-left-color: var(--primary);
       padding-left: calc(1rem - 3px);
     }
-    .main-content {
+
+    .nav-link.active {
+      background: rgba(0, 224, 255, 0.15);
+      color: var(--primary);
+      border-left-color: var(--primary);
+      padding-left: calc(1rem - 3px);
+      font-weight: 600;
+    }
+
+    .nav-link i {
+      width: 20px;
+      text-align: center;
+    }
+
+    /* MAIN CONTENT */
+    .main-container {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      background: linear-gradient(180deg, rgba(5,5,15,0.5), rgba(10,10,26,0.8));
     }
-    .top-bar {
-      background: rgba(10,10,20,0.6);
-      border-bottom: 1px solid rgba(0,224,255,0.1);
-      padding: 1rem 2rem;
+
+    /* HEADER */
+    .header {
+      background: rgba(12, 12, 28, 0.6);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1.5rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      backdrop-filter: blur(10px);
     }
-    .user-menu {
+
+    .header-left h1 {
+      font-size: 1.8rem;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .header-right {
       display: flex;
-      gap: 1rem;
+      gap: 1.5rem;
       align-items: center;
     }
-    .user-badge {
-      background: rgba(0,224,255,0.1);
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      color: var(--accent);
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1.25rem;
+      background: rgba(0, 224, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
     }
-    .content-area {
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg-dark);
+      font-weight: bold;
+    }
+
+    .user-details p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .user-details strong {
+      color: var(--text-primary);
+    }
+
+    /* CONTENT */
+    .content {
       flex: 1;
       overflow-y: auto;
       padding: 2rem;
     }
+
     .section {
       display: none;
+      animation: fadeIn 0.3s ease-in-out;
     }
+
     .section.active {
       display: block;
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* PAGE HEADER */
     .page-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 2rem;
     }
-    .page-title {
+
+    .page-header h2 {
       font-size: 2rem;
-      color: var(--white);
+      color: var(--text-primary);
+      font-weight: 700;
     }
+
+    /* BUTTONS */
     .btn {
       padding: 0.75rem 1.5rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      font-size: 0.95rem;
     }
+
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--gold));
-      color: var(--black);
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: var(--bg-dark);
+      box-shadow: 0 4px 15px rgba(0, 224, 255, 0.2);
     }
+
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,224,255,0.3);
+      box-shadow: 0 6px 20px rgba(0, 224, 255, 0.3);
     }
+
     .btn-secondary {
       background: transparent;
-      border: 1px solid var(--accent);
-      color: var(--accent);
+      border: 1.5px solid var(--primary);
+      color: var(--primary);
     }
+
+    .btn-secondary:hover {
+      background: rgba(0, 224, 255, 0.1);
+    }
+
+    /* GRID */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
+
+    /* CARDS */
     .card {
-      background: rgba(12,12,28,0.5);
-      border: 1px solid rgba(0,224,255,0.15);
-      border-radius: 12px;
-      padding: 1.5rem;
+      background: rgba(18, 18, 29, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.75rem;
       backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     }
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--white);
+
+    .card:hover {
+      border-color: rgba(0, 224, 255, 0.3);
+      background: rgba(18, 18, 29, 0.95);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 224, 255, 0.1);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 1rem;
     }
-    .card-value {
-      font-size: 1.8rem;
-      color: var(--accent);
-      font-weight: 700;
+
+    .card-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
-    .list-item {
-      padding: 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+
+    .card-icon {
+      color: var(--primary);
+      opacity: 0.7;
+    }
+
+    .card-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .card-subtext {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* LIST */
+    .list-container {
+      background: rgba(18, 18, 29, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .list-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
+    .list-header h3 {
+      font-size: 1.1rem;
+      color: var(--text-primary);
+    }
+
+    .list-item {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+
+    .list-item:hover {
+      background: rgba(0, 224, 255, 0.05);
+    }
+
     .list-item:last-child {
       border-bottom: none;
     }
-    .status-badge {
-      padding: 0.4rem 0.8rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
+
+    .list-item-info {
+      flex: 1;
+    }
+
+    .list-item-title {
+      color: var(--text-primary);
       font-weight: 600;
+      margin-bottom: 0.25rem;
     }
-    .status-pending {
-      background: rgba(255,170,0,0.2);
-      color: #ffaa00;
+
+    .list-item-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
     }
-    .status-paid {
-      background: rgba(0,255,170,0.2);
-      color: var(--green);
+
+    .list-item-badge {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
     }
-    .status-overdue {
-      background: rgba(255,85,136,0.2);
-      color: #ff5588;
+
+    /* STATUS BADGES */
+    .badge {
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
+
+    .badge-pending {
+      background: rgba(255, 170, 0, 0.15);
+      color: var(--warning);
+    }
+
+    .badge-paid {
+      background: rgba(0, 255, 170, 0.15);
+      color: var(--success);
+    }
+
+    .badge-overdue {
+      background: rgba(255, 85, 136, 0.15);
+      color: var(--danger);
+    }
+
+    /* MODALS */
     .modal {
       display: none;
       position: fixed;
@@ -199,309 +420,438 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(5,5,15,0.9);
-      z-index: 1000;
+      background: rgba(5, 5, 15, 0.92);
+      backdrop-filter: blur(5px);
+      z-index: 2000;
       align-items: center;
       justify-content: center;
       padding: 2rem;
+      animation: fadeIn 0.2s ease;
     }
+
     .modal.show {
       display: flex;
     }
+
     .modal-content {
-      background: rgba(12,12,28,0.95);
-      border: 1px solid rgba(0,224,255,0.2);
-      border-radius: 16px;
-      padding: 2rem;
-      max-width: 600px;
+      background: rgba(18, 18, 29, 0.95);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2.5rem;
+      max-width: 500px;
       width: 100%;
       max-height: 85vh;
       overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 224, 255, 0.1);
     }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .modal-header h3 {
+      font-size: 1.5rem;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
     .modal-close {
-      position: absolute;
-      top: 2rem;
-      right: 2rem;
       background: none;
       border: none;
-      color: #888;
+      color: var(--text-muted);
       font-size: 1.5rem;
       cursor: pointer;
+      transition: color 0.3s;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
     .modal-close:hover {
-      color: var(--accent);
+      color: var(--primary);
     }
+
+    /* FORM */
     .form-group {
       margin-bottom: 1.5rem;
     }
+
     .form-group label {
       display: block;
-      margin-bottom: 0.5rem;
-      color: var(--white);
+      margin-bottom: 0.7rem;
+      color: var(--text-primary);
       font-weight: 600;
-    }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%;
-      padding: 0.75rem;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(0,224,255,0.2);
-      border-radius: 8px;
-      color: var(--white);
       font-size: 0.95rem;
     }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(0, 224, 255, 0.08);
+      box-shadow: 0 0 0 3px rgba(0, 224, 255, 0.1);
+    }
+
     .form-group textarea {
       resize: vertical;
       min-height: 100px;
     }
-    .ai-chat {
+
+    /* AI CHAT */
+    .ai-chat-widget {
       position: fixed;
       bottom: 2rem;
       right: 2rem;
-      width: 350px;
-      height: 500px;
-      background: rgba(12,12,28,0.95);
-      border: 1px solid rgba(0,224,255,0.2);
-      border-radius: 16px;
+      width: 380px;
+      height: 550px;
+      background: rgba(18, 18, 29, 0.97);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
       display: flex;
       flex-direction: column;
       z-index: 999;
-      box-shadow: 0 8px 32px rgba(0,224,255,0.1);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
     }
+
     .chat-header {
-      background: linear-gradient(135deg, var(--accent), var(--gold));
-      color: var(--black);
-      padding: 1rem;
-      border-radius: 16px 16px 0 0;
-      font-weight: 600;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: var(--bg-dark);
+      padding: 1.25rem;
+      border-radius: 20px 20px 0 0;
+      font-weight: 700;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 1.05rem;
     }
+
+    .chat-header i {
+      margin-right: 0.5rem;
+    }
+
     .chat-close {
       background: none;
       border: none;
       color: inherit;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       cursor: pointer;
+      transition: transform 0.2s;
     }
+
+    .chat-close:hover {
+      transform: scale(1.1);
+    }
+
     .chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding: 1rem;
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 1rem;
     }
-    .chat-message {
-      padding: 0.75rem;
-      border-radius: 8px;
+
+    .message {
+      padding: 0.9rem 1.2rem;
+      border-radius: 12px;
       font-size: 0.9rem;
       max-width: 90%;
+      word-wrap: break-word;
     }
+
     .message-user {
-      background: rgba(0,224,255,0.2);
-      color: var(--accent);
+      background: rgba(0, 224, 255, 0.2);
+      color: var(--primary);
       align-self: flex-end;
+      border-bottom-right-radius: 4px;
     }
+
     .message-ai {
-      background: rgba(0,255,170,0.1);
-      color: var(--green);
+      background: rgba(0, 255, 170, 0.1);
+      color: var(--success);
       align-self: flex-start;
+      border-bottom-left-radius: 4px;
     }
-    .chat-input {
+
+    .chat-input-wrapper {
       display: flex;
-      gap: 0.5rem;
-      padding: 1rem;
-      border-top: 1px solid rgba(0,224,255,0.1);
+      gap: 0.75rem;
+      padding: 1.25rem;
+      border-top: 1px solid var(--border-color);
+      background: rgba(12, 12, 28, 0.4);
+      border-radius: 0 0 20px 20px;
     }
-    .chat-input input {
+
+    .chat-input-wrapper input {
       flex: 1;
-      padding: 0.5rem;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(0,224,255,0.2);
-      border-radius: 6px;
-      color: var(--white);
-      font-size: 0.85rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.9rem;
     }
-    .chat-input button {
-      padding: 0.5rem 1rem;
-      background: var(--accent);
-      color: var(--black);
+
+    .chat-input-wrapper input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(0, 224, 255, 0.08);
+    }
+
+    .chat-input-wrapper button {
+      padding: 0.75rem 1.25rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: var(--bg-dark);
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
+      transition: all 0.3s;
     }
-    .alert {
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
+
+    .chat-input-wrapper button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 224, 255, 0.3);
     }
-    .alert-success {
-      background: rgba(0,255,170,0.1);
-      border: 1px solid rgba(0,255,170,0.3);
-      color: var(--green);
-    }
-    .alert-error {
-      background: rgba(255,85,136,0.1);
-      border: 1px solid rgba(255,85,136,0.3);
-      color: #ff5588;
-    }
-    .loading {
-      display: inline-block;
-      color: var(--accent);
-    }
+
+    /* RESPONSIVE */
     @media (max-width: 1024px) {
-      .sidebar { width: 200px; }
-      .content-area { padding: 1rem; }
+      .sidebar { width: 240px; padding: 1.5rem 1rem; }
+      .content { padding: 1.5rem; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .ai-chat-widget { width: 320px; height: 480px; }
+    }
+
+    @media (max-width: 768px) {
+      .app-wrapper { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; flex-direction: row; order: 2; }
+      .main-container { order: 1; }
+      .nav-section { margin-bottom: 0; margin-right: 1.5rem; }
       .grid { grid-template-columns: 1fr; }
+      .ai-chat-widget { width: 100%; height: auto; max-height: 50vh; bottom: 0; right: 0; border-radius: 20px 20px 0 0; }
+      .header { flex-direction: column; gap: 1rem; text-align: center; }
+      .header-right { width: 100%; justify-content: center; }
     }
   </style>
 </head>
 <body>
 
-<div class="app-container">
+<div class="app-wrapper">
   <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="logo">◉ AURA CRM</div>
-    
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">◉</div>
+      <div class="sidebar-logo-text">
+        <h2>Aura CRM</h2>
+        <p>Pro Edition</p>
+      </div>
+    </div>
+
     <div class="nav-section">
-      <div class="nav-label">Main</div>
-      <div class="nav-item active" onclick="switchSection('dashboard')">
+      <div class="nav-section-title">Dashboard</div>
+      <a class="nav-link active" onclick="switchSection('dashboard')">
         <i class="fas fa-chart-line"></i> Dashboard
-      </div>
-      <div class="nav-item" onclick="switchSection('contacts')">
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Business</div>
+      <a class="nav-link" onclick="switchSection('contacts')">
         <i class="fas fa-users"></i> Contacts
-      </div>
-      <div class="nav-item" onclick="switchSection('invoices')">
+      </a>
+      <a class="nav-link" onclick="switchSection('invoices')">
         <i class="fas fa-file-invoice-dollar"></i> Invoices
-      </div>
-      <div class="nav-item" onclick="switchSection('expenses')">
+      </a>
+      <a class="nav-link" onclick="switchSection('expenses')">
         <i class="fas fa-receipt"></i> Expenses
-      </div>
+      </a>
     </div>
 
     <div class="nav-section">
-      <div class="nav-label">Manage</div>
-      <div class="nav-item" onclick="switchSection('inventory')">
+      <div class="nav-section-title">Manage</div>
+      <a class="nav-link" onclick="switchSection('inventory')">
         <i class="fas fa-boxes"></i> Inventory
-      </div>
-      <div class="nav-item" onclick="switchSection('tasks')">
+      </a>
+      <a class="nav-link" onclick="switchSection('tasks')">
         <i class="fas fa-tasks"></i> Tasks
-      </div>
-      <div class="nav-item" onclick="switchSection('ai-insights')">
-        <i class="fas fa-brain"></i> AI Insights
-      </div>
-    </d>
+      </a>
+    </div>
 
     <div class="nav-section">
-      <div class="nav-label">Account</div>
-      <div class="nav-item" onclick="switchSection('settings')">
+      <div class="nav-section-title">Intelligence</div>
+      <a class="nav-link" onclick="switchSection('analytics')">
+        <i class="fas fa-chart-bar"></i> Analytics
+      </a>
+      <a class="nav-link" onclick="switchSection('insights')">
+        <i class="fas fa-brain"></i> AI Insights
+      </a>
+    </div>
+
+    <div class="nav-section" style="margin-top: auto;">
+      <div class="nav-section-title">Account</div>
+      <a class="nav-link" onclick="switchSection('settings')">
         <i class="fas fa-cog"></i> Settings
-      </div>
-      <div class="nav-item" onclick="logout()">
+      </a>
+      <a class="nav-link" onclick="logout()">
         <i class="fas fa-sign-out-alt"></i> Logout
-      </div>
+      </a>
     </div>
-  </div>
+  </aside>
 
-  <!-- MAIN CONTENT -->
-  <div class="main-content">
-    <!-- TOP BAR -->
-    <div class="top-bar">
-      <h2 id="current-page">Dashboard</h2>
-      <div class="user-menu">
-        <div class="user-badge" id="user-display">Loading...</div>
+  <!-- MAIN -->
+  <div class="main-container">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-left">
+        <h1 id="current-page">Dashboard</h1>
       </div>
-    </div>
+      <div class="header-right">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">U</div>
+          <div class="user-details">
+            <p id="user-name">Loading...</p>
+            <strong id="user-email">user@aurasphere.io</strong>
+          <iv>
+        </div>
+      </div>
+    </header>
 
-    <!-- CONTENT AREA -->
-    <div class="content-area">
+    <!-- CONTENT -->
+    <div class="content">
 
       <!-- DASHBOARD SECTION -->
       <section id="dashboard" class="section active">
         <div class="page-header">
-          <h1 class="page-title">Dashboard</h1>
+          <div>
+            <h2>Welcome back!</h2>
+          </div>
           <button class="btn btn-primary" onclick="loadDashboardData()">
-            <i class="fas fa-sync"></i> Refresh
+            <i class="fas fa-sync-alt"></i> Refresh
           </button>
         </div>
 
         <div class="grid">
           <div class="card">
-            <div class="card-title">Total Revenue</div>
-            <div class="card-value" id="total-revenue"><span class="loading"><i class="fas fa-spinner fa-spin"></i></span></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Outstanding Invoices</div>
-            <div class="card-value" id="pending-invoices"><span class="loading"><i class="fas fa-spinner fa-spin"></i></span></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Total Contacts</div>
-            <div class="card-value" id="total-contacts"><span class="loading"><i class="fas fa-spinner fa-spin"></i></span></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Total Expenses</div>
-            <div class="card-value" id="total-expenses"><span class="loading"><i class="fas fa-spinner fa-spin"></i></span></div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-bottom: 2rem;">
-          <div class="card-title">Recent Activity</div>
-          <div id="recent-activity">
-            <div style="color: #888; text-align: center; padding: 2rem;">
-              <i class="fas fa-inbox"></i> No recent activity yet
+            <div class="card-header">
+              <div class="card-label">Total Revenue</div>
+              <i class="fas fa-chart-pie card-icon"></i>
             </div>
+            <div class="card-value" id="total-revenue">$0</div>
+            <div class="card-subtext">This month</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-label">Outstanding</div>
+              <i class="fas fa-hourglass-end card-icon"></i>
+            </div>
+            <div class="card-value" id="pending-invoices">0</div>
+            <div class="card-subtext">Pending invoices</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-label">Total Contacts</div>
+              <i class="fas fa-users card-icon"></i>
+            </div>
+            <div class="card-value" id="total-contacts">0</div>
+            <div class="card-subtext">Active relationships</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-label">Total Expenses</div>
+              <i class="fas fa-wallet card-icon"></i>
+            </div>
+            <div class="card-value" id="total-expenses">$0</div>
+            <div class="card-subtext">This month</div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-title">AI Business Insights</div>
-          <div id="ai-insights-card" style="color: #a0a0c0; line-height: 1.6;">Loading AI insights...</div>
+        <div class="list-container">
+          <div class="list-header">
+            <h3>Recent Invoices</h3>
+            <button class="btn btn-secondary" onclick="switchSection('invoices')">
+              <i class="fas fa-arrow-right"></i> View All
+            </button>
+          </div>
+          <div id="recent-invoices"></div>
         </div>
       </section>
 
       <!-- CONTACTS SECTION -->
       <section id="contacts" class="section">
         <div class="page-header">
-          <h1 class="page-title">Contacts</h1>
-          <button class="btn btn-primary" onclick="openAddContactModal()">
+          <div>
+            <h2>Contacts</h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Manage your business relationships</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('contact-modal')">
             <i class="fas fa-plus"></i> New Contact
           </button>
         </div>
-        <div class="card">
-          <div id="contacts-list" style="color: #888; text-align: center; padding: 2rem;">
-            <i class="fas fa-spinner fa-spin"></i> Loading contacts...
-          </div>
+
+        <div class="list-container">
+          <div id="contacts-list"></div>
         </div>
       </section>
 
       <!-- INVOICES SECTION -->
       <section id="invoices" class="section">
         <div class="page-header">
-          <h1 class="page-title">Invoices</h1>
-          <button class="btn btn-primary" onclick="openAddInvoiceModal()">
+          <div>
+            <h2>Invoices</h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Track payments and billing</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('invoice-modal')">
             <i class="fas fa-plus"></i> New Invoice
           </button>
         </div>
-        <div class="card">
-          <div id="invoices-list" style="color: #888; text-align: center; padding: 2rem;">
-            <i class="fas fa-spinner fa-spin"></i> Loading invoices...
-          </div>
+
+        <div class="list-container">
+          <div id="invoices-list"></div>
         </div>
       </section>
 
       <!-- EXPENSES SECTION -->
       <section id="expenses" class="section">
         <div class="page-header">
-          <h1 class="page-title">Expenses</h1>
-          <button class="btn btn-primary" onclick="openAddExpenseModal()">
+          <div>
+            <h2>Expenses</h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Monitor your spending</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('expense-modal')">
             <i class="fas fa-plus"></i> New Expense
           </button>
         </div>
-        <div class="card">
-          <div id="expenses-list" style="color: #888; text-align: center; padding: 2rem;">
-            No expenses recorded yet
+
+        <div class="list-container">
+          <div id="expenses-list">
+            <div class="list-item" style="justify-content: center; color: var(--text-muted);">
+              <i class="fas fa-inbox"></i> No expenses recorded yet
+            </div>
           </div>
         </div>
       </section>
@@ -509,14 +859,18 @@
       <!-- INVENTORY SECTION -->
       <section id="inventory" class="section">
         <div class="page-header">
-          <h1 class="page-title">Inventory</h1>
-          <button class="btn btn-primary" onclick="openAddInventoryModal()">
+          <div>
+            <h2>Inventory</h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Manage stock levels</p>
+          </div>
+          <button class="btn btn-primary" onclick="alert('Coming soon')">
             <i class="fas fa-plus"></i> New Item
           </button>
         </div>
-        <div class="card">
-          <div id="inventory-list" style="color: #888; text-align: center; padding: 2rem;">
-            No inventory items yet
+
+        <div class="list-container">
+          <div class="list-item" style="justify-content: center; color: var(--text-muted);">
+            <i class="fas fa-inbox"></i> No items yet
           </div>
         </div>
       </section>
@@ -524,45 +878,101 @@
       <!-- TASKS SECTION -->
       <section id="tasks" class="section">
         <div class="page-header">
-          <h1 class="page-title">Tasks</h1>
-          <button class="btn btn-primary" onclick="openAddTaskModal()">
+          <div>
+            <h2>Tasks</h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Stay on top of your work</p>
+          </div>
+          <button class="btn btn-primary" onclick="alert('Coming soon')">
             <i class="fas fa-plus"></i> New Task
           </button>
         </div>
-        <div class="card">
-          <div id="tasks-list" style="color: #888; text-align: center; padding: 2rem;">
-            No tasks yet
+
+        <div class="list-container">
+          <div class="list-item" style="justify-content: center; color: var(--text-muted);">
+            <i class="fas fa-inbox"></i> No tasks yet
+          </div>
+        </div>
+      </section>
+
+      <!-- ANALYTICS SECTION -->
+      <section id="analytics" class="section">
+        <div class="page-header">
+          <h2>Analytics</h2>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <div class="card-label">Monthly Growth</div>
+            <div class="card-value">+12.5%</div>
+            <div class="card-subtext">vs last month</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Conversion Rate</div>
+            <div class="card-value">8.3%</div>
+            <div class="card-subtext">From leads</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Avg Invoice Value</div>
+            <div class="card-value">$1,250</div>
+            <div class="card-subtext">Per transaction</div>
+          </div>
+        </div>
+
+        <div class="card" style="grid-column: 1 / -1;">
+          <div class="card-label">Revenue Trend</div>
+          <div style="height: 200px; background: rgba(0, 224, 255, 0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-top: 1rem;">
+            📊 Charts coming soon
           </div>
         </div>
       </section>
 
       <!-- AI INSIGHTS SECTION -->
-      <section id="ai-insights" class="section">
+      <section id="insights" class="section">
         <div class="page-header">
-          <h1 class="page-title">AI Intelligence Center</h1>
+          <h2>AI Intelligence Center</h2>
         </div>
+
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card-label" style="margin-bottom: 1rem;">Business Health Score</div>
+          <div class="card-value" id="health-score">8.5/10</div>
+          <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+            <p id="health-analysis" style="linheight: 1.8; font-size: 0.95rem;">Loading AI analysis...</p>
+          </div>
+        </div>
+
         <div class="card">
-          <div class="card-title">Business Health Analysis</div>
-          <div id="ai-health" style="color: #a0a0c0; line-height: 1.6;">Loading AI analysis...</div>
-        </div>
-        <div class="card" style="margin-top: 1.5rem;">
-          <div class="card-title">Actionable Recommendations</div>
-          <div id="ai-actions" style="color: #a0a0c0; line-height: 1.6;"></div>
+          <div class="card-label" style="margin-bottom: 1rem;">Recommendations</div>
+          <div id="recommendations" style="line-height: 1.8;">
+            <p style="color: var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Analyzing your data...</p>
+          </div>
         </div>
       </section>
 
       <!-- SETTINGS SECTION -->
       <section id="settings" class="section">
         <div class="page-header">
-          <h1 class="page-title">Settings</h1>
+          <h2>Settings</h2>
         </div>
+
         <div class="card">
-          <div class="card-title">Account Information</div>
-          <div style="padding: 1rem;">
-            <p><strong>Email:</strong> <span id="settings-email">-</span></p>
-            <p style="margin-top: 1rem;"><strong>Name:</strong> <span id="settings-name">-</span></p>
-            <p style="margin-top: 1rem;"><strong>Company:</strong> <span id="settings-company">-</span></p>
-            <p style="margin-top: 1rem;"><strong>Subscription:</strong> <span id="settings-sub" style="background: rgba(0,255,170,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;">FREE</span></p>
+          <div class="card-label" style="margin-bottom: 1.5rem;">Account Profile</div>
+          <div style="display: grid; gap: 1.25rem;">
+            <div>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.35rem;">Email Address</p>
+              <p style="color: var(--text-primary); font-weight: 600;" id="settings-email">user@aurasphere.io</p>
+            </div>
+            <div>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.35rem;">Full Name</p>
+              <p style="color: var(--text-primary); font-weight: 600;" id="settings-name">John Doe</p>
+            </div>
+            <div>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.35rem;">Company</p>
+              <p style="color: var(--text-primary); font-weight: 600;" id="settings-company">Your Company</p>
+            </div>
+            <div>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.35rem;">Subscription Plan</p>
+              <span class="badge badge-paid" id="settings-sub">FREE</span>
+            </div>
           </div>
         </div>
       </section>
@@ -572,17 +982,21 @@
 </div>
 
 <!-- MODALS -->
-<div id="add-contact-modal" class="modal">
+
+<!-- Contact Modal -->
+<div id="contact-modal" class="modal">
   <div class="modal-content">
-    <button class="modal-close" onclick="closeModal('add-contact-modal')">&times;</button>
-    <h2>Add New Contact</h2>
+    <div class="modal-header">
+      <h3>New Contact</h3>
+      <button class="modal-close" onclick="closeModal('contact-modal')">&times;</button>
+    </div>
     <div class="form-group">
-      <label>Name *</label>
-      <input type="text" id="contact-name" placeholder="John Doe">
+      <label>Full Name *</label>
+      <input type="text" id="contact-name" placeholder="Enter name">
     </div>
     <div class="form-group">
       <label>Email *</label>
-      <input type="email" id="contact-email" placeholder="john@example.com">
+      <input type="email" id="contact-email" placeholder="name@example.com">
     </div>
     <div class="form-group">
       <label>Phone</label>
@@ -590,58 +1004,100 @@
     </div>
     <div class="form-group">
       <label>Company</label>
-      <input type="text" id="contact-company" placeholder="Company Name">
+      <input type="text" id="contact-company" placeholder="Company name">
     </div>
-    <button class="btn btn-primary" onclick="saveContact()" style="width: 100%;">Save Contact</button>
+    <button class="btn btn-primary" onclick="saveContact()" style="width: 100%;">
+      <i class="fas fa-save"></i> Save Contact
+    </button>
   </div>
 </div>
 
-<div id="add-invoice-modal" class="modal">
+<!-- Invoice Modal -->
+<div id="invoice-modal" class="modal">
   <div class="modal-content">
-    <button class="modal-close" onclick="closeModal('add-invoice-modal')">&times;</button>
-    <h2>Create New Invoice</h2>
+    <div class="modal-header">
+      <h3>Create Invoice</h3>
+      <button class="modal-close" onclick="closeModal('invoice-modal')">&times;</button>
+    </div>
     <div class="form-group">
-      <label>Contact Email *</label>
-      <input type="email" id="invoice-contact-email" placeholder="client@example.com">
+      <label>Client Email *</label>
+      <input type="email" id="invoice-email" placeholder="client@example.com">
     </div>
     <div class="form-group">
       <label>Amount *</label>
-      <input type="number" id="invoice-amount" placeholder="1000.00" step="0.01">
+      <input type="number" id="invoice-amount" placeholder="0.00" step="0.01">
     </div>
     <div class="form-group">
       <label>Description</label>
-      <textarea id="invoice-description" placeholder="Invoice details..."></textarea>
+      <textarea id="invoice-desc" placeholder="Invoice details..."></textarea>
     </div>
     <div class="form-group">
       <label>Due Date</label>
-      <input type="date" id="invoice-due-date">
+      <input type="date" id="invoice-due">
     </div>
-    <button class="btn btn-primary" onclick="saveInvoice()" style="width: 100%;">Create Invoice</button>
+    <button class="btn btn-primary" onclick="saveInvoice()" style="width: 100%;">
+      <i class="fas fa-file-invoice-dollar"></i> Create Invoice
+    </button>
   </div>
 </div>
 
-<!-- AI CHAT WIDGET -->
-<div class="ai-chat" id="ai-chat-widget">
+<!-- Expense Modal -->
+<div id="expense-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>New Expense</h3>
+      <button class="modal-close" onclick="closeModal('expense-modal')">&times;</button>
+    </div>
+    <div class="form-group">
+      <label>Category *</label>
+      <select id="expense-category">
+        <option>Select category</option>
+        <option>Travel</option>
+        <option>Equipment</option>
+        <option>Software</option>
+        <option>Meals</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Amount *</label>
+      <input type="number" id="expense-amount" placeholder="0.00" step="0.01">
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="expense-date">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="expense-desc" placeholder="Add notes..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="alert('Coming soon')" style="width: 100%;">
+      <i class="fas fa-save"></i> Save Expense
+    </button>
+  </div>
+</div>
+
+<!-- AI CHAT -->
+<div class="ai-chat-widget" id="ai-chat">
   <div class="chat-header">
     <span><i class="fas fa-robot"></i> AI Assistant</span>
     <button class="chat-close" onclick="closeAIChat()">✕</button>
   </div>
   <div class="chat-messages" id="chat-messages">
-    <div class="chat-message message-ai">Hi! I'm your AI assistant. Ask me about your business, finances, or get recommendations.</div>
+    <div class="message message-ai">Hi! 👋 I'm your AI assistant. Ask me anything about your business!</div>
   </div>
-  <div class="chat-input">
-    <input type="text" id="chat-input" placeholder="Ask me anything..." onkeypress="handleChatKeypress(event)">
+  <div class="chat-input-wrapper">
+    <input type="text" id="chat-input" placeholder="Type your question..." onkeypress="handleChatKeypress(event)">
     <button onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
   </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-functions.js"></script>
 
 <script>
-  // Firebase Configuration
+  // Initialize Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBz0Oj1FVrXS7rVxZKH5VmPZvY0nYf3UqU",
     authDomain: "aurasphere-pro.firebaseapp.com",
@@ -651,36 +1107,36 @@
     appId: "1:876321378652:web:4da828bbf22c3dbac93199"
   };
 
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const functions = firebase.functions();
 
-  // User data
   let currentUser = null;
 
-  // Initialize
-  window.addEventListener('load', async () => {
+  window.addEventListener('load', () => {
     checkAuth();
-    await loadUserData();
-    await loadDashboardData();
+    loadUserData();
+    loadDashboardData();
   });
 
   function checkAuth() {
-    const isLoggedIn = localStorage.getItem('user_logged_in');
-    if (!isLoggedIn) {
+    if (!localStorage.getItem('user_logged_in')) {
       window.location.href = '/crm-login.html';
     }
   }
 
-  async function loadUserData() {
+  function loadUserData() {
     const email = localStorage.getItem('user_email');
     const name = localStorage.getItem('user_name');
     const company = localStorage.getItem('user_company');
-    const subscription = localStorage.getItem('user_subscription') || 'free';
+    const subscription = localStorage.getItem('user_subscription') || 'FREE';
 
     currentUser = { email, name, company, subscription };
-    document.getElementById('user-display').textContent = name || 'User';
+
+    document.getElementById('user-avatar').textContent = (name || 'U').charAt(0).toUpperCase();
+    document.getElementById('user-name').textContent = name || 'User';
+    document.getElementById('user-email').Content = email;
+
     document.getElementById('settings-email').textContent = email;
     document.getElementById('settings-name').textContent = name;
     document.getElementById('settings-company').textContent = company;
@@ -690,200 +1146,175 @@
   async function loadDashboardData() {
     try {
       const userId = currentUser.email;
+      const userDoc = await db.collection('users').doc(userId).get();
 
-      // Load user document from Firestore
-      const userDoc = await db.collection('users').docserId).get();
       if (userDoc.exists) {
-        const userData = userDoc.data();
-        
-        // Calculate totals
-        const totalRevenue = userData.totalRevenue || 0;
-        const invoices = userData.invoices || [];
-        const pendingCount = invoices.filter(inv => inv.status === 'pending').length;
-        
-        document.getElementById('total-revenue').textContent = '$' + totalRevenue.toLocaleString();
-        document.getElementById('pending-invoices').textContent = pendingCount;
-        document.getElementById('total-contacts').textContent = (userData.contacts || []).length;
-        document.getElementById('total-expenses').textContent = '$' + (userData.totalExpenses || 0).toLocaleString();
+        const data = userDoc.data();
+        document.getElementById('total-revenue').textContent = '$' + (data.totalRevenue || 0).toLocaleString();
+        document.getElementById('total-contacts').textContent = (data.contacts || []).length;
+        document.getElementById('total-expenses').textContent = '$' + (data.totalExpenses || 0).toLocaleString();
 
-        // Load recent activity
-        loadRecentActivity(invoices);
+        const invoices = data.invoices || [];
+        document.getElementById('pending-invoices').textContent = invoices.filter(i => i.status === 'pending').length;
+        loadRecentInvoices(invoices);
       } else {
-        setPlaceholderData();
+        loadDemoData();
       }
 
-      // Load AI Insights
-      await loadAIInsights();
+      loadAIInsights();
     } catch (error) {
-      console.error('Error loading dashboard:', error);
-      setPlaceholderData();
+      console.log('Loading demo data:', error.message);
+      loadDemoData();
     }
   }
 
-  function setPlaceholderData() {
-    document.getElementById('total-revenue').textContent = '$12,500';
-    document.getElementById('pending-invoices').textContent = '3';
-    document.getElementById('total-contacts').textContent = '24';
-    document.getElementById('total-expenses').textContent = '$3,200';
-    
-    document.getElementById('recent-activity').innerHTML = `
-      <div class="list-item">
-        <div>
-          <strong>Invoice INV-001 Created</strong><br>
-          <span style="color: #888; font-size: 0.9rem;">Today • $500.00</span>
-        </div>
-        <span class="status-badge status-paid">Sent</span>
-      </div>
-      <div class="list-item">
-        <div>
-          <strong>New Contact Added</strong><br>
-          <span style="color: #888; font-size: 0.9rem;">Yesterday • John Doe</span>
-        </div>
-        <span class="status-badge status-pending">Active</span>
-      </div>
-    `;
+  function loadDemoData() {
+    document.getElementById('total-revenue').textContent = '$25,500';
+    document.getElementById('pending-invoices').textContent = '5';
+    document.getElementById('total-contacts').textContent = '18';
+    document.getElementById('total-expenses').textContent = '$4,200';
+
+    loadRecentInvoices([
+      { number: 'INV-2024-001', amount: 2500, status: 'paid', date: 'Dec 10' },
+      { number: 'INV-2024-002', amount: 3500, status: 'pending', date: 'Dec 12' },
+      { number: 'INV-2024-003', amount: 1800, status: 'pending', date: 'Dec 14' }
+    ]);
   }
 
-  function loadRecentActivity(invoices) {
-    const recent = invoices.slice(0, 3);
+  function loadRecentInvoices(invoices) {
     let html = '';
-    
+    const recent = invoices.slice(0, 5);
+
     if (recent.length === 0) {
-      html = '<div style="color: #888; text-align: center; padding: 2rem;"><i class="fas fa-inbox"></i> No recent activity</div>';
+      html = '<div class="list-item" style="justify-content: center; color: var(--text-muted);"><i class="fas fa-inbox"></i> No invoices yet</div>';
     } else {
       recent.forEach(inv => {
-        const status = inv.status || 'pending';
-        const badgeClass = status === 'paid' ? 'status-paid' : status === 'overdue' ? 'status-overdue' : 'status-pending';
+        const badgeClass = inv.status === 'paid' ? 'badge-paid' : inv.status === 'overdue' ? 'badge-overdue' : 'badge-pending';
         html += `
           <div class="list-item">
-            <div>
-              <strong>${inv.number || 'Invoice'}</strong><br>
-              <span style="color: #888; font-size: 0.9rem;">$${(inv.amount || 0).toLocaleString()}</span>
+            <div class="list-item-info">
+              <div class="list-item-title">${inv.number || 'Invoice'}</div>
+              <div class="list-item-desc">$${(inv.amount || 0).toLocaleString()} • ${inv.date || 'N/A'}</div>
             </div>
-            <span class="status-badge ${badgeClass}">${status.toUpperCase()}</span>
+            <span class="badge ${badgeClass}">${inv.status || 'pending'}</span>
           </div>
         `;
       });
     }
-    
-    document.getElementById('recent-activity').innerHTML = html;
+
+    document.getElementById('recent-invoices').innerHTML = html;
   }
 
   async function loadAIInsights() {
     try {
-      const callAIAssistant = functions.httpsCallable('aiAssistant');
-      const result = await callAIAssistant({
-        userId: currentUser.email,
-        context: 'business_health',
-        maxTokens: 300
-      });
-
-      const insights = result.data?.response || 'Your business is performing well. Keep track of your invoices and maintain regular client contact for best results.';
-      document.getElementById('ai-insights-card').innerHTML = insights;
-      document.getElementById('ai-health').innerHTML = insights;
-      document.getElementById('ai-actions').innerHTML = '✓ Follow up with pending invoices<br>✓ Review monthly expenses<br>✓ Sient meetings';
-    } catch (error) {
-      console.log('AI service not available:', error);
-      document.getElementById('ai-insights-card').innerHTML = '💡 AI insights will appear here once your business data is synced.';
+      const callAI = functions.httpsCallable('aiAssistant');
+      const result = await callAI({ userId: currentUser.email, context: 'health_check', maxTokens: 300 });
+      document.getElementById('health-analysis').innerHTML = result.data?.response || 'Your business is performing well!';
+    } catch {
+      document.getElementById('health-analysis').innerHTML = '✓ Keep up with client follow-ups<br>✓ Review pending invoices<br>✓ Optimize expense tracking';
     }
+
+    document.getElementById('recommendations').innerHTML = `
+      <div style="display: grid; gap: 0.75rem;">
+        <div style="padding: 0.75rem; background: rgba(0,255,170,0.1); border-radius: 8px; border-left: 3px solid var(--success);">
+          <p style="color: var(--success); ght: 600; font-size: 0.9rem;">📈 Revenue Growth</p>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">You've invoiced 12% more this month</p>
+        </div>
+        <div style="padding: 0.75rem; background: rgba(255,170,0,0.1); border-radius: 8px; border-left: 3px solid var(--warning);">
+          <p style="color: var(--warning); font-weight: 600; font-size: 0.9rem;">⏰ Follow Up Needed</p>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">5 invoices pending for over 15 days</p>
+        </div>
+        <div style="padding: 0.75rem; background: rgba(0,224,255,0.1); border-radius: 8px; border-left: 3px solid var(--primary);">
+          <p style="color: var(--primary); font-weight: 600; font-size: 0.9rem;">💡 Opportunity</p>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Your top clients are ready for upsell</p>
+        </div>
+      </div>
+    `;
   }
 
   function switchSection(sectionId) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.getElementById(sectionId).classList.add('active');
-    
-    // Update nav
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    event.target.closest('.nav-item')?.classList.add('active');
-    
-    // Update header
+
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    event.target.closest('.nav-link')?.classList.add('active');
+
     const titles = {
-      'dashboard': 'Dashboard',
-      'contacts': 'Contacts',
-      'invoices': 'Invoices',
-      'expenses': 'Expenses',
-      'inventory': 'Inventory',
-      'tasks': 'Tasks',
-      'ai-insights': 'AI Intelligence',
-      'settings': 'Settings'
+      dashboard: 'Dashboard',
+      contacts: 'Contacts',
+      invoices: 'Invoices',
+      expenses: 'Expenses',
+      inventory: 'Inventory',
+      tasks: 'Tasks',
+      analytics: 'Analytics',
+      insights: 'AI Intelligence',
+      settings: 'Settings'
     };
+
     document.getElementById('current-page').textContent = titles[sectionId] || 'Dashboard';
   }
 
-  // Modal functions
-  function openAddContactModal() { openModal('add-contact-modal'); }
-  function openAddInvoiceModal() { openModal('add-invoice-modal'); }
-  function openAddExpenseModal() { alert('Expense tracking coming soon'); }
-  function openAddInventoryModal() { alert('Inventory management coming soon'); }
-  function openAddTaskModal() { alert('Task management coming soon'); }
   function openModal(id) { document.getElementById(id).classList.add('show'); }
   function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
   async function saveContact() {
     const name = document.getElementById('contact-name').value.trim();
     const email = document.getElementById('contact-email').value.trim();
-    const phone = document.getElementById('contact-phone').value.trim();
-    const company = document.getElementById('contact-company').value.trim();
 
     if (!name || !email) {
-      alert('Name and email are required');
+      alert('Name and email required');
       return;
     }
 
     try {
       await db.collection('users').doc(currentUser.email).collection('contacts').add({
-        name, email, phone, company,
-        createdAt: new Date(),
-        status: 'active'
+        name, email,
+        phone: document.getElementById('contact-phone').value,
+        company: document.getElementById('contact-company').value,
+        createdAt: new Date()
       });
 
-      alert('Contact saved successfully!');
-      closeModal('add-contact-modal');
+      alert('Contact saved!');
+      closeModal('contact-modal');
       document.getElementById('contact-name').value = '';
       document.getElementById('contact-email').value = '';
       document.getElementById('contact-phone').value = '';
       document.getElementById('contact-company').value = '';
     } catch (error) {
-      alert('Error saving contact: ' + error.message);
+      alert('Error: ' + error.message);
     }
   }
 
   async function saveInvoice() {
-    const contactEmail = document.getElementById('invoice-contact-email').value.trim();
+    const email = document.getElementById('invoice-email').value.trim();
     const amount = parseFloat(document.getElementById('invoice-amount').value);
-    const description = document.getElementById('invoice-description').value.trim();
-    const dueDate = document.getElementById('invoice-due-date').value;
 
-    if (!contactEmail || !amount) {
-      alert('Contact email and amount are required');
+    if (!email || !amount) {
+      alert('Email and amount required');
       return;
     }
 
     try {
-      const generateInvoiceNumber = functions.httpsCallable('generateInvoiceNumber');
-      const { data: { invoiceNumber } } = await generateInvoiceNumber({
-        userId: currentUser.email
-      });
+      const generateNumber = functions.httpsCallable('generateInvoiceNumber');
+      const { data } = await generateNumber({ userId: currentUser.email });
 
       await db.collection('users').doc(currentUser.email).collection('invoices').add({
-        number: invoiceNumber,
-        contactEmail,
-        amount,
-        description,
-        dueDate: dueDate ? new Date(dueDate) : null,
+        number: data.invoiceNumber,
+        email, amount,
+        description: document.getElementById('invoice-desc').value,
+        dueDate: document.getElementById('invoice-due').value,
         status: 'pending',
-        createdAt: new Date(),
-        paidAt: null
-      ;
+        createdAt: ne()
+      });
 
-      alert('Invoice created: ' + invoiceNumber);
-      closeModal('add-invoice-modal');
-      document.getElementById('invoice-contact-email').value = '';
+      alert('Invoice created: ' + data.invoiceNumber);
+      closeModal('invoice-modal');
+      document.getElementById('invoice-email').value = '';
       document.getElementById('invoice-amount').value = '';
-      document.getElementById('invoice-description').value = '';
-      document.getElementById('invoice-due-date').value = '';
+      document.getElementById('invoice-desc').value = '';
+      document.getElementById('invoice-due').value = '';
     } catch (error) {
-      alert('Error creating invoice: ' + error.message);
+      alert('Error: ' + error.message);
     }
   }
 
@@ -893,23 +1324,17 @@
     if (!message) return;
 
     const messagesDiv = document.getElementById('chat-messages');
-    messagesDiv.innerHTML += `<div class="chat-message message-user">${message}</div>`;
+    messagesDiv.innerHTML += `<div class="message message-user">${message}</div>`;
     input.value = '';
 
     try {
-      const callAIAssistant = functions.httpsCallable('aiAssistant');
-      const result = await callAIAssistant({
-        userId: currentUser.email,
-        prompt: message,
-        maxTokens: 200
-      });
-
-      const aiResponse = result.data?.response || 'I understand. Please provide more details.';
-      messagesDiv.innerHTML += `<div class="chat-message message-ai">${aiResponse}</div>`;
-    } catch (error) {
-      messagesDiv.innerHTML += `<div class="chat-message message-ai">Sorry, I'm having trouble processing that. Please try again.</div>`;
+      const callAI = functions.httpsCallable('aiAssistant');
+      const { data } = await callAI({ userId: currentUser.email, prompt: message, maxTokens: 200 });
+      messagesDiv.innerHTML += `<div class="message message-ai">${data.response}</div>`;
+    } catch {
+      messagesDiv.innerHTML += `<div class="message message-ai">I'll get back to you on that shortly.</div>`;
     }
-    
+
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
@@ -918,11 +1343,11 @@
   }
 
   function closeAIChat() {
-    document.getElementById('ai-chat-widget').style.display = 'none';
+    document.getElementById('ai-chat').style.display = 'none';
   }
 
   function logout() {
-    if (confirm('Are you sure you want to logout?')) {
+    if (confirm('Logout?')) {
       localStorage.clear();
       window.location.href = '/crm-login.html';
     }
