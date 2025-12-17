@@ -1,507 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AuraSphere — A complete business operating system. Manage expenses, invoices, clients, projects, and more with AI automation. Professional tools for freelancers, agencies, and SMEs.">
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://aura-sphere.app/">
-  <meta property="og:title" content="AuraSphere — Business Operating System">
-  <meta property="og:description" content="Unified platform for business operations, finance, CRM, and AI automation.">
-  <meta property="og:image" content="https://aura-sphere.app/images/og-image.png">
-  
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://aura-sphere.app/">
-  <meta name="twitter:title" content="AuraSphere — Business Operating System">
-  <meta name="twitter:description" content="Unified platform for business operations, finance, CRM, and AI automation.">
-  <meta name="twitter:image" content="https://aura-sphere.app/images/og-image.png">
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="apple-touch-icon" href="/icons/Icon-192.png">
-  
-  <title>AuraSphere — Business Operating System</title>
-  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aurasphere — Sovereign Digital Life</title>
+  <meta name="description" content="AuraPost, AuraLink, AuraShield & CRM Dashboard — unified ecosystem for privacy-conscious professionals.">
+  <link rel="icon" href="image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%2300e0ff'/></svg>">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
     :root {
-      --primary: #00e0ff;
-      --secondary: #00ffaa;
-      --accent: #ffd700;
-      --dark: #0a0e27;
-      --darker: #050812;
-      --light: #f0f0f0;
-      --text: #b0b0b0;
-      --text-light: #e0e0e0;
+      --black: #05050f;
+      --white: #ffffff;
+      --light-gray: #a0a0c0;
+      --accent: #00e0ff;
+      --gold: #ffd700;
+      --green: #00ffaa;
+      --red: #ff5588;
     }
-    
-    html { scroll-behavior: smooth; }
-    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: var(--dark);
-      color: var(--text);
-      line-height: 1.6;
-      overflow-x: hidden;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--black);
+      color: var(--light-gray);
+      line-height: 1.65;
     }
+    .container { width: 90%; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+    section { padding: 6rem 0; }
+    .text-center { text-align: center; }
     
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 2rem;
-    }
-    
-    /* Navigation */
-    nav {
+    header {
+      padding: 1.2rem 0;
+      background: rgba(8,8,18,0.92);
+      backdrop-filter: blur(12px);
       position: sticky;
       top: 0;
-      z-index: 1000;
-      background: rgba(10, 14, 39, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(0, 224, 255, 0.1);
-      padding: 1rem 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(0,224,255,0.12);
     }
-    
-    nav .container {
+    .header-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    
     .logo {
-      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .orb {
+      width: 48px; height: 48px; position: relative;
+    }
+    .core {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 14px; height: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      border-radius: 50%;
+      box-shadow: 0 0 14px rgba(0, 224, 255, 0.5);
+    }
+    .logo-text {
+      font-size: 1.55rem;
       font-weight: 800;
-      color: var(--primary);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .logo:hover { color: var(--secondary); }
-    
-    nav ul {
-      display: flex;
-      list-style: none;
-      gap: 2rem;
-      align-items: center;
-    }
-    
-    nav a {
-      color: var(--text);
-      text-decoration: none;
-      transition: color 0.3s;
-      font-size: 0.95rem;
-    }
-    
-    nav a:hover { color: var(--primary); }
-    
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      text-decoration: none;
-      transition: all 0.3s;
-      display: inline-block;
-      text-align: center;
-    }
-    
-    .btn-primary {
-      background: var(--primary);
-      color: var(--darker);
-    }
-    
-    .btn-primary:hover {
-      background: var(--secondary);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(0, 224, 255, 0.3);
-    }
-    
-    .btn-secondary {
-      background: transparent;
-      color: var(--primary);
-      border: 2px solid var(--primary);
-    }
-    
-    .btn-secondary:hover {
-      background: var(--primary);
-      color: var(--darker);
-    }
-    
-    /* Hero Section */
-    .hero {
-      padding: 5rem 0;
-      text-align: center;
-      background: linear-gradient(135deg, rgba(0, 224, 255, 0.05) 0%, rgba(0, 255, 170, 0.05) 100%);
-      border-radius: 1rem;
-      margin: 2rem 0;
-    }
-    
-    .hero h1 {
-      font-size: 3rem;
-      color: var(--text-light);
-      margin-bottom: 1rem;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      background: linear-gradient(90deg, var(--white), var(--accent));
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
       background-clip: text;
+      color: transparent;
     }
-    
+
+    .hero {
+      text-align: center;
+      padding: 8rem 0 6rem;
+      background: #0a0a14;
+    }
+    .hero h1 {
+      font-size: 2.9rem;
+      margin-bottom: 1.4rem;
+      color: var(--white);
+    }
     .hero p {
-      font-size: 1.25rem;
-      color: var(--text);
-      margin-bottom: 2rem;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+      font-size: 1.15rem;
+      max-width: 680px;
+      margin: 0 auto 2.2rem;
+      color: #b5b5d5;
     }
-    
-    .hero .buttons {
-      display: flex;
-      gap: 1rem;
+
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 2.3rem;
+      margin-top: 2.5rem;
+    }
+    .app-card {
+      background: rgba(12,12,28,0.65);
+      border-radius: 18px;
+      padding: 2.2rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    .app-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+    }
+    .app-badge {
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      font-weight: 700;
+      color: var(--black);
+      margin-bottom: 1.2rem;
+      font-size: 0.88rem;
+    }
+    .app-badge.shield {
+      background: linear-gradient(135deg, var(--accent), var(--gold), var(--green));
+    }
+    .app-card h3 {
+      font-size: 1.45rem;
+      margin: 0 0 1.1rem;
+      color: var(--white);
+    }
+    .app-card p {
+      font-size: 0.98rem;
+      color: #b0b0d0;
+      margin-bottom: 1.3rem;
+    }
+    .pricing {
+      font-size: 0.97rem;
+      color: #a0a0d0;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .platforms {
+      display: flex;
+      justify-content: center;
+      gap: 0.6rem;
+      margin: 1.2rem 0;
       flex-wrap: wrap;
     }
-    
-    /* Features Section */
-    .features {
-      padding: 5rem 0;
+    .platform {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--light-gray);
+      padding: 0.3rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
     }
-    
-    .section-title {
-      text-align: center;
-      font-size: 2.5rem;
-      color: var(--text-light);
-      margin-bottom: 3rem;
+    .signin-note {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 0.8rem;
     }
-    
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
-      margin-bottom: 3rem;
-    }
-    
-    .feature-card {
-      background: rgba(0, 224, 255, 0.03);
-      border: 1px solid rgba(0, 224, 255, 0.1);
+
+    .pricing-summary {
+      background: rgba(10,10,22,0.4);
       padding: 2rem;
-      border-radius: 0.75rem;
-      transition: all 0.3s;
-      cursor: pointer;
-    }
-    
-    .feature-card:hover {
-      border-color: rgba(0, 224, 255, 0.5);
-      background: rgba(0, 224, 255, 0.08);
-      transform: translateY(-5px);
-    }
-    
-    .feature-card h3 {
-      color: var(--primary);
-      font-size: 1.25rem;
-      margin-bottom: 0.5rem;
-    }
-    
-    .feature-card p {
-      color: var(--text);
-      font-size: 0.95rem;
-    }
-    
-    /* Modules Section */
-    .modules {
-      padding: 5rem 0;
-      background: rgba(0, 224, 255, 0.02);
-      border-radius: 1rem;
-      margin: 2rem 0;
-    }
-    
-    .modules-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
-    
-    .module-item {
-      background: var(--darker);
-      padding: 1.5rem;
-      border-radius: 0.5rem;
-      border-left: 3px solid var(--primary);
-      transition: all 0.3s;
-    }
-    
-    .module-item:hover {
-      border-left-color: var(--secondary);
-      transform: translateX(5px);
-    }
-    
-    .module-item h4 {
-      color: var(--primary);
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-    }
-    
-    .module-item p {
-      font-size: 0.9rem;
-      color: var(--text);
-    }
-    
-    /* CTA Section */
-    .cta {
-      padding: 5rem 0;
+      border-radius: 20px;
+      margin: 3.5rem 0;
+      border: 1px solid rgba(0,224,255,0.1);
       text-align: center;
-      background: linear-gradient(135deg, rgba(0, 255, 170, 0.1) 0%, rgba(0, 224, 255, 0.1) 100%);
-      border-radius: 1rem;
-      margin: 2rem 0;
     }
     
-    .cta h2 {
-      font-size: 2rem;
-      color: var(--text-light);
+    .pricing-summary h2 {
+      color: var(--white);
       margin-bottom: 1rem;
+      font-size: 1.8rem;
     }
-    
-    .cta p {
-      font-size: 1.1rem;
-      color: var(--text);
-      margin-bottom: 2rem;
-    }
-    
-    /* Footer */
+
     footer {
-      background: var(--darker);
-      border-top: 1px solid rgba(0, 224, 255, 0.1);
-      padding: 3rem 0 1rem;
-      margin-top: 5rem;
+      text-align: center;
+      padding: 4rem 0 2.5rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      color: #777;
+      font-size: 0.92rem;
     }
-    
-    .footer-content {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 2rem;
-      margin-bottom: 2rem;
+    .legal-links {
+      margin: 1.5rem 0;
     }
-    
-    .footer-section h4 {
-      color: var(--primary);
-      margin-bottom: 1rem;
-    }
-    
-    .footer-section ul {
-      list-style: none;
-    }
-    
-    .footer-section a {
-      color: var(--text);
+    .legal-links a {
+      color: var(--accent);
       text-decoration: none;
-      display: block;
-      margin-bottom: 0.5rem;
+      margin: 0 12px;
       transition: color 0.3s;
     }
-    
-    .footer-section a:hover {
-      color: var(--primary);
+    .legal-links a:hover {
+      color: var(--green);
+    }
+    .company-info {
+      margin-top: 1.2rem;
+      color: #888;
     }
     
-    .footer-bottom {
-      border-top: 1px solid rgba(0, 224, 255, 0.1);
-      padding-top: 1rem;
-      text-align: center;
-      color: var(--text);
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    footer a:hover {
+      color: var(--green);
+    }
+
+    .crm-link {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      background: linear-gradient(135deg, var(--accent), var(--green));
+      color: var(--black);
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
       font-size: 0.9rem;
+      transition: transform 0.2s;
     }
-    
-    /* Responsive */
+    .crm-link:hover {
+      transform: scale(1.05);
+    }
+
     @media (max-width: 768px) {
       .hero h1 { font-size: 2rem; }
-      .section-title { font-size: 1.75rem; }
-      nav ul { gap: 1rem; }
-      .hero .buttons { flex-direction: column; }
-      .btn { width: 100%; }
+      .hero p { font-size: 1rem; }
+      .apps-grid { grid-template-columns: 1fr; }
+      .logo-text { font-size: 1.3rem; }
+      header .header-content { flex-direction: column; gap: 1rem; }
+      section { padding: 4rem 0; }
     }
   </style>
 </head>
 <body>
-  <!-- Navigation -->
-  <nav>
-    <div class="container">
-      <a href="/" class="logo">
-        <span>⭐</span> AuraSphere
-      </a>
-      <ul>
-        <li><a href="#features">Features</a></li>
-        <li><a href="#modules">Modules</a></li>
-        <li><a href="#pricing">Pricing</a></li>
-        <li><a href="/crm.html" class="btn btn-primary">Launch CRM</a></li>
-      </ul>
-    </div>
-  </nav>
 
-  <!-- Hero Section -->
+  <header>
+    <div class="container header-content">
+      <div class="logo">
+        <div class="orb"><div class="core"></div></div>
+        <div class="logo-text">AURASPHERE</div>
+      </div>
+      <div style="color: var(--accent); font-weight:600; font-size:0.95rem;">Sovereign Digital Life</div>
+    </div>
+  </header>
+
   <section class="hero">
     <div class="container">
-      <h1>Business Operating System for the Modern Era</h1>
-      <p>Manage expenses, invoices, clients, projects, and more — all in one intelligent platform powered by AI.</p>
-      <div class="buttons">
-        <a href="/crm.html" class="btn btn-primary">Launch Dashboard</a>
-        <a href="#features" class="btn btn-secondary">Learn More</a>
-      </div>
+      <h1>The Aurasphere Ecosystem</h1>
+      <p>A unified, privacy-first platform where your identity, data, and creativity remain yours — forever.</p>
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section id="features" class="features">
-    <div class="container">
-      <h2 class="section-title">Why Choose AuraSphere?</h2>
-      <div class="features-grid">
-        <div class="feature-card">
-          <h3>🤖 AI-Powered</h3>
-          <p>Automated insights, smart recommendations, and actionable AI that works for your business.</p>
+  <section class="container">
+    <div class="apps-grid">
+      
+      <!-- CRM Dashboard -->
+      <div class="app-card">
+        <div class="app-badge" style="background: linear-gradient(135deg, var(--gold), #ffaa00);">CORE</div>
+        <h3>CRM Dashboard</h3>
+        <p>Your command center: contacts, tasks, wallet, invoices, expenses, and ecosystem launchpad.</p>
+        <div class="pricing">$9.99–$29/month<br><small>(30% off annual)</small></div>
+        <div class="platforms">
+          <span class="platform">iOS</span>
+          <span class="platform">Android</span>
+          <span class="platform">Windows</span>
+          <span class="platform">macOS</span>
+          <span class="platform">Web</span>
         </div>
-        <div class="feature-card">
-          <h3>📊 Complete Visibility</h3>
-          <p>Real-time dashboards, advanced analytics, and comprehensive reporting for data-driven decisions.</p>
-        </div>
-        <div class="feature-card">
-          <h3>🌍 Global Ready</h3>
-          <p>19+ languages, multi-currency support, and tax compliance for 5+ regions.</p>
-        </div>
-        <div class="feature-card">
-          <h3>🔒 Enterprise Security</h3>
-          <p>Role-based access control, immutable audit logs, GDPR compliance, and end-to-end encryption.</p>
-        </div>
-        <div class="feature-card">
-          <h3>⚡ Real-Time Sync</h3>
-          <p>Instant synchronization across devices, offline-first functionality, and seamless collaboration.</p>
-        </div>
-        <div class="feature-card">
-          <h3>💰 Built-In Payments</h3>
-          <p>Stripe integration, payment links, automatic billing, and invoice payment tracking.</p>
-        </div>
+        <a href="/crm.html" class="crm-link">Launch CRM Dashboard</a>
+        <p class="signin-note">Sign in with your Aurasphere account</p>
+        <p style="font-size:0.88rem; color:#888; margin-top:0.5rem;">
+          ✅ All 8 features always visible
+        </p>
       </div>
+
+      <!-- AuraPost -->
+      <div class="app-card">
+        <div class="app-badge" style="background: linear-gradient(135deg, var(--green), #00cc88);">MEDIA</div>
+        <h3>AuraPost</h3>
+        <p>Generate authentic social content — client-side, zero tracking, privacy-first.</p>
+        <div class="pricing">$6/month<br><small>or $29/year</small></div>
+        <div class="platforms">
+          <span class="platform">iOS</span>
+          <span class="platform">Android</span>
+          <span class="platform">Windows</span>
+          <span class="platform">macOS</span>
+        </div>
+        <p class="signin-note">Sign in with your Aurasphere account</p>
+        <p style="font-size:0.88rem; color:#888; margin-top:0.5rem;">
+          ✅ Coming Soon
+        </p>
+      </div>
+
+      <!-- AuraLink -->
+      <div class="app-card">
+        <div class="app-badge" style="background: linear-gradient(135deg, var(--accent), #00aaff);">NETWORK</div>
+        <h3>AuraLink</h3>
+        <p>Sovereign professional networking — no algorithm, no data harvesting, you own your network.</p>
+        <div class="pricing">$5/month<br><small>or $20/year</small></div>
+        <div class="platforms">
+          <span class="platform">iOS</span>
+          <span class="platform">Android</span>
+          <span class="platform">Windows</span>
+          <span class="platform">macOS</span>
+        </div>
+        <p class="signin-note">Sign in with your Aurasphere account</p>
+        <p style="font-size:0.88rem; color:#888; margin-top:0.5rem;">
+          ✅ Coming Soon
+        </p>
+      </div>
+
+      <!-- AuraShield -->
+      <div class="app-card">
+        <div class="app-badge shield">SHIELD</div>
+        <h3>AuraShield</h3>
+        <p>Proactive AI security agent — works offline, guards your sovereignty, protects your privacy.</p>
+        <div class="pricing">$5/month<br><small>or $20/year</small></div>
+        <div class="platforms">
+          <span class="platform">iOS</span>
+          <span class="platform">Android</span>
+          <span class="platform">Windows</span>
+          <span class="platform">macOS</span>
+        </div>
+        <p class="signin-note">Sign in with your Aurasphere account</p>
+        <p style="font-size:0.88rem; color:#8m;">
+          ✅ Coming Soon
+        </p>
+      </div>
+    </div>
+
+    <div class="pricing-summary">
+      <h2>Transparent, Fair Pricing</h2>
+      <p>
+        <strong>CRM</strong>: $9.99–$29/month (30% off annual) •
+        <strong>AuraPost</strong>: $6/mo or $29/yr •
+        <strong>AuraLink & AuraShield</strong>: $5/mo or $20/yr
+      </p>
+      <p style="margin-top:1rem; color:var(--gold); font-style:italic;">
+        "Sovereignty includes financial clarity."
+      </p>
+    </div>
+
+    <div style="text-align:center; padding:2rem; background:rgba(10,10,22,0.3); border-radius:20px; margin:3rem 0;">
+      <h2 style="color:var(--gold); margin-bottom:1rem;">Built by Black Diamond LTD</h2>
+      <p>Registered in Sofia, Bulgaria (UIC: 207807571)<br>
+      We build ethical, privacy-first tools for freelancers and professionals.</p>
     </div>
   </section>
 
-  <!-- Modules Section -->
-  <section id="modules" class="modules">
-    <div class="container">
-      <h2 class="section-title">8 Powerful Modules</h2>
-      <div class="modules-grid">
-        <div class="module-item">
-          <h4>💼 Dashboard</h4>
-          <p>Real-time business overview with KPIs, alerts, and AI recommendations.</p>
-        </div>
-        <div class="module-item">
-          <h4>💸 Expense Management</h4>
-          <p>AI OCR receipt scanning, auto-categorization, and budget tracking.</p>
-        </div>
-        <div class="module-item">
-          <h4>📄 Invoice Management</h4>
-          <p>Professional invoicing, Stripe payments, and automated reminders.</p>
-        </div>
-        <div class="module-item">
-          <h4>👥 CRM</h4>
-          <p>Client management with AI insights, churn prediction, and deal scoring.</p>
-        </div>
-        <div class="module-item">
-          <h4>📋 Projects</h4>
-          <p>Task management, timeline tracking, and project profitability analysis.</p>
-        </div>
-        <div class="module-item">
-          <h4>📦 Inventory</h4>
-          <p>Stock tracking, reorder automation, and supplier management (coming Q1 2026).</p>
-        </div>
-        <div class="module-item">
-          <h4>🛒 Purchase Orders</h4>
-          <p>Supplier management, three-way matching, and payment terms tracking.</p>
-        </div>
-        <div class="module-item">
-          <h4>👨‍💼 Team Management</h4>
-          <p>Role-based access, performance tracking, and team collaboration tools.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Pricing Section -->
-  <section id="pricing" class="cta">
-    <div class="container">
-      <h2>Flexible Pricing for Every Business Size</h2>
-      <p>Start for $29/month. Scale as you grow. Cancel anytime.</p>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
-        <div style="background: var(--darker); padding: 2rem; border-radius: 0.5rem; border: 1px solid rgba(0, 224, 255, 0.2);">
-          <h4 style="color: var(--primary);">Starter</h4>
-          <p style="font-size: 2rem; color: var(--text-light); margin: 1rem 0;">$29<span style="font-size: 1rem;">/mo</span></p>
-          <p style="color: var(--text); font-size: 0.9rem;">1 user, 100 invoices/month, 5GB storage</p>
-        </div>
-        <div style="background: var(--darker); padding: 2rem; border-radius: 0.5rem; border: 2px solid rgba(0, 255, 170, 0.5);">
-          <h4 style="color: var(--secondary);">Professional</h4>
-          <p style="font-size: 2rem; color: var(--text-light); margin: 1rem 0;">$79<span style="font-size: 1rem;">/mo</span></p>
-          <p style="color: var(--text); font-size: 0.9rem;">5 users, 1K invoices/month, 50GB storage</p>
-        </div>
-        <div style="background: var(--darker); padding: 2rem; border-radius: 0.5rem; border: 1px solid rgba(0, 224, 255, 0.2);">
-          <h4 style="color: var(--primary);">Enterprise</h4>
-          <p style="font-size: 2rem; color: var(--text-light); margin: 1rem 0;">Custom</p>
-          <p style="color: var(--text); font-size: 0.9rem;">Unlimited users, API access, dedicated support</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
   <footer>
     <div class="container">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h4>Product</h4>
-          <ul>
-            <li><a href="/crm.html">CRM Dashboard</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#modules">Modules</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Company</h4>
-          <ul>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Careers</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Legal</h4>
-          <ul>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms of Service</a></li>
-            <li><a href="#">Security</a></li>
-            <li><a href="#">Compliance</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Resources</h4>
-          <ul>
-            <li><a href="#">Documentation</a></li>
-            <li><a href="#">API Reference</a></li>
-            <li><a href="#">Support</a></li>
-            <li><a href="#">Status Page</a></li>
-          </ul>
-        </div>
+      <p>© 2025 Aurasphere — Sovereign Digital Life</p>
+      
+      <div class="legal-links">
+        <a href="/support.html">Support</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/crm.html">Dashboard</a>
       </div>
-      <div class="footer-bottom">
-        <p>&copy; 2025 AuraSphere. All rights reserved. Built with ❤️ for modern businesses.</p>
+
+      <div class="company-info">
+        Operated by <strong>Black Diamond LTD</strong> (UIC: 207807571), Sofia, Bulgaria
       </div>
+      
+      <p style="margin-top: 1.2rem;">
+        Contact: <a href="mailto:hello@aura-sphere.app">hello@aura-sphere.app</a>
+      </p>
     </div>
   </footer>
 
