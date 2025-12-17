@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRM Dashboard - Aurasphere</title>
+  <title>CRM Dashboard — Aurasphere</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     :root {
       --black: #05050f;
@@ -15,91 +19,161 @@
       --green: #00ffaa;
       --gold: #ffd700;
       --gray: #2a2a3e;
-      --red: #ff5588;
     }
 
     body {
-      background: var(--black);
-      color: #a0a0c0;
+      background: linear-gradient(135deg, var(--black) 0%, var(--gray) 100%);
       font-family: 'Inter', system-ui, sans-serif;
-      line-height: 1.6;
+      color: var(--white);
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
     }
 
     .top-bar {
-      background: rgba(10, 10, 20, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(0, 224, 255, 0.1);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       position: sticky;
       top: 0;
+      background: rgba(12, 12, 28, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 224, 255, 0.2);
+      padding: 1rem 2rem;
       z-index: 100;
     }
 
+    .top-bar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+    }
+
     .logo {
-      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--white);
+    }
+
+    .logo-orb {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--green));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .logo-text {
       font-weight: 700;
+      font-size: 1.1rem;
       background: linear-gradient(135deg, var(--white), var(--accent));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .user-info {
+    .user-section {
       display: flex;
       align-items: center;
       gap: 1.5rem;
     }
 
-    .subscription-badge {
-      padding: 0.5rem 1rem;
-      background: linear-gradient(135deg, var(--gold), #ffaa00);
-      border-radius: 20px;
-      color: var(--black);
-      font-weight: 600;
-      font-size: 0.85rem;
-      text-transform: uppercase;
+    .user-info {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
     }
 
-    .logout-btn {
-      padding: 0.5rem 1rem;
-      background: rgba(255, 85, 136, 0.2);
-      border: 1px solid var(--red);
-      color: var(--red);
+    .user-email {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .subscription-badge {
+      background: linear-gradient(135deg, var(--gold), #ffed4e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--green));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 16px rgba(0, 224, 255, 0.4);
+    }
+
+    .btn-logout {
+      padding: 0.6rem 1.2rem;
+      background: rgba(255, 85, 136, 0.1);
+      border: 1px solid rgba(255, 85, 136, 0.3);
+      color: #ff5588;
       border-radius: 6px;
       cursor: pointer;
       font-weight: 600;
       transition: all 0.3s;
     }
 
-    .logout-btn:hover {
-      background: rgba(255, 85, 136, 0.3);
+    .btn-logout:hover {
+      background: rgba(255, 85, 136, 0.2);
+      box-shadow: 0 4px 12px rgba(255, 85, 136, 0.2);
     }
 
     .container {
       max-width: 1400px;
       margin: 0 auto;
       padding: 2rem;
+      position: relative;
+      z-index: 1;
     }
 
     .header {
       display: flex;
       justify-content: space-between;
-      align-items: start;
-      margin-bottom: 2.5rem;
+      align-items: center;
+      margin-bottom: 3rem;
     }
 
     h1 {
       font-size: 2.5rem;
-      color: var(--white);
-      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--white), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .header-actions {
       display: flex;
       gap: 1rem;
-      flex-wrap: wrap;
     }
 
     .btn {
@@ -125,57 +199,152 @@
     }
 
     .btn-secondary {
-      background: rgba(0, 224, 255, 0.1);
-      color: var(--accent);
+      background: transparent;
       border: 1px solid var(--accent);
+      color: var(--accent);
     }
 
     .btn-secondary:hover {
-      background: rgba(0, 224, 255, 0.2);
+      background: rgba(0, 224, 255, 0.1);
     }
 
-    .features-grid {
+    .profile-section {
+      background: rgba(12, 12, 28, 0.5);
+      border: 1px solid rgba(0, 224, 255, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .profile-header {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+    }
+
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--accent), var(--green));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      flex-shrink: 0;
+    }
+
+    .profile-info h2 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .profile-info p {
+      color: #a0a0c0;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .profile-stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 224, 255, 0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .profile-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
 
+    .detail-item {
+      border-left: 2px solid var(--accent);
+      padding-left: 1rem;
+    }
+
+    .detail-label {
+      color: #888;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+      font-size: 1rem;
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
     .feature-card {
-      background: rgba(12, 12, 28, 0.6);
-      border: 1px solid rgba(0, 224, 255, 0.1);
-      border-radius: 12px;
+      background: rgba(12, 12, 28, 0.5);
+      border: 1px solid rgba(0, 224, 255, 0.2);
+      border-radius: 16px;
       padding: 1.5rem;
+      text-align: center;
       cursor: pointer;
       transition: all 0.3s;
+      backdrop-filter: blur(10px);
     }
 
     .feature-card:hover {
       border-color: var(--accent);
-      background: rgba(12, 12, 28, 0.9);
+      box-shadow: 0 8px 24px rgba(0, 224, 255, 0.2);
       transform: translateY(-4px);
     }
 
     .feature-icon {
-      font-size: 2rem;
+      font-size: 2.5rem;
       margin-bottom: 1rem;
       color: var(--accent);
     }
 
     .feature-card h3 {
-      color: var(--white);
+      font-size: 1.1rem;
       margin-bottom: 0.5rem;
     }
 
     .feature-card p {
+      color: #a0a0c0;
       font-size: 0.9rem;
-      color: #888;
       margin-bottom: 1rem;
     }
 
     .feature-status {
       display: inline-block;
-      padding: 0.25rem 0.75rem;
+      padding: 0.4rem 0.8rem;
       background: rgba(0, 255, 170, 0.1);
       color: var(--green);
       border-radius: 4px;
@@ -183,54 +352,61 @@
       font-weight: 600;
     }
 
-    .subscription-section {
-      background: rgba(12, 12, 28, 0.6);
-      border: 1px solid rgba(0, 224, 255, 0.1);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 2rem;
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    .subscription-grid {
+    .pricing-section {
+      margin-bottom: 3rem;
+    }
+
+    .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 1.5rem;
-      margin-top: 1.5rem;
     }
 
     .plan-card {
-      background: rgba(10, 10, 20, 0.8);
-      border: 1px solid rgba(0, 224, 255, 0.1);
-      border-radius: 12px;
+      background: rgba(12, 12, 28, 0.5);
+      border: 1px solid rgba(0, 224, 255, 0.2);
+      border-radius: 16px;
       padding: 1.5rem;
-      text-align: center;
       transition: all 0.3s;
+      backdrop-filter: blur(10px);
     }
 
     .plan-card.active {
       border-color: var(--accent);
-      background: rgba(0, 224, 255, 0.1);
-      box-shadow: 0 0 16px rgba(0, 224, 255, 0.2);
+      background: rgba(0, 224, 255, 0.05);
+      box-shadow: 0 0 24px rgba(0, 224, 255, 0.2);
     }
 
     .plan-name {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 700;
-      color: var(--white);
       margin-bottom: 0.5rem;
     }
 
     .plan-price {
-      font-size: 1.8rem;
       color: var(--gold);
+      font-size: 1.8rem;
       font-weight: 700;
-      margin: 0.5rem 0;
+      margin-bottom: 0.5rem;
+    }
+
+    .plan-period {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
     }
 
     .plan-features {
       list-style: none;
-      margin: 1.5rem 0;
-      text-align: left;
+      margin-bottom: 1.5rem;
       font-size: 0.9rem;
     }
 
@@ -239,112 +415,212 @@
       color: #a0a0c0;
     }
 
-    .plan-features li:before {
-      content: "✓ ";
+    .plan-features li.included {
       color: var(--green);
+    }
+
+    .plan-features li.included::before {
+      content: '✓ ';
       font-weight: 700;
-      margin-right: 0.5rem;
     }
 
-    .plan-features li.limited:before {
-      content: "✗ ";
-      color: #666;
-    }
-
-    .plan-button {
-      width: 100%;
-      padding: 0.75rem;
-      margin-top: 1rem;
-      background: rgba(0, 224, 255, 0.1);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-
-    .plan-button:hover {
-      background: rgba(0, 224, 255, 0.2);
-    }
-
-    .download-section {
-      background: rgba(0, 255, 170, 0.05);
-      border: 1px solid rgba(0, 255, 170, 0.2);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .download-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-top: 1.5rem;
-    }
-
-    .download-card {
-      background: rgba(10, 10, 20, 0.8);
-      border: 1px solid rgba(0, 255, 170, 0.2);
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .download-card:hover {
-      background: rgba(0, 255, 170, 0.1);
-      border-color: var(--green);
-    }
-
-    .download-icon {
-      font-size: 2.5rem;
-      color: var(--green);
-      margin-bottom: 1rem;
-    }
-
-    .download-card h3 {
-      color: var(--white);
-      margin-bottom: 0.5rem;
-    }
-
-    .download-card p {
-      font-size: 0.85rem;
+    .plan-features li.limited::before {
+      content: '✗ ';
       color: #888;
     }
 
+    .btn-upgrade {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(135deg, var(--accent), var(--gree     color: var(--black);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-upgrade:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 224, 255, 0.3);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(5, 5, 15, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: rgba(12, 12, 28, 0.95);
+      border: 1px solid rgba(0, 224, 255, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+      position: relative;
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .modal-close:hover {
+      color: var(--accent);
+    }
+
+    .modal h2 {
+      margin-bottom: 1.5rem;
+      color: var(--white);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 224, 255, 0.2);
+      border-radius: 8px;
+      color: var(--white);
+      font-size: 1rem;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 8px rgba(0, 224, 255, 0.3);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .modal-actions button {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .modal-actions .btn-save {
+      background: linear-gradient(135deg, var(--accent), var(--green));
+      color: var(--black);
+    }
+
+    .modal-actions .btn-cancel {
+      background: transparent;
+      border: 1px solid #666;
+      color: #a0a0c0;
+    }
+
+    .modal-actions .btn-cancel:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
     @media (max-width: 768px) {
-      .container { padding: 1rem; }
-      h1 { font-size: 1.8rem; }
-      .features-grid { grid-template-columns: 1fr; }
-      .subscription-grid { grid-template-columns: 1fr; }
-      .download-grid { grid-template-columns: 1fr; }
-      .header { flex-direction: column; }
-      .header-actions { width: 100%; flex-direction: column; }
-      .btn { width: 100%; justify-content: center; }
+      .top-bar-content {
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .header-actions {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .profile-header {
+        flex-direction: column;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pricing-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Top Bar with User Info -->
+  <!-- TOP BAR -->
   <div class="top-bar">
-    <div class="logo">◉ AURASPHERE CRM</div>
-    <div class="user-info">
-      <div id="user-email" class="user-email"></div>
-      <div id="subscription-display" class="subscription-badge"></div>
-      <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="top-bar-content">
+      <div class="logo">
+        <div class="logo-orb">◉</div>
+        <div class="logo-text">AURASPHERE CRM</div>
+      </div>
+      <div class="user-section">
+        <div class="user-info">
+          <div class="user-email" id="top-email">user@email.com</div>
+          <div class="subscription-badge" id="top-subscription">FREE TRIAL</div>
+        </div>
+        <div class="user-avatar" id="user-avatar" onclick="openProfileModal()">?</div>
+        <button class="btn-logout" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Main Container -->
+  <!-- MAIN CONTENT -->
   <div class="container">
-    <!-- Header -->
     <div class="header">
-      <div>
-        <h1>Dashboard</h1>
-        <p style="color: #888;">Manage your business with Aurasphere</p>
-      </div>
+      <h1>Dashboard</h1>
       <div class="header-actions">
         <button class="btn btn-primary" onclick="exportData()">
           <i class="fas fa-download"></i> Export Data
@@ -355,221 +631,351 @@
       </div>
     </div>
 
-    <!-- CRM Features -->
-    <section>
-      <h2 style="color: var(--white); margin-bottom: 1.5rem;">CRM Features</h2>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-users"></i></div>
-          <h3>Contact Management</h3>
-          <p>Organize and manage all your business contacts in one place.</p>
-          <span class="feature-status">✓ Active</span>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-file-invoice"></i></div>
-          <h3>Invoice Management</h3>
-          <p>Create, track, and manage invoices with ease.</p>
-          <span class="feature-status">✓ Active</span>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
-          <h3>Expense Tracking</h3>
-          <p>Track and categorize all business expenses.</p>
-          <span class="feature-status">✓ Active</span>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-tasks"></i></div>
-          <h3>Task Management</h3>
-          <p>Organize tasks and projects with team collaboration.</p>
-          <span class="feature-status">✓ Active</span>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-boxes"></i></div>
-          <h3>Inventory Management</h3>
-         k levels and manage inventory efficiently.</p>
-          <span class="feature-status">✓ Active</span>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-shopping-cart"></i></div>
-          <h3>Purchase Orders</h3>
-          <p>Create and manage purchase orders for suppliers.</p>
-          <span class="feature-status">✓ Active</span>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-users-cog"></i></div>
-          <h3>Team Management</h3>
-          <p>Manage team members, roles, and permissions.</p>
-          <span class="feature-status">✓ Active</span>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-database"></i></div>
-          <h3>Data Analytics</h3>
-          <p>Get insights with detailed business analytics and reports.</p>
-          <span class="feature-status">✓ Active</span>
+    <!-- PROFILE SECTION -->
+    <div class="profile-section">
+      <div class="profile-header">
+        <div class="profile-avatar" id="profile-avatar">?</div>
+        <div style="flex: 1;">
+          <div class="profile-info">
+            <h2 id="profile-name">User Name</h2>
+            <p><i class="fas fa-envelope"></i> <span id="profile-email">user@email.com</span></p>
+            <p><i class="fas fa-building"></i> <span id="profile-company">Company Name</span></p>
+            <p><i class="fas fa-phone"></i> <span id="profile-phone">Not provided</span></p>
+            <p><i class="fas fa-industry"></i> <span id="profile-industry">Not specified</span></p>
+            <p style="margin-top: 1rem;">
+              <button class="btn btn-secondary" onclick="openProfileModal()">
+                <i class="fas fa-edit"></i> Edit Profile
+              </button>
+            </p>
+          </div>
         </div>
       </div>
-    </section>
 
-    <!-- Subscription Plans -->
-    <section class="subscription-section">
-      <h2 style="color: var(--white);">Your Subscription Plan</h2>
-      <p style="color: #888; margin-bottom: 1.5rem;">Choose the perfect plan for your business needs.</p>
-      
-      <div class="subscription-grid">
+      <div class="profile-stats">
+        <div class="stat-box">
+          <div class="stat-value" id="stat-account-age">0</div>
+          <div class="stat-label">Days Active</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="stat-subscription">FREE</div>
+          <div class="stat-label">Current Plan</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">0</div>
+          <div class="stat-label">Contacts</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">0</div>
+          <div class="stat-label">Invoices</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURES SECTION -->
+    <h2 class="section-title">
+      <i class="fas fa-star"></i> Core Features
+    </h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-users"></i></div>
+        <h3>Contact Management</h3>
+        <p>Organize and manage all your customer and vendor contacts</p>
+        <div class="feature-status">Active</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+        <h3>Invoice Management</h3>
+        <p>Create, track, and manage invoices with ease</p>
+        <div class="feature-status">Active</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-receipt"></i></div>
+        <h3>Expense Tracking</h3>
+        <p>Monitor and categorize all business expenses</p>
+        <div class="feature-status">Active</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-tasks"></i></div>
+        <h3>Task Management</h3>
+        <p>Organize projects and deadlines with task lists</p>
+        <div class="feature-status">Active</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-boxes"></i></div>
+        <h3>Inventory Management</h3>
+        <p>Track stock levels and manage SKUs</p>
+        <div class="feature-status">Active</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-shopping-cart"></i></div>
+        <h3>Purchase Orders</h3>
+        <p>Create and manage supplier orders</p>
+        <div class="feature-status">Active</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-ic"><i class="fas fa-users-cog"></i></div>
+        <h3>Team Management</h3>
+        <p>Manage team members and permissions</p>
+        <div class="feature-status">Active</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+        <h3>Data Analytics</h3>
+        <p>Get insights with dashboards and reports</p>
+        <div class="feature-status">Active</div>
+      </div>
+    </div>
+
+    <!-- PRICING SECTION -->
+    <h2 class="section-title">
+      <i class="fas fa-crown"></i> Upgrade Your Plan
+    </h2>
+    <div class="pricing-section">
+      <div class="pricing-grid">
         <div class="plan-card" id="plan-free">
           <div class="plan-name">Free Trial</div>
           <div class="plan-price">$0</div>
-          <p style="color: #888; font-size: 0.9rem;">14 days</p>
+          <div class="plan-period">14 days free</div>
           <ul class="plan-features">
-            <li>Contact Management</li>
-            <li>Basic Invoicing</li>
+            <li class="included">Contact Management</li>
+            <li class="included">Basic Invoicing</li>
             <li class="limited">Expense Tracking</li>
-            <li class="limited">Team Features</li>
-            <li class="limited">API Access</li>
+            <li class="limited">Task Management</li>
+            <li class="limited">Team (1 user)</li>
           </ul>
-          <button class="plan-button" onclick="selectPlan('free')">Current Plan</button>
+          <button class="btn-upgrade" onclick="selectPlan('free')">Current Plan</button>
         </div>
 
         <div class="plan-card" id="plan-basic">
           <div class="plan-name">Basic</div>
           <div class="plan-price">$9.99</div>
-          <p style="color: #888; font-size: 0.9rem;">per month</p>
+          <div class="plan-period">per month</div>
           <ul class="plan-features">
-            <li>Contact Management</li>
-            <li>Full Invoicing</li>
-            <li>Expense Tracking</li>
-            <li class="limited">Team Features</li>
-            <li class="limited">API Access</li>
+            <li class="included">All Free features</li>
+            <li class="included">Full Invoicing</li>
+            <li class="included">Expense Tracking</li>
+            <li class="included">Task Management</li>
+            <li class="limited">Team (1 user)</li>
           </ul>
-          <button class="plan-button" onclick="selectPlan('basic')">Upgrade</button>
+          <button class="btn-upgrade" onclick="selectPlan('basic')">Upgrade</button>
         </div>
 
         <div class="plan-card" id="plan-professional">
           <div class="plan-name">Professional</div>
           <div class="plan-price">$19.99</div>
-          <p style="color: #888; font-size: 0.9rem;">per month</p>
+          <div class="plan-period">per month</div>
           <ul class="plan-features">
-            <li>All Basic Features</li>
-            <li>Team Management (5 users)</li>
-            <li>Advanced Analytics</li>
-            <li>Priority Support</li>
-            <li class="limited">API Access</li>
+            <li class="included">All Basic features</li>
+            <li class="included">Team Management (5 users)</li>
+            <li class="included">Advanced Analytics</li>
+            <li class="included">Priority Support</li>
+            <li class="included">Custom Reports</li>
           </ul>
-          <button class="plan-button" onclick="selectPlan('professional')">Upgrade</button>
+          <button class="btn-upgrade" onclick="selectPlan('professional')">Upgrade</button>
         </div>
 
         <div class="plan-card" id="plan-enterprise">
           <div class="plan-name">Enterprise</div>
           <div class="plan-price">$29.99</div>
-          <p style="color: #888; font-size: 0.9rem;">per month</p>
+          <div class="plan-period">per month</div>
           <ul class="plan-features">
-            <li>All Professional Features</li>
-            <li>Unlimited Team Users</li>
-            <li>Full API Access</li>
-            <li>Custom Integrations</li>
-            <li>24/7 Support</li>
+            <li class="included">All Professional features</li>
+            <li class="included">Unlimited Team Users</li>
+            <li class="included">Full API Access</li>
+            <li class="included">Custom Integrations</li>
+            <li class="included">24/7 Support</li>
           </ul>
-          <button class="plan-button" onclick="selectPlan('enterprise')">Upgrade</button>
+          <button class="btn-upgrade" onclick="selectPlan('enterprise')">Upgrade</button>
         </div>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <!-- Download App -->
-    <section class="download-section">
-      <h2 style="color: var(--white);">Download Aurasphere App</h2>
-      <p style="color: #888; margin-bottom: 1.5rem;">Access your CRM on any device, anywhere, anytime.</p>
+  <!-- PROFILE EDIT MODAL -->
+  <div class="modal" id="profile-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+      <h2>Edit Your Profile</h2>
       
-      <div class="download-grid">
-        <div class="download-card" onclick="downloadApp('ios')">
-          <div class="download-icon"><i class="fab fa-apple"></i></div>
-          <h3>iOS App</h3>
-          <p>iPhone & iPad</p>
-          <p style="margin-top: 1rem; color: var(--green); font-size: 0.8rem;">Coming Soon</p>
-        </div>
-
-        <div class="download-card" onclick="downloadApp('android')">
-          <div class="download-icon"><i class="fab fa-android"></i></div>
-          <h3>Android App</h3>
-          <p>All Android Devices</p>
-          <p style="margin-top: 1rem; color: var(--green); font-size: 0.8rem;">Coming Soon</p>
-        </div>
-
-        <div class="download-card" onclick="downloadApp('windows')">
-          <div class="download-icon"><i class="fab fa-windows"></i></div>
-          <h3>Windows Desktop</h3>
-          <p>Windows PC</p>
-          <p style="margin-top: 1rem; color: var(--green); font-size: 0.8rem;">Coming Soon</p>
-        </div>
-
-        <div class="download-card" onclick="downloadApp('mac')">
-          <div class="download-icon"><i class="fab fa-apple"></i></div>
-          <h3>macOS Desktop</h3>
-          <p>Mac Computer</p>
-          <p style="margin-top: 1rem; color: var(--green); font-size: 0.8rem;">Coming Soon</p>
-        </div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="modal-name" placeholder="John Doe">
       </div>
-    </section>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="modal-email" placeholder="john@email.com" disabled>
+      </div>
+
+      <div class="form-group">
+        <label>Company Name</label>
+        <input type="text" id="modal-company" placeholder="Your Company">
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" id="modal-phone" placeholder="+1 (555) 000-0000">
+      </div>
+
+      <div class="form-group">
+        <label>Industry</label>
+        <select id="modal-industry">
+          <option value="">Select an industry</option>
+          <option value="technology">Technology</option>
+          <option value="finance">Finance</option>
+          <option value="healthcare">Healthcare</option>
+          <option value="retail">Retail</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="services">Services</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-save" onclick="saveProfile()">Save Changes</button>
+        <button class="btn-cancel" onclick="closeProfileModal()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // Check login status on page load
-    window.addEventListener('load', function() {
+    function loadUserData() {
       const isLoggedIn = localStorage.getItem('user_logged_in');
-      const userEmail = localStorage.getItem('user_email');
-      const userSubscription = localStorage.getItem('user_subscription') || 'free';
-
       if (!isLoggedIn) {
         window.location.href = '/crm-login.html';
+        return;
       }
 
-      // Update UI with user info
-      document.getElementById('user-email').textContent = userEmail;
-      document.getElementById('subscription-display').textContent = userSubscription.toUpperCase();
+      const email = localStorage.getItem('user_email');
+      const name = localStorage.getItem('user_name');
+      const company = localStorage.getItem('user_company');
+      const phone = localStorage.getItem('user_phone');
+      const industry = localStorage.getItem('user_industry');
+      const subscription = localStorage.getItem('user_subscription') || 'free';
+      const createdAt = localStorage.getItem('user_created_at');
+
+      // Get first letter for avatar
+      const initial = name ? name.charAt(0).toUpperCase() : '?';
+
+      // Update top bar
+      document.getElementById('top-email').textContent = email;
+      document.getElementById('top-subscription').textContent = subscription.toUpperCase();
+      document.getElementById('user-avatar').textContent = initial;
+
+      // Update profile section
+      document.getElementById('profile-avatar').textContent = initial;
+      document.getElementById('profile-name').textContent = name;
+      document.getElementById('profile-email').textContent = email;
+      document.getElementById('profile-company').textContent = company;
+      document.getElementById('profile-phone').textContent = phone || 'Not provided';
+      document.getElementById('profile-industry').textContent = industry || 'Not specified';
+      document.getElementById('stat-subscription').textContent = subscription.toUpperCase();
+
+      // Calculate days active
+      if (createdAt) {
+        const created = new Date(createdAt);
+        const now = new Date();
+        const days = Math.floor((now - created) / (1000 * 60 * 60 * 24));
+        document.getElementById('stat-account-age').textContent = Math.max(days, 0);
+      }
 
       // Highlight active plan
-      const planMap = {
-        'free': 'plan-free',
-        'basic': 'plan-basic',
-        'professional': 'plan-professional',
-        'enterprise': 'plan-enterprise'
-      };
+      highlightActivePlan(subscription);
 
-      const activePlanId = planMap[userSubscription];
-      if (activePlanId) {
-        const activePlan = document.getElementById(activePlanId);
-        if (activePlan) {
-          activePlan.classList.add('active');
-        }
+      // Load modal data
+      document.getElementById('modal-name').value = name;
+      document.getElementById('modal-email').value = email;
+      document.getElementById('modal-company').value = company;
+      document.getElementById('modal-phone').value = phone || '';
+      document.getElementById('modal-industry').value = industry || '';
+    }
+
+    function highlightActivePlan(subscription) {
+      document.querySelectorAll('.plan-card').forEach(card => {
+        card.classList.remove('active');
+      });
+      const planId = `plan-${subscription}`;
+      const planCard = document.getElementById(planId);
+      if (planCard) {
+        planCard.classList.add('active');
       }
-    });
+    }
 
-    function logout() {
-      localStorage.removeItem('user_logged_in');
-      localStorage.removeItem('user_email');
-      localStorage.removeItem('user_subscription');
-      window.location.href = '/crm-login.html';
+    function openProfileModal() {
+      document.getElementById('profile-modal').classList.add('show');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.remove('show');
+    }
+
+    function saveProfile() {
+      const name = document.getElementById('modal-name').value;
+      const company = document.getElementById('modal-company').value;
+      const phone = document.getElementById('modal-phone').value;
+      const industry = document.getElementById('modal-industry').value;
+
+      if (!name || !company || !industry) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      localStorage.setItem('user_name', name);
+      localStorage.setItem('user_company', company);
+      localStorage.setItem('user_phone', phone);
+      localStorage.setItem('user_industry', industry);
+
+      closeProfileModal();
+      loadUserData();
+      alert('Profile updated successfully!');
     }
 
     function selectPlan(plan) {
+      const currentPlan = localStorage.getItem('user_subscription');
+      if (currentPlan === plan) {
+        alert('You are already on this plan');
+        return;
+      }
+      
       localStorage.setItem('user_subscription', plan);
-      alert(`Upgraded to ${plan.toUpperCase()} plan!`);
-      location.reload();
+      highlightActivePlan(plan);
+      document.getElementById('top-subscription').textContent = plan.toUpperCase();
+      document.getElementById('stat-subscription').textContent = plan.toUpperCase();
+      alert(`Successfully upgraded to ${plan} plan!`);
     }
 
     function exportData() {
-      alert('Export functionality coming soon. Your data will be downloaded as CSV/PDF.');
+      alert('Export feature coming soon! Your data will be available in CSV and PDF formats.');
     }
 
-    function downloadApp(platform) {
-      alert(`Download link for ${platform.toUpperCase()} coming soon!`);
+    function downloadApp() {
+      alert('Mobile and desktop apps are coming soon. Visit the App Store or Google Play when available.');
     }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('user_logged_in');
+        localStorage.removeItem('user_email');
+        localStorage.removeItem('user_name');
+        localStorage.removeItem('user_company');
+        localStorage.removeItem('user_phone');
+        localStorage.removeItem('user_industry');
+        localStorage.removeItem('user_subscription');
+        localStorage.removeItem('user_created_at');
+        window.location.href = '/crm-login.html';
+      }
+    }
+
+    // Load data on page load
+    window.addEventListener('load', loadUserData);
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('profile-modal');
+      if (event.target === modal) {
+        closeProfileModal();
+      }
+    });
   </script>
 </body>
 </html>
