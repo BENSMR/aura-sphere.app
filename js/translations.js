@@ -1,497 +1,52 @@
 // translations.js
-// AuraSphere Multi-Language Support (10 Languages)
+// AuraSphere Multi-Language Support (34 Languages - Comprehensive Global Coverage)
 // Auto-detected via navigator.language
 // OCR already supports 100+ languages via Tesseract.js
 
 const translations = {
-  // 1. English (default fallback)
-  en: {
-    // Global
-    app_name: "AuraSphere",
-    aura_post: "AuraPost",
-    aura_crm: "Aurasphere CRM",
-    dashboard: "Dashboard",
-    settings: "Settings",
-    language: "Language",
-    save: "Save",
-    cancel: "Cancel",
-    close: "Close",
-
-    // AuraPost
-    generate_post: "Generate Social Post",
-    your_prompt: "Describe your post idea (in English or Arabic)...",
-    dialect: "Dialect",
-    egyptian: "Egyptian",
-    gulf: "Gulf",
-    levantine: "Levantine",
-    maghrebi: "Maghrebi",
-    generate: "Generate",
-    copy: "Copy",
-    copied: "Copied!",
-    saved_posts: "Saved Posts",
-    privacy_first: "Privacy-first AI for social content in Arabic dialects",
-    annual_save: "Save 20% with annual plan",
-
-    // CRM
-    clients: "Clients",
-    invoices: "Invoices",
-    tasks: "Tasks",
-    wallet: "Wallet",
-    expenses: "Expenses",
-    add_client: "Add Client",
-    send_invoice: "Send Invoice",
-    new_task: "New Task",
-    scan_receipt: "Scan Receipt (OCR)",
-    customize_mobile: "Customize Mobile (max 8 features)",
-
-    // Auth / Billing
-    login: "Login",
-    signup: "Sign Up",
-    subscribe: "Subscribe",
-    monthly: "Monthly",
-    yearly: "Yearly",
-    free_trial: "3-Day Free Trial",
-    contact_support: "hello@aura-sphere.app"
-  },
-
-  // 2. Arabic (Modern Standard + RTL)
-  ar: {
-    app_name: "أوراسفير",
-    aura_post: "أورة بوست",
-    aura_crm: "سي آر إم أوراسفير",
-    dashboard: "لوحة التحكم",
-    settings: "الإعدادات",
-    language: "اللغة",
-    save: "حفظ",
-    cancel: "إلغاء",
-    close: "إغلاق",
-
-    generate_post: "إنشاء منشور اجتماعي",
-    your_prompt: "صف فكرتك للمنشور (بالإنجليزية أو العربية)...",
-    dialect: "اللهجة",
-    egyptian: "مصري",
-    gulf: "خليجي",
-    levantine: "شوامي",
-    maghrebi: "مغاربي",
-    generate: "إنشاء",
-    copy: "نسخ",
-    copied: "تم النسخ!",
-    saved_posts: "المنشورات المحفوظة",
-    privacy_first: "ذكاء اصطناعي يحترم خصوصيتك للمحتوى الاجتماعي باللهجات العربية",
-    annual_save: "وفر 20% مع الاشتراك السنوي",
-
-    clients: "العملاء",
-    invoices: "الفواتير",
-    tasks: "المهام",
-    wallet: "المحفظة",
-    expenses: "المصروفات",
-    add_client: "إضافة عميل",
-    send_invoice: "إرسال فاتورة",
-    new_task: "مهمة جديدة",
-    scan_receipt: "مسح الإيصال (OCR)",
-    customize_mobile: "تخصيص الجوال (8 ميزات كحد أقصى)",
-
-    login: "تسجيل الدخول",
-    signup: "اشتراك",
-    subscribe: "الاشتراك",
-    monthly: "شهري",
-    yearly: "سنوي",
-    free_trial: "تجربة مجانية 3 أيام",
-    contact_support: "hello@aura-sphere.app"
-  },
-
-  // 3. Spanish
-  es: {
-    app_name: "AuraSphere",
-    aura_post: "AuraPost",
-    aura_crm: "CRM AuraSphere",
-    dashboard: "Panel",
-    settings: "Ajustes",
-    language: "Idioma",
-    save: "Guardar",
-    cancel: "Cancelar",
-    close: "Cerrar",
-
-    generate_post: "Crear publicación social",
-    your_prompt: "Describe tu idea (en inglés o árabe)...",
-    dialect: "Dialecto",
-    egyptian: "Egipcio",
-    gulf: "Golfo",
-    levantine: "Levantino",
-    maghrebi: "Magrebí",
-    generate: "Generar",
-    copy: "Copiar",
-    copied: "¡Copiado!",
-    saved_posts: "Publicaciones guardadas",
-    privacy_first: "IA respetuosa con la privacidad para contenido social en dialectos árabes",
-    annual_save: "Ahorra 20% con plan anual",
-
-    clients: "Clientes",
-    invoices: "Facturas",
-    tasks: "Tareas",
-    wallet: "Billetera",
-    expenses: "Gastos",
-    add_client: "Añadir cliente",
-    send_invoice: "Enviar factura",
-    new_task: "Nueva tarea",
-    scan_receipt: "Escanear recibo (OCR)",
-    customize_mobile: "Personalizar móvil (máx. 8 funciones)",
-
-    login: "Iniciar sesión",
-    signup: "Registrarse",
-    subscribe: "Suscribirse",
-    monthly: "Mensual",
-    yearly: "Anual",
-    free_trial: "Prueba gratuita de 3 días",
-    contact_support: "hello@aura-sphere.app"
-  },
-
-  // 4. French
-  fr: {
-    app_name: "AuraSphere",
-    aura_post: "AuraPost",
-    aura_crm: "CRM AuraSphere",
-    dashboard: "Tableau de bord",
-    settings: "Paramètres",
-    language: "Langue",
-    save: "Enregistrer",
-    cancel: "Annuler",
-    close: "Fermer",
-
-    generate_post: "Générer un post social",
-    your_prompt: "Décrivez votre idée (en anglais ou arabe)...",
-    dialect: "Dialecte",
-    egyptian: "Égyptien",
-    gulf: "Golfe",
-    levantine: "Levantin",
-    maghrebi: "Maghrébin",
-    generate: "Générer",
-    copy: "Copier",
-    copied: "Copié !",
-    saved_posts: "Posts enregistrés",
-    privacy_first: "IA respectueuse de la vie privée pour le contenu social en dialectes arabes",
-    annual_save: "Économisez 20% avec l'abonnement annuel",
-
-    clients: "Clients",
-    invoices: "Factures",
-    tasks: "Tâches",
-    wallet: "Portefeuille",
-    expenses: "Dépenses",
-    add_client: "Ajouter un client",
-    send_invoice: "Envoyer une facture",
-    new_task: "Nouvelle tâche",
-    scan_receipt: "Scanner un reçu (OCR)",
-    customize_mobile: "Personnaliser mobile (8 fonctions max)",
-
-    login: "Connexion",
-    signup: "S'inscrire",
-    subscribe: "S'abonner",
-    monthly: "Mensuel",
-    yearly: "Annuel",
-    free_trial: "Essai gratuit de 3 jours",
-    contact_support: "hello@aura-sphere.app"
-  },
-
-  // 5. German
-  de: {
-    app_name: "AuraSphere",
-    aura_post: "AuraPost",
-    aura_crm: "AuraSphere CRM",
-    dashboard: "Dashboard",
-    settings: "Einstellungen",
-    language: "Sprache",
-    save: "Speichern",
-    cancel: "Abbrechen",
-    close: "Schließen",
-
-    generate_post: "Sozialen Beitrag erstellen",
-    your_prompt: "Beschreiben Sie Ihre Idee (auf Englisch oder Arabisch)...",
-    dialect: "Dialekt",
-    egyptian: "Ägyptisch",
-    gulf: "Golf",
-    levantine: "Levante",
-    maghrebi: "Maghrebinisch",
-    generate: "Erstellen",
-    copy: "Kopieren",
-    copied: "Kopiert!",
-    saved_posts: "Gespeicherte Beiträge",
-    privacy_first: "Datenschutzfreundliche KI für Social-Media-Inhalte in arabischen Dialekten",
-    annual_save: "Sparen Sie 20% mit Jahresabo",
-
-    clients: "Kunden",
-    invoices: "Rechnungen",
-    tasks: "Aufgaben",
-    wallet: "Geldbörse",
-    expenses: "Ausgaben",
-    add_client: "Kunde hinzufügen",
-    send_invoice: "Rechnung senden",
-    new_task: "Neue Aufgabe",
-    scan_receipt: "Beleg scannen (OCR)",
-    customize_mobile: "Mobil anpassen (max. 8 Funktionen)",
-
-    login: "Anmelden",
-    signup: "Registrieren",
-    subscribe: "Abonnieren",
-    monthly: "Monatlich",
-    yearly: "Jährlich",
-    free_trial: "3-tägige kostenlose Testversion",
-    contact_support: "hello@aura-sphere.app"
-  },
-
-  // 6. Turkish
-  tr: {
-    app_name: "AuraSphere",
-    aura_post: "AuraPost",
-    aura_crm: "AuraSphere CRM",
-    dashboard: "Kontrol Paneli",
-    settings: "Ayarlar",
-    language: "Dil",
-    save: "Kaydet",
-    cancel: "İptal",
-    close: "Kapat",
-
-    generate_post: "Sosyal Medya Gönderisi Oluştur",
-    your_prompt: "Fikrinizi açıklayın (İngilizce veya Arapça)...",
-    dialect: "Ağız",
-    egyptian: "Mısırlı",
-    gulf: "Basra Körfezi",
-    levantine: "Levant",
-    maghrebi: "Magribi",
-    generate: "Oluştur",
-    copy: "Kopyala",
-    copied: "Kopyalandı!",
-    saved_posts: "Kayıtlı Gönderiler",
-    privacy_first: "Arap ağızlarıyla sosyal içerik için gizlilik odaklı yapay zeka",
-    annual_save: "Yıllık planla %20 tasarruf edin",
-
-    clients: "Müşteriler",
-    invoices: "Faturalar",
-    tasks: "Görevler",
-    wallet: "Cüzdan",
-    expenses: "Giderler",
-    add_client: "Müşteri Ekle",
-    send_invoice: "Fatura Gönder",
-    new_task: "Yeni Görev",
-    scan_receipt: "Fiş Tara (OCR)",
-    customize_mobile: "Mobil'i Özelleştir (en fazla 8 özellik)",
-
-    login: "Giriş Yap",
-    signup: "Kayıt Ol",
-    subscribe: "Abone Ol",
-    monthly: "Aylık",
-    yearly: "Yıllık",
-    free_trial: "3 Günlük Ücretsiz Deneme",
-    contact_support: "hello@aura-sphere.app"
-  },
-
-  // 7. Portuguese
-  pt: {
-    app_name: "AuraSphere",
-    aura_post: "AuraPost",
-    aura_crm: "CRM AuraSphere",
-    dashboard: "Painel",
-    settings: "Configurações",
-    language: "Idioma",
-    save: "Salvar",
-    cancel: "Cancelar",
-    close: "Fechar",
-
-    generate_post: "Gerar postagem social",
-    your_prompt: "Descreva sua ideia (em inglês ou árabe)...",
-    dialect: "Dialeto",
-    egyptian: "Egípcio",
-    gulf: "Golfo",
-    levantine: "Levantino",
-    maghrebi: "Magrebino",
-    generate: "Gerar",
-    copy: "Copiar",
-    copied: "Copiado!",
-    saved_posts: "Postagens salvas",
-    privacy_first: "IA respeitosa com a privacidade para conteúdo social em dialetos árabes",
-    annual_save: "Economize 20% com plano anual",
-
-    clients: "Clientes",
-    invoices: "Faturas",
-    tasks: "Tarefas",
-    wallet: "Carteira",
-    expenses: "Despesas",
-    add_client: "Adicionar cliente",
-    send_invoice: "Enviar fatura",
-    new_task: "Nova tarefa",
-    scan_receipt: "Escanear recibo (OCR)",
-    customize_mobile: "Personalizar móvel (máx. 8 recursos)",
-
-    login: "Entrar",
-    signup: "Inscrever-se",
-    subscribe: "Assinar",
-    monthly: "Mensal",
-    yearly: "Anual",
-    free_trial: "Teste gratuito de 3 dias",
-    contact_support: "hello@aura-sphere.app"
-  },
-
-  // 8. Russian
-  ru: {
-    app_name: "AuraSphere",
-    aura_post: "AuraPost",
-    aura_crm: "CRM AuraSphere",
-    dashboard: "Панель управления",
-    settings: "Настройки",
-    language: "Язык",
-    save: "Сохранить",
-    cancel: "Отмена",
-    close: "Закрыть",
-
-    generate_post: "Создать пост в соцсетях",
-    your_prompt: "Опишите свою идею (на английском или арабском)...",
-    dialect: "Диалект",
-    egyptian: "Египетский",
-    gulf: "Заливский",
-    levantine: "Левантийский",
-    maghrebi: "Магрибский",
-    generate: "Создать",
-    copy: "Копировать",
-    copied: "Скопировано!",
-    saved_posts: "Сохранённые посты",
-    privacy_first: "Конфиденциальный ИИ для соцконтента на арабских диалектах",
-    annual_save: "Экономия 20% при годовой подписке",
-
-    clients: "Клиенты",
-    invoices: "Счета",
-    tasks: "Задачи",
-    wallet: "Кошелёк",
-    expenses: "Расходы",
-    add_client: "Добавить клиента",
-    send_invoice: "Отправить счёт",
-    new_task: "Новая задача",
-    scan_receipt: "Сканировать чек (OCR)",
-    customize_mobile: "Настроить мобильную версию (макс. 8 функций)",
-
-    login: "Войти",
-    signup: "Зарегистрироваться",
-    subscribe: "Подписаться",
-    monthly: "Ежемесячно",
-    yearly: "Ежегодно",
-    free_trial: "Бесплатный пробный период 3 дня",
-    contact_support: "hello@aura-sphere.app"
-  },
-
-  // 9. Indonesian
-  id: {
-    app_name: "AuraSphere",
-    aura_post: "AuraPost",
-    aura_crm: "CRM AuraSphere",
-    dashboard: "Dasbor",
-    settings: "Pengaturan",
-    language: "Bahasa",
-    save: "Simpan",
-    cancel: "Batal",
-    close: "Tutup",
-
-    generate_post: "Buat Postingan Sosial",
-    your_prompt: "Jelaskan ide Anda (dalam bahasa Inggris atau Arab)...",
-    dialect: "Dialek",
-    egyptian: "Mesir",
-    gulf: "Teluk",
-    levantine: "Levantine",
-    maghrebi: "Maghrebi",
-    generate: "Buat",
-    copy: "Salin",
-    copied: "Disalin!",
-    saved_posts: "Postingan Tersimpan",
-    privacy_first: "AI privasi-utama untuk konten sosial dalam dialek Arab",
-    annual_save: "Hemat 20% dengan langganan tahunan",
-
-    clients: "Klien",
-    invoices: "Faktur",
-    tasks: "Tugas",
-    wallet: "Dompet",
-    expenses: "Pengeluaran",
-    add_client: "Tambah Klien",
-    send_invoice: "Kirim Faktur",
-    new_task: "Tugas Baru",
-    scan_receipt: "Pindai Struk (OCR)",
-    customize_mobile: "Sesuaikan Seluler (maks. 8 fitur)",
-
-    login: "Masuk",
-    signup: "Daftar",
-    subscribe: "Berlangganan",
-    monthly: "Bulanan",
-    yearly: "Tahunan",
-    free_trial: "Uji Coba Gratis 3 Hari",
-    contact_support: "hello@aura-sphere.app"
-  },
-
-  // 10. Chinese (Simplified)
-  zh: {
-    app_name: "AuraSphere",
-    aura_post: "AuraPost",
-    aura_crm: "AuraSphere CRM",
-    dashboard: "仪表板",
-    settings: "设置",
-    language: "语言",
-    save: "保存",
-    cancel: "取消",
-    close: "关闭",
-
-    generate_post: "生成社交媒体帖子",
-    your_prompt: "描述您的帖子想法（英文或阿拉伯文）...",
-    dialect: "方言",
-    egyptian: "埃及方言",
-    gulf: "海湾方言",
-    levantine: "黎凡特方言",
-    maghrebi: "马格里布方言",
-    generate: "生成",
-    copy: "复制",
-    copied: "已复制！",
-    saved_posts: "已保存的帖子",
-    privacy_first: "隐私优先的人工智能，支持阿拉伯方言社交媒体内容",
-    annual_save: "年付计划节省 20%",
-
-    clients: "客户",
-    invoices: "发票",
-    tasks: "任务",
-    wallet: "钱包",
-    expenses: "支出",
-    add_client: "添加客户",
-    send_invoice: "发送发票",
-    new_task: "新建任务",
-    scan_receipt: "扫描收据 (OCR)",
-    customize_mobile: "自定义移动版（最多 8 项功能）",
-
-    login: "登录",
-    signup: "注册",
-    subscribe: "订阅",
-    monthly: "月付",
-    yearly: "年付",
-    free_trial: "3 天免费试用",
-    contact_support: "hello@aura-sphere.app"
-  }
-};
-
-// Auto-detect user language
-function getUserLanguage() {
-  const userLang = navigator.language.split('-')[0]; // e.g., 'ar' from 'ar-SA'
-  return translations[userLang] ? userLang : 'en';
-}
-
-// Translate UI
-function translateUI(lang = getUserLanguage()) {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
+  en: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "AuraSphere CRM", dashboard: "Dashboard", settings: "Settings", language: "Language", save: "Save", cancel: "Cancel", close: "Close", generate_post: "Generate Social Post", your_prompt: "Describe your post idea...", dialect: "Dialect", egyptian: "Egyptian", gulf: "Gulf", levantine: "Levantine", maghrebi: "Maghrebi", generate: "Generate", copy: "Copy", copied: "Copied!", saved_posts: "Saved Posts", privacy_first: "Privacy-first AI", annual_save: "Save 20%", clients: "Clients", invoices: "Invoices", tasks: "Tasks", wallet: "Wallet", expenses: "Expenses", add_client: "Add Client", send_invoice: "Send Invoice", new_task: "New Task", scan_receipt: "Scan Receipt (OCR)", customize_mobile: "Customize Mobile", login: "Login", signup: "Sign Up", subscribe: "Subscribe", monthly: "Monthly", yearly: "Yearly", free_trial: "3-Day Free Trial", contact_support: "hello@aura-sphere.app" },
+  es: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM AuraSphere", dashboard: "Panel", settings: "Ajustes", language: "Idioma", save: "Guardar", cancel: "Cancelar", close: "Cerrar", generate_post: "Crear publicación", your_prompt: "Describe tu idea...", dialect: "Dialecto", egyptian: "Egipcio", gulf: "Golfo", levantine: "Levantino", maghrebi: "Magrebí", generate: "Generar", copy: "Copiar", copied: "¡Copiado!", saved_posts: "Guardadas", privacy_first: "IA respetuosa", annual_save: "Ahorra 20%", clients: "Clientes", invoices: "Facturas", tasks: "Tareas", wallet: "Billetera", expenses: "Gastos", add_client: "Añadir", send_invoice: "Enviar", new_task: "Nueva", scan_receipt: "Escanear (OCR)", customize_mobile: "Personalizar", login: "Iniciar", signup: "Registrarse", subscribe: "Suscribirse", monthly: "Mensual", yearly: "Anual", free_trial: "Prueba 3 días", contact_support: "hello@aura-sphere.app" },
+  fr: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM AuraSphere", dashboard: "Tableau de bord", settings: "Paramètres", language: "Langue", save: "Enregistrer", cancel: "Annuler", close: "Fermer", generate_post: "Post social", your_prompt: "Décrivez...", dialect: "Dialecte", egyptian: "Égyptien", gulf: "Golfe", levantine: "Levantin", maghrebi: "Maghrébin", generate: "Générer", copy: "Copier", copied: "Copié!", saved_posts: "Posts", privacy_first: "IA privée", annual_save: "20% off", clients: "Clients", invoices: "Factures", tasks: "Tâches", wallet: "Portefeuille", expenses: "Dépenses", add_client: "Ajouter", send_invoice: "Envoyer", new_task: "Nouvelle", scan_receipt: "Scanner (OCR)", customize_mobile: "Personnaliser", login: "Connexion", signup: "S'inscrire", subscribe: "S'abonner", monthly: "Mensuel", yearly: "Annuel", free_trial: "Essai 3 jours", contact_support: "hello@aura-sphere.app" },
+  de: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Dashboard", settings: "Einstellungen", language: "Sprache", save: "Speichern", cancel: "Abbrechen", close: "Schließen", generate_post: "Beitrag", your_prompt: "Beschreiben...", dialect: "Dialekt", egyptian: "Ägyptisch", gulf: "Golf", levantine: "Levante", maghrebi: "Maghrebinisch", generate: "Erstellen", copy: "Kopieren", copied: "Kopiert!", saved_posts: "Beiträge", privacy_first: "Datenschutz-KI", annual_save: "20%", clients: "Kunden", invoices: "Rechnungen", tasks: "Aufgaben", wallet: "Brieftasche", expenses: "Ausgaben", add_client: "Hinzufügen", send_invoice: "Senden", new_task: "Neu", scan_receipt: "Scannen (OCR)", customize_mobile: "Anpassen", login: "Anmelden", signup: "Registrieren", subscribe: "Abonnieren", monthly: "Monatlich", yearly: "Jährlich", free_trial: "Testversion 3 Tage", contact_support: "hello@aura-sphere.app" },
+  it: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Pannello", settings: "Impostazioni", language: "Lingua", save: "Salva", cancel: "Annulla", close: "Chiudi", generate_post: "Post", your_prompt: "Descrivi...", dialect: "Dialetto", egyptian: "Egiziano", gulf: "Golfo", levantine: "Levantino", maghrebi: "Maghrebino", generate: "Genera", copy: "Copia", copied: "Copiato!", saved_posts: "Post", privacy_first: "IA privacy", annual_save: "20%", clients: "Clienti", invoices: "Fatture", tasks: "Attività", wallet: "Portafoglio", expenses: "Spese", add_client: "Aggiungi", send_invoice: "Invia", new_task: "Nuova", scan_receipt: "Scansiona (OCR)", customize_mobile: "Personalizza", login: "Accedi", signup: "Registrati", subscribe: "Sottoscrivi", monthly: "Mensile", yearly: "Annuale", free_trial: "Prova 3 giorni", contact_support: "hello@aura-sphere.app" },
+  pt: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Painel", settings: "Configurações", language: "Idioma", save: "Salvar", cancel: "Cancelar", close: "Fechar", generate_post: "Post", your_prompt: "Descreva...", dialect: "Dialeto", egyptian: "Egípcio", gulf: "Golfo", levantine: "Levantino", maghrebi: "Magrebino", generate: "Gerar", copy: "Copiar", copied: "Copiado!", saved_posts: "Posts", privacy_first: "IA privada", annual_save: "20%", clients: "Clientes", invoices: "Faturas", tasks: "Tarefas", wallet: "Carteira", expenses: "Despesas", add_client: "Adicionar", send_invoice: "Enviar", new_task: "Nova", scan_receipt: "Escanear (OCR)", customize_mobile: "Personalizar", login: "Entrar", signup: "Inscrever", subscribe: "Assinar", monthly: "Mensal", yearly: "Anual", free_trial: "Teste 3 dias", contact_support: "hello@aura-sphere.app" },
+  nl: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Dashboard", settings: "Instellingen", language: "Taal", save: "Opslaan", cancel: "Annuleren", close: "Sluiten", generate_post: "Bericht", your_prompt: "Beschrijf...", dialect: "Dialect", egyptian: "Egyptisch", gulf: "Golf", levantine: "Levantijns", maghrebi: "Maghrebijns", generate: "Genereren", copy: "Kopiëren", copied: "Gekopieerd!", saved_posts: "Berichten", privacy_first: "Privacy-AI", annual_save: "20%", clients: "Klanten", invoices: "Facturen", tasks: "Taken", wallet: "Portemonnee", expenses: "Uitgaven", add_client: "Toevoegen", send_invoice: "Verzenden", new_task: "Nieuw", scan_receipt: "Scannen (OCR)", customize_mobile: "Aanpassen", login: "Inloggen", signup: "Registreren", subscribe: "Abonneren", monthly: "Maandelijks", yearly: "Jaarlijks", free_trial: "Proef 3 dagen", contact_support: "hello@aura-sphere.app" },
+  pl: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Pulpit", settings: "Ustawienia", language: "Język", save: "Zapisz", cancel: "Anuluj", close: "Zamknij", generate_post: "Post", your_prompt: "Opisz...", dialect: "Dialekt", egyptian: "Egipski", gulf: "Zatoki", levantine: "Lewantu", maghrebi: "Magrebu", generate: "Wygeneruj", copy: "Kopiuj", copied: "Skopiowano!", saved_posts: "Posty", privacy_first: "AI prywatna", annual_save: "20%", clients: "Klienci", invoices: "Faktury", tasks: "Zadania", wallet: "Portfel", expenses: "Wydatki", add_client: "Dodaj", send_invoice: "Wyślij", new_task: "Nowe", scan_receipt: "Skanuj (OCR)", customize_mobile: "Dostosuj", login: "Zaloguj", signup: "Zarejestruj", subscribe: "Subskrybuj", monthly: "Miesięcznie", yearly: "Rocznie", free_trial: "Próba 3 dni", contact_support: "hello@aura-sphere.app" },
+  cs: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Přehled", settings: "Nastavení", language: "Jazyk", save: "Uložit", cancel: "Zrušit", close: "Zavřít", generate_post: "Příspěvek", your_prompt: "Popište...", dialect: "Dialekt", egyptian: "Egyptský", gulf: "Záliv", levantine: "Levantský", maghrebi: "Maghreb", generate: "Vytvořit", copy: "Kopírovat", copied: "Zkopírováno!", saved_posts: "Příspěvky", privacy_first: "Soukromá AI", annual_save: "20%", clients: "Klienti", invoices: "Faktury", tasks: "Úkoly", wallet: "Peněženka", expenses: "Výdaje", add_client: "Přidat", send_invoice: "Odeslat", new_task: "Nový", scan_receipt: "Skenovat (OCR)", customize_mobile: "Přizpůsobit", login: "Přihlášení", signup: "Registrace", subscribe: "Odebírat", monthly: "Měsíční", yearly: "Roční", free_trial: "Zkušební 3 dny", contact_support: "hello@aura-sphere.app" },
+  sk: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Prehľad", settings: "Nastavenia", language: "Jazyk", save: "Uložiť", cancel: "Zrušiť", close: "Zatvoriť", generate_post: "Príspevok", your_prompt: "Popíšte...", dialect: "Dialekt", egyptian: "Egyptský", gulf: "Záliv", levantine: "Levantský", maghrebi: "Maghreb", generate: "Vytvoriť", copy: "Kopírovať", copied: "Skopírované!", saved_posts: "Príspevky", privacy_first: "Súkromná AI", annual_save: "20%", clients: "Klienti", invoices: "Faktúry", tasks: "Úlohy", wallet: "Peňaženka", expenses: "Výdavky", add_client: "Pridať", send_invoice: "Poslať", new_task: "Nová", scan_receipt: "Skenovať (OCR)", customize_mobile: "Prispôsobiť", login: "Prihlásenie", signup: "Registrácia", subscribe: "Odoberať", monthly: "Mesačne", yearly: "Ročne", free_trial: "Skúšobná 3 dni", contact_support: "hello@aura-sphere.app" },
+  hu: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Irányítópult", settings: "Beállítások", language: "Nyelv", save: "Mentés", cancel: "Mégse", close: "Bezárás", generate_post: "Bejegyzés", your_prompt: "Írja le...", dialect: " "Másolás", copied: "Másolva!", saved_posts: "Bejegyzések", privacy_first: "Magánélet AI", annual_save: "20%", clients: "Ügyfelek", invoices: "Számlák", tasks: "Feladatok", wallet: "Pénztárca", expenses: "Kiadások", add_client: "Hozzáadás", send_invoice: "Küldés", new_task: "Új", scan_receipt: "Beolvasás (OCR)", customize_mobile: "Testreszabás", login: "Bejelentkezés", signup: "Regisztráció", subscribe: "Feliratkozás", monthly: "Havi", yearly: "Éves", free_trial: "Próba 3 nap", contact_support: "hello@aura-sphere.app" },
+  ro: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Tablou", settings: "Setări", language: "Limba", save: "Salvare", cancel: "Anulare", close: "Închidere", generate_post: "Postare", your_prompt: "Descrieți...", dialect: "Dialect", egyptian: "Egipteană", gulf: "Golful", levantine: "Levantina", maghrebi: "Magrebina", generate: "Generare", copy: "Copiere", copied: "Copiat!", saved_posts: "Postări", privacy_first: "IA privată", annual_save: "20%", clients: "Clienți", invoices: "Facturi", tasks: "Sarcini", wallet: "Portofel", expenses: "Cheltuieli", add_client: "Adăugare", send_invoice: "Trimitere", new_task: "Nouă", scan_receipt: "Scanare (OCR)", customize_mobile: "Personalizare", login: "Conectare", signup: "Înregistrare", subscribe: "Abonare", monthly: "Lunar", yearly: "Anual", free_trial: "Probă 3 zile", contact_support: "hello@aura-sphere.app" },
+  bg: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Таблица", settings: "Настройки", language: "Език", save: "Запази", cancel: "Отмени", close: "Затвори", generate_post: "Публикация", your_prompt: "Опишете...", dialect: "Диалект", egyptian: "Египетски", gulf: "Залив", levantine: "Левантска", maghrebi: "Магребски", generate: "Генериране", copy: "Копиране", copied: "Копирано!", saved_posts: "Публикации", privacy_first: "Приватна AI", annual_save: "20%", clients: "Клиенти", invoices: "Фактури", tasks: "Задачи", wallet: "Портфейл", expenses: "Разходи", add_client: "Добавяне", send_invoice: "Изпращане", new_task: "Нова", scan_receipt: "Сканиране (OCR)", customize_mobile: "Персонализиране", login: "Вход", signup: "Регистрирайте", subscribe: "Абониране", monthly: "Месечно", yearly: "Годишно", free_trial: "Пробна 3 дни", contact_support: "hello@aura-sphere.app" },
+  el: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Πίνακας", settings: "Ρυθμίσεις", language: "Γλώσσα", save: "Αποθήκευση", cancel: "Ακύρωση", close: "Κλείσιμο", generate_post: "Ανάρτηση", your_prompt: "Περιγράψτε...", dialect: "Διάλεκτος", egyptian: "Αιγυπτιακή", gulf: "Κόλπος", levantine: "Λεβαντίνη", maghrebi: "Μαγρέμπι", generate: "Δημιουργία", copy: "Αντιγραφή", copied: "Αντιγράφηκε!", saved_posts: "Αναρτήσεις", privacy_first: "Ιδιωτική AI", annual_save: "20%", clients: "Πελάτες", invoices: "Τιμολόγια", tasks: "Εργασίες", wallet: "Πορτοφόλι", expenses: "Έξοδα", add_client: "Προσθήκη", send_invoice: "Αποστολή", new_task: "Νέα", scan_receipt: "Σάρωση (OCR)", customize_mobile: "Προσαρμογή", login: "Σύνδεση", signup: "Εγγραφή", subscribe: "Συνδρομή", monthly: "Μηνιαίο", yearly: "Ετήσιο", free_trial: "Δοκιμή 3 ημέρες", contact_support: "hello@aura-sphere.app" },
+  hr: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Nadzorna", settings: "Postavke", language: "Jezik", save: "Spremi", cancel: "Otkaži", close: "Zatvori", generate_post: "Objava", your_prompt: "Opiši...", dialect: "Dijalekt", egyptian: "Egipatski", gulf: "Zaljev", levantine: "Levantin", maghrebi: "Magrebi", generate: "Generiraj", copy: "Kopiraj", copied: "Kopirano!", saved_posts: "Objave", privacy_first: "Privatna AI", annual_save: "20%", clients: "Klijenti", invoices: "Računi", tasks: "Zadaci", wallet: "Novčanik", expenses: "Rashodi", add_client: "Dodaj", send_invoice: "Pošalji", new_task: "Nova", scan_receipt: "Skeniraj (OCR)", customize_mobile: "Prilagodi", login: "Prijava", signup: "Registracija", subscribe: "Pretplata", monthly: "Mjesečno", yearly: "Godišnje", free_trial: "Probna 3 dana", contact_support: "hello@aura-sphere.app" },
+  sl: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Nadzorna", settings: "Nastavitve", language: "Jezik", save: "Shrani", cancel: "Prekliči", close: "Zapri", generate_post: "Objava", your_prompt: "Opiši...", dialect: "Narečje", egyptian: "Egipčanski", gulf: "Zaliv", levantine: "Levantin", maghrebi: "Magrebi", generate: "Ustvari", copy: "Kopiraj", copied: "Kopirano!", saved_posts: "Objave", privacy_first: "Zasebna AI", annual_save: "20%", clients: "Odjemalci", invoices: "Računi", tasks: "Naloge", wallet: "Denarnica", expenses: "Izdatki", add_client: "Dodaj", send_invoice: "Pošlji", new_task: "Nova", scan_receipt: "Skeniraj (OCR)", customize_mobile: "Prilagodi", login: "Prijava", signup: "Registracija", subscribe: "Naročanje", monthly: "Mesečno", yearly: "Letno", free_trial: "Probna 3 dni", contact_support: "hello@aura-sphere.app" },
+  sr: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Tabla", settings: "Postavke", language: "Jezik", save: "Spremi", cancel: "Otkaži", close: "Zatvori", generate_post: "Post", your_prompt: "Opiši...", dialect: "Dijalekt", egyptian: "Egipatski", gulf: "Zaliv", levantine: "Levantin", maghrebi: "Magrebi", generate: "Generiši", copy: "Kopiraj", copied: "Kopirano!", saved_posts: "Postovi", privacy_first: "Privatna AI", annual_save: "20%", clients: "Klijenti", invoices: "Računi", tasks: "Zadaci", wallet: "Novčanik", expenses: "Rashodi", add_client: "Dodaj", send_invoice: "Pošalji", new_task: "Novi", scan_receipt: "Skeniraj (OCR)", customize_mobile: "Prilagodi", login: "Prijava", signup: "Registracija", subscribe: "Pretplata", monthly: "Mesečno", yearly: "Godišnje", free_trial: "Probna 3 dana", contact_support: "hello@aura-sphere.app" },
+  bs: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Tabla", settings: "Postavke", language: "Jezik", save: "Spremi", cancel: "Otkaži", close: "Zatvori", generate_post: "Post", your_prompt: "Opiši...", dialect: "Dijalekt", egyptian: "Egipatski", gulf: "Zaliv", levantine: "Levantin", maghrebi: "Magrebi", generate: "Generiraj", copy: "Kopiraj", copied: "Kopirano!", saved_posts: "Postovi", privacy_first: "Privatna AI", annual_save: "20%", clients: "Klijenti", invoices: "Računi", tasks: "Zadaci", wallet: "Novčanik", expenses: "Rashodi", add_client: "Dodaj", send_invoice: "Pošalji", new_task: "Novi", scan_receipt: "Skeniraj (OCR)", customize_mobile: "Prilagodi", login: "Prijava", signup: "Registracija", subscribe: "Pretplata", monthly: "Mesečno", yearly: "Godišnje", free_trial: "Probna 3 dana", contact_support: "hello@aura-sphere.app" },
+  mk: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Таблица", settings: "Поставки", language: "Јазик", save: "Зачувај", cancel: "Откажи", close: "Затвори", generate_post: "Објава", your_prompt: "Опиши...", dialect: "Дијалект", egyptian: "ЕгиRM", dashboard: "Paneli", settings: "Cilësimet", language: "Gjuha", save: "Ruaj", cancel: "Anulo", close: "Mbyll", generate_post: "Postim", your_prompt: "Përshkruaj...", dialect: "Dialekti", egyptian: "Egjiptian", gulf: "Gjiri", levantine: "Levantin", maghrebi: "Magrebita", generate: "Gjenero", copy: "Kopjo", copied: "Kopjuar!", saved_posts: "Postime", privacy_first: "Privatë AI", annual_save: "20%", clients: "Klientë", invoices: "Fatura", tasks: "Detyra", wallet: "Portofol", expenses: "Shpenzime", add_client: "Shto", send_invoice: "Dërgo", new_task: "E re", scan_receipt: "Skanoni (OCR)", customize_mobile: "Përshtatni", login: "Hyrje", signup: "Regjistrim", subscribe: "Pajtim", monthly: "Mujore", yearly: "Vjetore", free_trial: "Prova 3 ditë", contact_support: "hello@aura-sphere.app" },
+  lt: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Sritis", settings: "Nustatymai", language: "Kalba", save: "Išsaugoti", cancel: "Atšaukti", close: "Uždaryti", generate_post: "Postą", your_prompt: "Apibūdinkite...", dialect: "Dialektas", egyptian: "Egiptiečių", gulf: "Įlankos", levantine: "Levantinis", maghrebi: "Maghrebinis", generate: "Sukurti", copy: "Kopijuoti", copied: "Nukopijuota!", saved_posts: "Postai", privacy_first: "Privati AI", annual_save: "20%", clients: "Klientai", invoices: "Sąskaitos", tasks: "Užduotys", wallet: "Piniginė", expenses: "Išlaidos", add_client: "Pridėti", send_invoice: "Siųsti", new_task: "Nauja", scan_receipt: "Nuskaityti (OCR)", customize_mobile: "Tinkinti", login: "Prisijungti", signup: "Užsiregistruoti", subscribe: "Prenumeruoti", monthly: "Mėnesinis", yearly: "Metinis", free_trial: "Bandomoji 3 dienų", contact_support: "hello@aura-sphere.app" },
+  lv: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Panelis", settings: "Iestatījumi", language: "Valoda", save: "Saglabāt", cancel: "Atcelt", close: "Aizvērt", generate_post: "Ziņu", your_prompt: "Aprakstiet...", dialect: "Dialekts", egyptian: "Ēģiptiešu", gulf: "Jūras līcis", levantine: "Levantīna", maghrebi: "Magreba", generate: "Ģenerēt", copy: "Kopēt", copied: "Nokopēts!", saved_posts: "Ziņojumi", privacy_first: "Privāta AI", annual_save: "20%", clients: "Klienti", invoices: "Rēķini", tasks: "Uzdevumi", wallet: "Maks", expenses: "Izdevumi", add_client: "Pievienot", send_invoice: "Nosūtīt", new_task: "Jauns", scan_receipt: "Skenēt (OCR)", customize_mobile: "Pielāgot", login: "Ielogoties", signup: "Reģistrēties", subscribe: "Abonēt", monthly: "Mēnešs", yearly: "Gads", free_trial: "Bezmaksas 3 dienu", contact_support: "hello@aura-sphere.app" },
+  et: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Paneel", settings: "Seaded", language: "Keel", save: "Salvesta", cancel: "Tühista", close: "Sule", generate_post: "Postitus", your_prompt: "Kirjelda...", dialect: "Murre", egyptian: "Egiptuse", gulf: "Lahe", levantine: "Levantini", maghrebi: "Magreb", generate: "Loo", copy: "Kopeeri", copied: "Kopeeritud!", saved_posts: "Postitused", privacy_first: "Privaatne AI", annual_save: "20%", clients: "Kliendid", invoices: "Arved", tasks: "Ülesanded", wallet: "Rahakott", expenses: "Kulud", add_client: "Lisa", send_invoice: "Saada", new_task: "Uus", scan_receipt: "Skanni (OCR)", customize_mobile: "Kohandage", login: "Logi sisse", signup: "Registreeru", subscribe: "Telli", monthly: "Igakuiselt", yearly: "Aastas", free_trial: "Tasuta 3-päevane", contact_support: "hello@aura-sphere.app" },
+  fi: { app_name: "AuraSphere", aura_post:ttings: "Asetukset", language: "Kieli", save: "Tallenna", cancel: "Peruuta", close: "Sulje", generate_post: "Viesti", your_prompt: "Kuvaile...", dialect: "Murre", egyptian: "Egyptin", gulf: "Lahti", levantine: "Levanttilainen", maghrebi: "Magreb", generate: "Luo", copy: "Kopioi", copied: "Kopioitu!", saved_posts: "Viestit", privacy_first: "Yksityinen AI", annual_save: "20%", clients: "Asiakkaat", invoices: "Laskut", tasks: "Tehtävät", wallet: "Lompakko", expenses: "Kulut", add_client: "Lisää", send_invoice: "Lähetä", new_task: "Uusi", scan_receipt: "Kuvaa (OCR)", customize_mobile: "Mukauta", login: "Kirjaudu", signup: "Rekisteröidy", subscribe: "Tilaa", monthly: "Kuukausittain", yearly: "Vuosittain", free_trial: "Ilmainen 3 päivän", contact_support: "hello@aura-sphere.app" },
+  sv: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Panel", settings: "Inställningar", language: "Språk", save: "Spara", cancel: "Avbryt", close: "Stäng", generate_post: "Inlägg", your_prompt: "Beskriv...", dialect: "Dialekt", egyptian: "Egyptisk", gulf: "Persiska", levantine: "Levantin", maghrebi: "Maghrebi", generate: "Generera", copy: "Kopiera", copied: "Kopierad!", saved_posts: "Inlägg", privacy_first: "Integritet AI", annual_save: "20%", clients: "Kunder", invoices: "Fakturor", tasks: "Uppgifter", wallet: "Plånbok", expenses: "Utgifter", add_client: "Lägg till", send_invoice: "Skicka", new_task: "Ny", scan_receipt: "Skanna (OCR)", customize_mobile: "Anpassa", login: "Logga in", signup: "Registrera", subscribe: "Prenumerera", monthly: "Månatlig", yearly: "Årlig", free_trial: "Gratis 3 dagar", contact_support: "hello@aura-sphere.app" },
+  da: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Panel", settings: "Indstillinger", language: "Sprog", save: "Gem", cancel: "Annuller", close: "Luk", generate_post: "Opslag", your_prompt: "Beskriv...", dialect: "Dialekt", egyptian: "Egyptisk", gulf: "Persiske", levantine: "Levantinsk", maghrebi: "Maghrebi", generate: "Generer", copy: "Kopier", copied: "Kopieret!", saved_posts: "Opslag", privacy_first: "Privatliv AI", annual_save: "20%", clients: "Kunder", invoices: "Fakturaer", tasks: "Opgaver", wallet: "Tegnebog", expenses: "Udgifter", add_client: "Tilføj", send_invoice: "Send", new_task: "Ny", scan_receipt: "Scan (OCR)", customize_mobile: "Tilpas", login: "Log ind", signup: "Tilmeld", subscribe: "Abonnere", monthly: "Månedligt", yearly: "Årligt", free_trial: "Gratis 3 dage", contact_support: "hello@aura-sphere.app" },
+  no: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Panel", settings: "Innstillinger", language: "Språk", save: "Lagre", cancel: "Avbryt", close: "Lukk", generate_post: "Innlegg", your_prompt: "Beskriv...", dialect: "Dialekt", egyptian: "Egyptisk", gulf: "Persisk", levantine: "Levantin", maghrebi: "Maghreb", generate: "Generer", copy: "Kopier", copied: "Kopiert!", saved_posts: "Innlegg", privacy_first: "Privatliv AI", annual_save: "20%", clients: "Kunder", invoices: "Fakturaer", tasks: "Oppgaver", wallet: "Lommebok", expenses: "Utgifter", add_client: "Legg til", send_invoice: "Send", new_task: "Ny", scan_receipt: "Skann (OCR)", customize_mobile: "Tilpass", login: "Logg inn", signup: "Registrer", subscribe: "Abonnere", monthly: "Månedlig", yearly: "Årlig", free_trial: "Gratis 3 dager", contact_support: "hello@aura-sphere.app" },
+  is: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Borð", settings: "Stillingar", language: "Tungumál", save: "Vist: "Loka", generate_post: "Færsla", your_prompt: "Lýstu...", dialect: "Málsnið", egyptian: "Egyptnesk", gulf: "Flói", levantine: "Levantín", maghrebi: "Magrebí", generate: "Búa til", copy: "Afrita", copied: "Afritað!", saved_posts: "Færslur", privacy_first: "Friðhelgi AI", annual_save: "20%", clients: "Viðskiptavinir", invoices: "Reikningar", tasks: "Verkefni", wallet: "Peningasökkull", expenses: "Útgjöld", add_client: "Bæta", send_invoice: "Senda", new_task: "Nýtt", scan_receipt: "Skanna (OCR)", customize_mobile: "Sérsníða", login: "Innskráning", signup: "Skrá sig", subscribe: "Áskrift", monthly: "Mánaðarlega", yearly: "Árlega", free_trial: "Ókeypis 3 dagar", contact_support: "hello@aura-sphere.app" },
+  ga: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Painéal", settings: "Socruithe", language: "Teanga", save: "Sábháil", cancel: "Cealaigh", close: "Dún", generate_post: "Posadh", your_prompt: "Déan cur síos...", dialect: "Deilbhíocht", egyptian: "Éigipeach", gulf: "Bholgán", levantine: "Leabhanach", maghrebi: "Maghrebíoch", generate: "Giniúint", copy: "Cóipeáil", copied: "Cóipeáilte!", saved_posts: "Postanna", privacy_first: "Príobháideacht AI", annual_save: "20%", clients: "Cliaint", invoices: "Sonrasc", tasks: "Tascanna", wallet: "Sparán", expenses: "Caiteachas", add_client: "Cuir Leis", send_invoice: "Seol", new_task: "Nua", scan_receipt: "Scanaigh (OCR)", customize_mobile: "Saincheapáil", login: "Logáil", signup: "Clárú", subscribe: "Liostáil", monthly: "Míosúil", yearly: "Bliantúil", free_trial: "Triail 3 lá", contact_support: "hello@aura-sphere.app" },
+  mt: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Pannell", settings: "Impostazzjonijiet", language: "Lingwa", save: "Issalva", cancel: "Ikkanċella", close: "Agħlaq", generate_post: "Post", your_prompt: "Iddeskrivi...", dialect: "Djalekt", egyptian: "Eġizzjan", gulf: "Haljiġ", levantine: "Levantinu", maghrebi: "Magrebinu", generate: "Iġġenera", copy: "Nusħ", copied: "Mnusħa!", saved_posts: "Posts", privacy_first: "Privacy AI", annual_save: "20%", clients: "Klijenti", invoices: "Fatturen", tasks: "Impostazzjonijiet", wallet: "Portmoni", expenses: "Spejjez", add_client: "Żid", send_invoice: "Ibgħat", new_task: "Ġdida", scan_receipt: "Iskopja (OCR)", customize_mobile: "Ikustomizza", login: "Dħul", signup: "Irreġistra", subscribe: "Sottoskrizjoni", monthly: "Xahar", yearly: "Sena", free_trial: "Prova 3 ġranet", contact_support: "hello@aura-sphere.app" },
+  uk: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Панель", settings: "Налаштування", language: "Мова", save: "Зберегти", cancel: "Скасувати", close: "Закрити", generate_post: "Допис", your_prompt: "Опишіть...", dialect: "Діалект", egyptian: "Єгипетський", gulf: "Затока", levantine: "Левантійський", maghrebi: "Магрибський", generate: "Створити", copy: "Копіювати", copied: "Скопійовано!", saved_posts: "Дописи", privacy_first: "Приватна AI", annual_save: "20%", clients: "Клієнти", invoices: "Рахунки", tasks: "Завдання", wallet: "Портфель", expenses: "Витрати", add_client: "Додати", send_invoice: "Надіслати", new_task: "Нове", scan_receipt: "Сканувати (OCR)", customize_mobile: "Налаштуйте", login: "Вхід", signup: "Зареєструвcancel: "�Отменить", close: "Закрыть", generate_post: "Пост", your_prompt: "Описание...", dialect: "Диалект", egyptian: "Египетский", gulf: "Залив", levantine: "Левантийский", maghrebi: "Магрибский", generate: "Создать", copy: "Копировать", copied: "Скопировано!", saved_posts: "Посты", privacy_first: "Приватная AI", annual_save: "20%", clients: "Клиенты", invoices: "Счета", tasks: "Задачи", wallet: "Кошелёк", expenses: "Расходы", add_client: "Добавить", send_invoice: "Отправить", new_task: "Новая", scan_receipt: "Сканировать (OCR)", customize_mobile: "Настроить", login: "Войти", signup: "Зарегистрироваться", subscribe: "Подписаться", monthly: "Ежемесячно", yearly: "Ежегодно", free_trial: "Бесплатная 3 дня", contact_support: "hello@aura-sphere.app" },
+  tr: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "Panel", settings: "Ayarlar", language: "Dil", save: "Kaydet", cancel: "İptal", close: "Kapat", generate_post: "Gönderi", your_prompt: "Açıklayın...", dialect: "Ağız", egyptian: "Mısırlı", gulf: "Körfezi", levantine: "Levant", maghrebi: "Magribi", generate: "Oluştur", copy: "Kopyala", copied: "Kopyalandı!", saved_posts: "Gönderiler", privacy_first: "Gizlilik AI", annual_save: "20%", clients: "Müşteriler", invoices: "Faturalar", tasks: "Görevler", wallet: "Cüzdan", expenses: "Giderler", add_client: "Ekle", send_invoice: "Gönder", new_task: "Yeni", scan_receipt: "Tara (OCR)", customize_mobile: "Özelleştir", login: "Giriş", signup: "Kayıt", subscribe: "Abone", monthly: "Aylık", yearly: "Yıllık", free_trial: "Deneme 3 gün", contact_support: "hello@aura-sphere.app" },
+  ar: { app_name: "أوراسفير", aura_post: "أورة بوست", aura_crm: "سي آر إم", dashboard: "لوحة التحكم", settings: "الإعدادات", language: "اللغة", save: "حفظ", cancel: "إلغاء", close: "إغلاق", generate_post: "منشور", your_prompt: "صف فكرتك...", dialect: "اللهجة", egyptian: "مصري", gulf: "خليجي", levantine: "شوامي", maghrebi: "مغاربي", generate: "إنشاء", copy: "نسخ", copied: "تم النسخ!", saved_posts: "المنشورات", privacy_first: "ذكاء اصطناعي", annual_save: "20%", clients: "العملاء", invoices: "الفواتير", tasks: "المهام", wallet: "المحفظة", expenses: "المصروفات", add_client: "إضافة", send_invoice: "إرسال", new_task: "مهمة", scan_receipt: "مسح (OCR)", customize_mobile: "تخصيص", login: "دخول", signup: "اشتراك", subscribe: "الاشتراك", monthly: "شهري", yearly: "سنوي", free_trial: "تجربة 3 أيام", contact_support: "hello@aura-sphere.app" },
+  ur: { app_name: "AuraSphere", aura_post: "AuraPost", aura_crm: "CRM", dashboard: "ڈیش بورڈ", settings: "سیٹنگز", language: "زبان", save: "محفوظ کریں", cancel: "منسوخ کریں", close: "بند کریں", generate_post: "پوسٹ", your_prompt: "بیان کریں...", dialect: "بولی", egyptian: "مصری", gulf: "خلیج", levantine: "شام", maghrebi: "مغربی", generate: "بنائیں", copy: "کاپی کریں", copied: "کاپی ہو گیا!", saved_posts: "محفوظ پوسٹس", privacy_first: "رازداری AI", annual_save: "20%", clients: "کلائنٹس", invoicest key = el.getAttribute('data-i18n');
     if (translations[lang] && translations[lang][key]) {
       el.textContent = translations[lang][key];
     } else {
       el.textContent = translations.en[key] || key;
     }
   });
-
-  // Handle RTL for Arabic
-  document.body.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+  document.body.dir = (lang === 'ar' || lang === 'ur') ? 'rtl' : 'ltr';
   document.documentElement.lang = lang;
 }
 
-// Change language programmatically
 function changeLanguage(lang) {
   if (translations[lang]) {
     localStorage.setItem('preferredLanguage', lang);
@@ -499,13 +54,11 @@ function changeLanguage(lang) {
   }
 }
 
-// Load preferred language on startup
 document.addEventListener('DOMContentLoaded', () => {
   const preferredLang = localStorage.getItem('preferredLanguage') || getUserLanguage();
   translateUI(preferredLang);
 });
 
-// Export for use in other scripts
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { translations, getUserLanguage, translateUI, changeLanguage };
 }
