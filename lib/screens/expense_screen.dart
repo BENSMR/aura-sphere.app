@@ -20,6 +20,22 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
   String _selectedCategory = 'other';
   final List<String> _items = [];
 
+  void _showErrorSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  void _showSuccessSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.green),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -72,7 +88,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     );
 
     if (errors.isNotEmpty) {
-      showErrorSnackBar(errors.values.first);
+      _showErrorSnackBar(errors.values.first);
       return;
     }
 
@@ -89,7 +105,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     );
 
     if (result != null && context.mounted) {
-      showSuccessSnackBar('Expense added successfully');
+      _showSuccessSnackBar('Expense added successfully');
 
       // Clear form
       _amountController.clear();
@@ -105,7 +121,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
       });
     } else if (context.mounted) {
       final provider = context.read<ExpenseProvider>();
-      showErrorSnackBar(provider.error ?? 'Failed to add expense');
+      _showErrorSnackBar(provider.error ?? 'Failed to add expense');
     }
   }
 

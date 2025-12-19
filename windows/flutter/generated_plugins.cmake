@@ -12,6 +12,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   pdfx
   permission_handler_windows
   printing
+  sentry_flutter
   url_launcher_windows
 )
 

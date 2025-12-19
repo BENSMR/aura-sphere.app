@@ -181,12 +181,13 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
   /// Build individual feature card based on feature type
   Widget _buildFeatureCard(BuildContext context, String feature) {
     final featureData = _getFeatureData(feature);
+    final onTapFunc = featureData['onTap'] as Function(BuildContext)?;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Colors.grey[900],
       child: InkWell(
-        onTap: featureData['onTap'] as Function(BuildContext)?,
+        onTap: onTapFunc != null ? () => onTapFunc(context) : null,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
