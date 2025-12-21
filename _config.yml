@@ -1,2 +1,40 @@
 # GitHub Pages Configuration
-theme: none
+theme: jekyll-theme-minimal
+title: AuraSphere Pro
+description: Enterprise-grade business management platform with AI-powered automation
+url: https://aurasphere-pro.com
+baseurl: ""
+markdown: kramdown
+plugins:
+  - jekyll-seo-tag
+  - jekyll-feed
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:path/
+
+# Defaults
+defaults:
+  - scope:
+      path: "docs"
+    values:
+      layout: "default"
+
+# Exclude files
+exclude:
+  - .git
+  - .github
+  - node_modules
+  - functions
+  - lib
+  - android
+  - ios
+  - linux
+  - macos
+  - windows
+  - web
+  - test
+  - .env*
+  - "*.patch"
